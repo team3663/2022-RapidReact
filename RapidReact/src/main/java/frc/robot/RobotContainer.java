@@ -1,7 +1,3 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot;
 
 import edu.wpi.first.wpilibj.XboxController;
@@ -20,7 +16,6 @@ import static frc.robot.Constants.*;
 public class RobotContainer {
 
   private Command autoCommand = null;
-  @SuppressWarnings("unused")
   private final XboxController driveController = new XboxController(DRIVE_CONTROLLER_PORT);
   @SuppressWarnings("unused")
   private final XboxController operatorController = new XboxController(OPERATOR_CONTROLLER_PORT);
@@ -32,9 +27,9 @@ public class RobotContainer {
 
   public RobotContainer() {
 
-    createSubsystems();         // Create our subsystems.
-    createCommands();           // Create our commands
-    configureButtonBindings();  // Setup our button bindings
+    createSubsystems(); // Create our subsystems.
+    createCommands(); // Create our commands
+    configureButtonBindings(); // Setup our button bindings
   }
 
   /**
@@ -42,7 +37,7 @@ public class RobotContainer {
    */
   void createSubsystems() {
 
-      feeder = new FeederSubsystem(FEEDER_MOTOR_CAN_ID, FEEDER_ENTRY_SENSOR_DIO, FEEDER_EXIT_SENSOR_DIO);
+    feeder = new FeederSubsystem(FEEDER_MOTOR_CAN_ID, FEEDER_ENTRY_SENSOR_DIO, FEEDER_EXIT_SENSOR_DIO);
   }
 
   /**
@@ -56,8 +51,12 @@ public class RobotContainer {
    * Use this method to define your button->command mappings.
    */
   private void configureButtonBindings() {
-    new JoystickButton(driveController, Button.kX.value).whenPressed(new InstantCommand(() -> feeder.setFeedMode(FeedMode.STOPPED), feeder));
-    new JoystickButton(driveController, Button.kY.value).whenPressed(new InstantCommand(() -> feeder.setFeedMode(FeedMode.SHOOT), feeder));
+
+    // Button commands to help test the feeder subsystem.
+    new JoystickButton(driveController, Button.kX.value)
+        .whenPressed(new InstantCommand(() -> feeder.setFeedMode(FeedMode.STOPPED), feeder));
+    new JoystickButton(driveController, Button.kY.value)
+        .whenPressed(new InstantCommand(() -> feeder.setFeedMode(FeedMode.CONTINUOUS), feeder));
   }
 
   /**

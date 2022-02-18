@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/* Copyright (c) 2019 FIRST. All Rights Reserved.                             */
-/* Open Source Software - may be modified and shared by FRC teams. The code   */
-/* must be accompanied by the FIRST BSD license file in the root directory of */
-/* the project.                                                               */
-/*----------------------------------------------------------------------------*/
-
 package frc.robot.subsystems;
 
 import java.util.HashMap;
@@ -27,10 +20,11 @@ public class FeederSubsystem extends SubsystemBase {
         STOPPED,
         INTAKE,
         PRESHOOT,
-        SHOOT
+        SHOOT_ONE,
+        CONTINUOUS
     }
 
-    private final double FEEDER_BELT_GEAR_RATIO_MULTIPLIER = 1;
+    private final double FEEDER_GEAR_RATIO_MULTIPLIER = 1;
 
     // Feeder PID constants
     private final double KP = 0.0001;
@@ -41,14 +35,14 @@ public class FeederSubsystem extends SubsystemBase {
     private final int FEED_RPM_SHOOT = 100; // how fast the feeder should be running when we are shooting
     private final int FEED_RPM_INTAKE = 100; // how fast the feeder should be running when indexing the balls
 
-    // The number of revolutions of the belt motor required to cycle a ball all the
+    // The number of revolutions of the feed motor required to cycle a ball all the
     // way from the feeders entry to the exit.
     public final int REV_PER_FULL_FEED = 1500;
 
     // Subsystems internal data
     private CANSparkMax feedMotor;
-    private RelativeEncoder beltEncoder;
-    private SparkMaxPIDController beltPID;
+    private RelativeEncoder feedEncoder;
+    private SparkMaxPIDController feedPID;
 
     private DigitalInput entrySensor;
     private DigitalInput exitSensor;
@@ -56,9 +50,9 @@ public class FeederSubsystem extends SubsystemBase {
     private FeedModeBase currentMode;
     private HashMap<FeedMode, FeedModeBase> modes = new HashMap<FeedMode, FeedModeBase>();
 
-    // network table entries for telemetry
+    // network table entries for Shuffleboard
     private NetworkTableEntry feederRPMEntry;
-    private NetworkTableEntry entrySensorEntry;   
+    private NetworkTableEntry entrySensorEntry;
     private NetworkTableEntry exitSensorEntry;
 
     public FeederSubsystem(int feedMotorCanId, int entrySensorDio, int exitSensorDio) {
@@ -66,13 +60,13 @@ public class FeederSubsystem extends SubsystemBase {
         feedMotor = new CANSparkMax(feedMotorCanId, MotorType.kBrushless);
         feedMotor.setIdleMode(IdleMode.kBrake);
 
-        beltPID = feedMotor.getPIDController();
-        beltPID.setP(KP);
-        beltPID.setI(KI);
-        beltPID.setD(KD);
+        feedPID = feedMotor.getPIDController();
+        feedPID.setP(KP);
+        feedPID.setI(KI);
+        feedPID.setD(KD);
 
-        beltEncoder = feedMotor.getEncoder();
-        beltEncoder.setVelocityConversionFactor(FEEDER_BELT_GEAR_RATIO_MULTIPLIER); // set feeder gear ratio
+        feedEncoder = feedMotor.getEncoder();
+        feedEncoder.setVelocityConversionFactor(FEEDER_GEAR_RATIO_MULTIPLIER); // set feeder gear ratio
 
         // Sensors for Feeder
         entrySensor = new DigitalInput(entrySensorDio);
@@ -82,7 +76,8 @@ public class FeederSubsystem extends SubsystemBase {
         modes.put(FeedMode.STOPPED, new StoppedMode());
         modes.put(FeedMode.INTAKE, new IntakeMode());
         modes.put(FeedMode.PRESHOOT, new PreshootMode());
-        modes.put(FeedMode.SHOOT, new ShootMode());
+        modes.put(FeedMode.SHOOT_ONE, new ShootOneMode());
+        modes.put(FeedMode.CONTINUOUS, new ContinuousMode());
 
         currentMode = modes.get(FeedMode.STOPPED);
 
@@ -142,13 +137,13 @@ public class FeederSubsystem extends SubsystemBase {
      */
     public void setFeedMode(FeedMode mode) {
 
-        currentMode.end(this);
-        currentMode = modes.get(mode);
-        currentMode.init(this);
+        currentMode.end(this); // Terminate the current mode
+        currentMode = modes.get(mode); // Get the new desired mode
+        currentMode.init(this); // Start the new mode
     }
 
     /**
-     * Tell call if there is a ball at the entry end of the feeder subsystem.
+     * Tell caller if there is a ball at the entry end of the feeder subsystem.
      * 
      * @return True if a ball is present at the entry sensor, false otherwise.
      */
@@ -157,14 +152,13 @@ public class FeederSubsystem extends SubsystemBase {
     }
 
     /**
-     * Tell call if there is a ball at the exit end of the feeder subsystem.
+     * Tell caller if there is a ball at the exit end of the feeder subsystem.
      * 
      * @return True if a ball is present at the exit sensor, false otherwise.
      */
     private boolean ballInExit() {
         return !exitSensor.get();
     }
-
 
     /************************************************************************************************
      * Base class for all of our feed modes
@@ -187,9 +181,8 @@ public class FeederSubsystem extends SubsystemBase {
         }
     }
 
-
     /************************************************************************************************
-     * Implements our Stopped mode, stops motor in init and does nothing after that.
+     * Implements our Stopped mode, stops motor in init and then runs forever.
      */
     private class StoppedMode extends FeedModeBase {
         private StoppedMode() {
@@ -198,15 +191,13 @@ public class FeederSubsystem extends SubsystemBase {
 
         @Override
         protected void init(FeederSubsystem feeder) {
-            feeder.beltPID.setReference(FEED_RPM_STOPPED, ControlType.kVelocity);
+            feeder.feedPID.setReference(FEED_RPM_STOPPED, ControlType.kVelocity);
         }
     }
 
-
     /************************************************************************************************
-     * Implements Intake mode, advances belts as long as there is a ball in the
-     * entry and ends once a ball
-     * reaches the exit end of the feeder.
+     * Implements Intake mode, advances feed wheels as long as there is a ball in
+     * the entry and terminates once a ball reaches the exit end of the feeder.
      */
     private class IntakeMode extends FeedModeBase {
         private IntakeMode() {
@@ -219,16 +210,16 @@ public class FeederSubsystem extends SubsystemBase {
             // If there is ball at the top of the feeder then stop the motor and exit
             // complete this mode.
             if (feeder.ballInExit()) {
-                feeder.beltPID.setReference(FEED_RPM_STOPPED, ControlType.kVelocity);
+                feeder.feedPID.setReference(FEED_RPM_STOPPED, ControlType.kVelocity);
                 return true;
             }
 
             // If there is a ball in the intake end of the feeder then start the motor
             // otherwise stop it.
             if (feeder.ballInEntry()) {
-                feeder.beltPID.setReference(FEED_RPM_INTAKE, ControlType.kVelocity);
+                feeder.feedPID.setReference(FEED_RPM_INTAKE, ControlType.kVelocity);
             } else {
-                feeder.beltPID.setReference(FEED_RPM_STOPPED, ControlType.kVelocity);
+                feeder.feedPID.setReference(FEED_RPM_STOPPED, ControlType.kVelocity);
             }
 
             return false;
@@ -236,15 +227,13 @@ public class FeederSubsystem extends SubsystemBase {
 
         @Override
         protected void end(FeederSubsystem feeder) {
-            feeder.beltPID.setReference(FEED_RPM_STOPPED, ControlType.kVelocity);
+            feeder.feedPID.setReference(FEED_RPM_STOPPED, ControlType.kVelocity);
         }
     }
 
-    
     /************************************************************************************************
-     * Implements pre-Shoot mode, advances feed belt until a ball is present at the
-     * exit
-     * end of the feeder.
+     * Implements pre-Shoot mode, advances feeder until a ball is present at the
+     * exit end of the feeder.
      */
     private class PreshootMode extends FeedModeBase {
         private PreshootMode() {
@@ -253,8 +242,8 @@ public class FeederSubsystem extends SubsystemBase {
 
         @Override
         protected void init(FeederSubsystem feeder) {
-            feeder.beltEncoder.setPosition(0.0);
-            feeder.beltPID.setReference(FEED_RPM_INTAKE, ControlType.kVelocity);
+            feeder.feedEncoder.setPosition(0.0);
+            feeder.feedPID.setReference(FEED_RPM_INTAKE, ControlType.kVelocity);
         }
 
         @Override
@@ -268,7 +257,7 @@ public class FeederSubsystem extends SubsystemBase {
 
             // If the exit sensor has not seen a ball yet but the belt has moved the full
             // length of the feeder then there are no balls, bail out.
-            if (feeder.beltEncoder.getPosition() > REV_PER_FULL_FEED) {
+            if (feeder.feedEncoder.getPosition() > REV_PER_FULL_FEED) {
                 return true;
             }
 
@@ -277,27 +266,26 @@ public class FeederSubsystem extends SubsystemBase {
 
         @Override
         protected void end(FeederSubsystem feeder) {
-            feeder.beltPID.setReference(FEED_RPM_STOPPED, ControlType.kVelocity);
+            feeder.feedPID.setReference(FEED_RPM_STOPPED, ControlType.kVelocity);
         }
     }
 
     /************************************************************************************************
      * Implements Shoot mode, advances one ball out of the feeder into the shooter,
-     * advances next ball (if there is one) to the top of the feeder then
-     * terminates.
+     * advances next ball (if there is one) to the top of the feeder then terminates.
      */
-    private class ShootMode extends FeedModeBase {
+    private class ShootOneMode extends FeedModeBase {
         private boolean gapSeen;
 
-        private ShootMode() {
-            super(FeedMode.SHOOT);
+        private ShootOneMode() {
+            super(FeedMode.SHOOT_ONE);
         }
 
         @Override
         protected void init(FeederSubsystem feeder) {
 
             gapSeen = false;
-            feeder.beltPID.setReference(FEED_RPM_SHOOT, ControlType.kVelocity);
+            feeder.feedPID.setReference(FEED_RPM_SHOOT, ControlType.kVelocity);
         }
 
         @Override
@@ -320,7 +308,27 @@ public class FeederSubsystem extends SubsystemBase {
 
         @Override
         protected void end(FeederSubsystem feeder) {
-            feeder.beltPID.setReference(FEED_RPM_STOPPED, ControlType.kVelocity);
+            feeder.feedPID.setReference(FEED_RPM_STOPPED, ControlType.kVelocity);
+        }
+    }
+
+    /************************************************************************************************
+     * Implements Continuous mode, advanced the feeder forever.
+     */
+    private class ContinuousMode extends FeedModeBase {
+
+        private ContinuousMode() {
+            super(FeedMode.SHOOT_ONE);
+        }
+
+        @Override
+        protected void init(FeederSubsystem feeder) {
+            feeder.feedPID.setReference(FEED_RPM_SHOOT, ControlType.kVelocity);
+        }
+
+        @Override
+        protected void end(FeederSubsystem feeder) {
+            feeder.feedPID.setReference(FEED_RPM_STOPPED, ControlType.kVelocity);
         }
     }
 }
