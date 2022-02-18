@@ -17,4 +17,8 @@ public final class Constants {
   public static final int DRIVE_CONTROLLER_PORT = 0;
   public static final int OPERATOR_CONTROLLER_PORT = 1;
   public static final int TEST_CONTROLLER_PORT = 2;
+
+  public static final int INTAKE_MOTOR_ID = 0;
+  public static final int SOLONOID_INWARD_CAN_ID = 0;
+  public static final int SOLONOID_OUTWARD_CAN_ID = 1;
 }

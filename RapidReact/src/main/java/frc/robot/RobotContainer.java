@@ -4,10 +4,16 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj2.command.Command;
+import static frc.robot.Constants.DRIVE_CONTROLLER_PORT;
+import static frc.robot.Constants.OPERATOR_CONTROLLER_PORT;
 
-import static frc.robot.Constants.*;
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.XboxController.Button;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import frc.robot.subsystems.IntakeSubsystem;
 
 /**
  * This class is where the bulk of the robot should be declared.
@@ -21,6 +27,7 @@ public class RobotContainer {
   private final XboxController operatorController = new XboxController(OPERATOR_CONTROLLER_PORT);
 
   // Subsystems
+  private IntakeSubsystem intake;
 
   // Commands
 
@@ -35,6 +42,7 @@ public class RobotContainer {
    * Create all of our robot's subsystem objects here.
    */
   void createSubsystems() {
+    final IntakeSubsystem intake = new IntakeSubsystem(Constants.INTAKE_MOTOR_ID, Constants.SOLONOID_INWARD_CAN_ID, Constants.SOLONOID_OUTWARD_CAN_ID);
 
   }
 
@@ -49,6 +57,17 @@ public class RobotContainer {
    * Use this method to define your button->command mappings.
    */
   private void configureButtonBindings() {
+      //new JoystickButton(driveController, Button.kA.value).whenPressed(new InstantCommand(() -> intake.extend(), intake));
+
+      new JoystickButton(driveController, Button.kA.value).whenHeld(new SequentialCommandGroup(
+        new InstantCommand(() -> intake.extend(), intake), new InstantCommand(() -> intake.start(), intake)));
+
+      new JoystickButton(driveController, Button.kA.value).whenReleased(new SequentialCommandGroup(
+        new InstantCommand(() -> intake.retract(), intake), new InstantCommand(() -> intake.stop(), intake)));
+
+
+
+      //new JoystickButton(driveController, Button.kA.value).whenReleased(new InstantCommand(() -> intake.retract(), intake));   
 
   }
 
