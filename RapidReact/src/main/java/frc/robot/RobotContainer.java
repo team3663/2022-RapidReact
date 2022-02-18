@@ -6,6 +6,7 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.subsystems.FeederSubsystem;
 
 import static frc.robot.Constants.*;
 
@@ -21,6 +22,7 @@ public class RobotContainer {
   private final XboxController operatorController = new XboxController(OPERATOR_CONTROLLER_PORT);
 
   // Subsystems
+  FeederSubsystem feeder;
 
   // Commands
 
@@ -36,6 +38,7 @@ public class RobotContainer {
    */
   void createSubsystems() {
 
+      feeder = new FeederSubsystem( FEEDER_MOTOR_CAN_ID, FEEDER_ENTRY_SENSOR_DIO, FEEDER_EXIT_SENSOR_DIO);
   }
 
   /**

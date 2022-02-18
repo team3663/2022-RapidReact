@@ -17,4 +17,14 @@ public final class Constants {
   public static final int DRIVE_CONTROLLER_PORT = 0;
   public static final int OPERATOR_CONTROLLER_PORT = 1;
   public static final int TEST_CONTROLLER_PORT = 2;
+
+  // CAN IDs
+  // CAN ID 1 - 8 are reserved for the swerve drivetrain motors
+  // CAN ID 9-12 are reserved for the swerve angle encoders
+
+  public static final int FEEDER_MOTOR_CAN_ID = 13;
+
+  // Digital IO ports
+  public static final int FEEDER_ENTRY_SENSOR_DIO = 1;
+  public static final int FEEDER_EXIT_SENSOR_DIO = 2;
 }
