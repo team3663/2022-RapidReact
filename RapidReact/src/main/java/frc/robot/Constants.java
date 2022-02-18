@@ -1,7 +1,3 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot;
 
 /**
@@ -14,7 +10,13 @@ package frc.robot;
  */
 public final class Constants {
 
-  public static final int DRIVE_CONTROLLER_PORT = 0;
-  public static final int OPERATOR_CONTROLLER_PORT = 1;
-  public static final int TEST_CONTROLLER_PORT = 2;
+    // Xbox Controllers Port Indexes
+    public static final int DRIVE_CONTROLLER_ID = 0;
+    public static final int OPERATOR_CONTROLLER_ID = 1;
+    public static final int TEST_CONTROLLER_ID = 2;
+
+    public static final int SHOOTER_MOTOR_1_CAN_ID = 32;
+    public static final int SHOOTER_MOTOR_2_CAN_ID = 32;
+    public static final int HOOD_MOTOR_1_CAN_ID = 32;
+    public static final int HOOD_LIMITSWITCH_CAN_ID = 32;
 }
