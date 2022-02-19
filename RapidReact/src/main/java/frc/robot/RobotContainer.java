@@ -1,6 +1,7 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.XboxController.Axis;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -88,6 +89,10 @@ public class RobotContainer {
     new JoystickButton(driveController, Button.kLeftBumper.value)
         .whenPressed(new InstantCommand(() -> shooter.decreasePower(), shooter));
     new JoystickButton(driveController, Button.kRightBumper.value)
+        .whenPressed(new InstantCommand(() -> shooter.increasePower(), shooter));
+    new JoystickButton(driveController, Axis.kLeftTrigger.value)
+        .whenPressed(new InstantCommand(() -> shooter.decreasePower(), shooter));
+    new JoystickButton(driveController, Axis.kRightTrigger.value)
         .whenPressed(new InstantCommand(() -> shooter.increasePower(), shooter));
 
   }
