@@ -43,18 +43,17 @@ public class ShooterSubsystem extends SubsystemBase {
   private NetworkTableEntry hoodLimitSwitchEntry;
 
   /** Creates a new instance of the Shooter subsystem. */
-  public ShooterSubsystem(int shooterMotor1CANID, int shooterMotor2CANID, int hoodMotorCANID, int hoodLimitCANID, Ranger ranger) {
+  public ShooterSubsystem(int shooterMotor1CANID, int shooterMotor2CANID, int hoodMotorCANID, int hoodLimitDio, Ranger ranger) {
 
     this.ranger = ranger;
     
     shooterMotor1 = new CANSparkMax(shooterMotor1CANID, MotorType.kBrushless);
     shooterMotor2 = new CANSparkMax(shooterMotor2CANID, MotorType.kBrushless);
+    shooterPIDController = shooterMotor1.getPIDController();
     hoodMotor = new CANSparkMax(hoodMotorCANID, MotorType.kBrushless);
-    hoodLimit = new DigitalInput(hoodLimitCANID);
+    hoodLimit = new DigitalInput(hoodLimitDio);
 
     shooterMotorGroup = new MotorControllerGroup(shooterMotor1, shooterMotor2);
-
-    hoodLimit = new DigitalInput(hoodLimitCANID);
 
     limelight = RobotContainer.getVision();
 
@@ -69,17 +68,17 @@ public class ShooterSubsystem extends SubsystemBase {
   private void initTelemetry() {
     ShuffleboardTab tab = Shuffleboard.getTab("Shooter"); // Data is grouped with shooter and intake.
 
-    shooterRPMEntry = tab.add("Feeder RPM", 0)
+    shooterRPMEntry = tab.add("Shooter RPM", 0)
             .withPosition(0, 0)
             .withSize(1, 1)
             .getEntry();
 
-    hoodAngleEntry = tab.add("Entry Sensor", 0)
+    hoodAngleEntry = tab.add("Hood Angle", 0)
             .withPosition(1, 0)
             .withSize(1, 1)
             .getEntry();
 
-    hoodLimitSwitchEntry = tab.add("Exit Sensor", 0)
+    hoodLimitSwitchEntry = tab.add("Hood Limit", 0)
             .withPosition(2, 0)
             .withSize(1, 1)
             .getEntry();
