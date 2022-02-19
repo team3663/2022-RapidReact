@@ -18,7 +18,7 @@ public class ShooterSubsystem extends SubsystemBase {
   private CANSparkMax shooterMotor2;
   private SparkMaxPIDController shooterPIDController;
   private CANSparkMax hoodMotor;
-  private DigitalInput hoodLimit;
+  @SuppressWarnings("unused") private DigitalInput hoodLimit;
   private SparkMaxPIDController hoodPidController;
   private MotorControllerGroup shooterMotorGroup ;
   private RelativeEncoder hoodEncoder;
@@ -45,8 +45,8 @@ public class ShooterSubsystem extends SubsystemBase {
   private final int MAX_HOOD_ANGLE = 80; //THESE NUMBERS ARE ALL COMPLETELY IMAGINARY
   private final int MIN_HOOD_ANGLE = 25; //THESE NUMBERS ARE ALL COMPLETELY IMAGINARY
 
-  private final double WHEEL_GEAR_RATIO_MULTIPLIER = 1; //THESE NUMBERS ARE ALL COMPLETELY IMAGINARY
-  private final double ANGLE_GEAR_RATIO_MULTIPLIER = 1; //THESE NUMBERS ARE ALL COMPLETELY IMAGINARY
+  @SuppressWarnings("unused") private final double WHEEL_GEAR_RATIO_MULTIPLIER = 1; //THESE NUMBERS ARE ALL COMPLETELY IMAGINARY
+  @SuppressWarnings("unused") private final double ANGLE_GEAR_RATIO_MULTIPLIER = 1; //THESE NUMBERS ARE ALL COMPLETELY IMAGINARY
   private final double ROTATIONS_PER_DEGREE = 5; //THESE NUMBERS ARE ALL COMPLETELY IMAGINARY
 
   static final double powerIncrement = 0.05; 
