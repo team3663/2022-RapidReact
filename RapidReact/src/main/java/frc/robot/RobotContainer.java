@@ -5,7 +5,12 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import frc.robot.drivers.Limelight;
+import frc.robot.subsystems.ShooterSubsystem;
 
 import static frc.robot.Constants.*;
 
@@ -16,11 +21,14 @@ public class RobotContainer {
 
   private Command autoCommand = null;
   @SuppressWarnings("unused")
-  private final XboxController driveController = new XboxController(DRIVE_CONTROLLER_PORT);
+  private final XboxController driveController = new XboxController(Constants.DRIVE_CONTROLLER_ID);
   @SuppressWarnings("unused")
-  private final XboxController operatorController = new XboxController(OPERATOR_CONTROLLER_PORT);
+  private final XboxController operatorController = new XboxController(Constants.OPERATOR_CONTROLLER_ID);
+
+  private static final Limelight vision = new Limelight();
 
   // Subsystems
+  
 
   // Commands
 
@@ -35,7 +43,7 @@ public class RobotContainer {
    * Create all of our robot's subsystem objects here.
    */
   void createSubsystems() {
-
+    final ShooterSubsystem shooter = new ShooterSubsystem(SHOOTER_MOTOR_1_CAN_ID, SHOOTER_MOTOR_2_CAN_ID, HOOD_MOTOR_1_CAN_ID, HOOD_LIMITSWITCH_CAN_ID);
   }
 
   /**
@@ -49,7 +57,7 @@ public class RobotContainer {
    * Use this method to define your button->command mappings.
    */
   private void configureButtonBindings() {
-
+    
   }
 
   /**
@@ -60,5 +68,9 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     return autoCommand;
+  }
+
+  public static Limelight getVision() {
+    return vision;
   }
 }
