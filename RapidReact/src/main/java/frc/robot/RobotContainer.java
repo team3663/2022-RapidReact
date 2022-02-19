@@ -10,6 +10,8 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.drivers.Limelight;
 import frc.robot.subsystems.FeederSubsystem;
 import frc.robot.subsystems.FeederSubsystem.FeedMode;
+import frc.robot.utils.Ranger;
+import frc.robot.utils.SimpleRanger;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import static frc.robot.Constants.*;
@@ -25,10 +27,10 @@ public class RobotContainer {
   private final XboxController operatorController = new XboxController(Constants.OPERATOR_CONTROLLER_PORT);
 
   private static final Limelight vision = new Limelight();
+  private final Ranger ranger = new SimpleRanger();
 
   // Subsystems
   private FeederSubsystem feeder;
-  @SuppressWarnings("unused")
   private ShooterSubsystem shooter;
   private IntakeSubsystem intake;
 
@@ -50,8 +52,8 @@ public class RobotContainer {
 
     feeder = new FeederSubsystem(FEEDER_MOTOR_CAN_ID, FEEDER_ENTRY_SENSOR_DIO, FEEDER_EXIT_SENSOR_DIO);
 
-    shooter = new ShooterSubsystem(SHOOTER_MOTOR_1_CAN_ID, SHOOTER_MOTOR_2_CAN_ID, HOOD_MOTOR_1_CAN_ID,
-        HOOD_LIMITSWITCH_DIO);
+    shooter = new ShooterSubsystem(SHOOTER_MOTOR_1_CAN_ID, SHOOTER_MOTOR_2_CAN_ID, HOOD_MOTOR_CAN_ID,
+        HOOD_LIMITSWITCH_DIO, ranger);
   }
 
   /**

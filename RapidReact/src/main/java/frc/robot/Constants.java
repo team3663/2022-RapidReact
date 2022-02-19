@@ -30,7 +30,7 @@ public final class Constants {
 
   public static final int SHOOTER_MOTOR_1_CAN_ID = 25;
   public static final int SHOOTER_MOTOR_2_CAN_ID = 26;
-  public static final int HOOD_MOTOR_1_CAN_ID = 27;
+  public static final int HOOD_MOTOR_CAN_ID = 27;
 
   // Digital IO ports
   public static final int FEEDER_ENTRY_SENSOR_DIO = 1;
