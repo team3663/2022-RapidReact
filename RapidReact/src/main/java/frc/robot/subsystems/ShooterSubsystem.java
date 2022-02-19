@@ -1,16 +1,11 @@
 package frc.robot.subsystems;
 
-import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotContainer;
 import frc.robot.drivers.Limelight;
 import frc.robot.utils.Matrix;
-
-import java.util.concurrent.CancellationException;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
@@ -94,6 +89,14 @@ public class ShooterSubsystem extends SubsystemBase {
   public void stop() {
     running = false;
     shooterMotorGroup.set(0.0);
+  }
+
+  public void raiseHood() {
+    hoodMotor.set(0.05);
+  }
+
+  public void lowerHood() {
+    hoodMotor.set(-0.05);
   }
 
   public void increasePower() {
