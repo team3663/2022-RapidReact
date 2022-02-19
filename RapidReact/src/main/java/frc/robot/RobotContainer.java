@@ -21,7 +21,6 @@ import frc.robot.subsystems.IntakeSubsystem;
 public class RobotContainer {
 
   private Command autoCommand = null;
-  @SuppressWarnings("unused")
   private final XboxController driveController = new XboxController(DRIVE_CONTROLLER_PORT);
   @SuppressWarnings("unused")
   private final XboxController operatorController = new XboxController(OPERATOR_CONTROLLER_PORT);
@@ -33,16 +32,17 @@ public class RobotContainer {
 
   public RobotContainer() {
 
-    createSubsystems();         // Create our subsystems.
-    createCommands();           // Create our commands
-    configureButtonBindings();  // Setup our button bindings
+    createSubsystems(); // Create our subsystems.
+    createCommands(); // Create our commands
+    configureButtonBindings(); // Setup our button bindings
   }
 
   /**
    * Create all of our robot's subsystem objects here.
    */
   void createSubsystems() {
-    final IntakeSubsystem intake = new IntakeSubsystem(Constants.INTAKE_MOTOR_ID, Constants.SOLONOID_INWARD_CAN_ID, Constants.SOLONOID_OUTWARD_CAN_ID);
+    intake = new IntakeSubsystem(Constants.INTAKE_MOTOR_ID, Constants.SOLONOID_INWARD_CAN_ID,
+        Constants.SOLONOID_OUTWARD_CAN_ID);
 
   }
 
@@ -57,18 +57,12 @@ public class RobotContainer {
    * Use this method to define your button->command mappings.
    */
   private void configureButtonBindings() {
-      //new JoystickButton(driveController, Button.kA.value).whenPressed(new InstantCommand(() -> intake.extend(), intake));
 
-      new JoystickButton(driveController, Button.kA.value).whenHeld(new SequentialCommandGroup(
+    new JoystickButton(driveController, Button.kA.value).whenHeld(new SequentialCommandGroup(
         new InstantCommand(() -> intake.extend(), intake), new InstantCommand(() -> intake.start(), intake)));
 
-      new JoystickButton(driveController, Button.kA.value).whenReleased(new SequentialCommandGroup(
+    new JoystickButton(driveController, Button.kA.value).whenReleased(new SequentialCommandGroup(
         new InstantCommand(() -> intake.retract(), intake), new InstantCommand(() -> intake.stop(), intake)));
-
-
-
-      //new JoystickButton(driveController, Button.kA.value).whenReleased(new InstantCommand(() -> intake.retract(), intake));   
-
   }
 
   /**
