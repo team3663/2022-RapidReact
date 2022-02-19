@@ -22,16 +22,21 @@ public final class Constants {
   // CAN IDs
   // CAN ID 1 - 8 are reserved for the swerve drivetrain motors
   // CAN ID 9-12 are reserved for the swerve angle encoders
-  public static final int FEEDER_MOTOR_CAN_ID = 13;
+  public static final int INTAKE_MOTOR_ID = 15;
+  public static final int SOLONOID_INWARD_CAN_ID = 16;
+  public static final int SOLONOID_OUTWARD_CAN_ID = 17;
 
-  public static final int SHOOTER_MOTOR_1_CAN_ID = 32;
-  public static final int SHOOTER_MOTOR_2_CAN_ID = 32;
-  public static final int HOOD_MOTOR_1_CAN_ID = 32;
+  public static final int FEEDER_MOTOR_CAN_ID = 20;
+
+  public static final int SHOOTER_MOTOR_1_CAN_ID = 25;
+  public static final int SHOOTER_MOTOR_2_CAN_ID = 26;
+  public static final int HOOD_MOTOR_1_CAN_ID = 27;
 
   // Digital IO ports
   public static final int FEEDER_ENTRY_SENSOR_DIO = 1;
   public static final int FEEDER_EXIT_SENSOR_DIO = 2;
   public static final int HOOD_LIMITSWITCH_DIO = 3;
+
   // Analog IO ports
 
   // SPI addresses
