@@ -45,6 +45,8 @@ public class ShooterSubsystem extends SubsystemBase {
   private final int MAX_HOOD_ANGLE = 80; //THESE NUMBERS ARE ALL COMPLETELY IMAGINARY
   private final int MIN_HOOD_ANGLE = 25; //THESE NUMBERS ARE ALL COMPLETELY IMAGINARY
 
+  private final double ROTATIONS_PER_DEGREE = 5; //THESE NUMBERS ARE ALL COMPLETELY IMAGINARY
+
   static final double powerIncrement = 0.05; 
   public double power = 0.0;
 
