@@ -1,19 +1,18 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot;
-
-import static frc.robot.Constants.DRIVE_CONTROLLER_PORT;
-import static frc.robot.Constants.OPERATOR_CONTROLLER_PORT;
 
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+
+import frc.robot.drivers.Limelight;
+import frc.robot.subsystems.FeederSubsystem;
+import frc.robot.subsystems.FeederSubsystem.FeedMode;
 import frc.robot.subsystems.IntakeSubsystem;
+import frc.robot.subsystems.ShooterSubsystem;
+import static frc.robot.Constants.*;
 
 /**
  * This class is where the bulk of the robot should be declared.
@@ -21,11 +20,16 @@ import frc.robot.subsystems.IntakeSubsystem;
 public class RobotContainer {
 
   private Command autoCommand = null;
-  private final XboxController driveController = new XboxController(DRIVE_CONTROLLER_PORT);
+  private final XboxController driveController = new XboxController(Constants.DRIVE_CONTROLLER_PORT);
   @SuppressWarnings("unused")
-  private final XboxController operatorController = new XboxController(OPERATOR_CONTROLLER_PORT);
+  private final XboxController operatorController = new XboxController(Constants.OPERATOR_CONTROLLER_PORT);
+
+  private static final Limelight vision = new Limelight();
 
   // Subsystems
+  private FeederSubsystem feeder;
+  @SuppressWarnings("unused")
+  private ShooterSubsystem shooter;
   private IntakeSubsystem intake;
 
   // Commands
@@ -41,9 +45,13 @@ public class RobotContainer {
    * Create all of our robot's subsystem objects here.
    */
   void createSubsystems() {
-    intake = new IntakeSubsystem(Constants.INTAKE_MOTOR_ID, Constants.SOLONOID_INWARD_CAN_ID,
-        Constants.SOLONOID_OUTWARD_CAN_ID);
 
+    intake = new IntakeSubsystem(INTAKE_MOTOR_ID, SOLONOID_INWARD_CAN_ID, SOLONOID_OUTWARD_CAN_ID);
+
+    feeder = new FeederSubsystem(FEEDER_MOTOR_CAN_ID, FEEDER_ENTRY_SENSOR_DIO, FEEDER_EXIT_SENSOR_DIO);
+
+    shooter = new ShooterSubsystem(SHOOTER_MOTOR_1_CAN_ID, SHOOTER_MOTOR_2_CAN_ID, HOOD_MOTOR_1_CAN_ID,
+        HOOD_LIMITSWITCH_DIO);
   }
 
   /**
@@ -58,11 +66,17 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
 
+    // Button commands to test intake subsystem
     new JoystickButton(driveController, Button.kA.value).whenHeld(new SequentialCommandGroup(
         new InstantCommand(() -> intake.extend(), intake), new InstantCommand(() -> intake.start(), intake)));
-
     new JoystickButton(driveController, Button.kA.value).whenReleased(new SequentialCommandGroup(
         new InstantCommand(() -> intake.retract(), intake), new InstantCommand(() -> intake.stop(), intake)));
+
+    // Button commands to help test the feeder subsystem.
+    new JoystickButton(driveController, Button.kX.value)
+        .whenPressed(new InstantCommand(() -> feeder.setFeedMode(FeedMode.STOPPED), feeder));
+    new JoystickButton(driveController, Button.kY.value)
+        .whenPressed(new InstantCommand(() -> feeder.setFeedMode(FeedMode.CONTINUOUS), feeder));
   }
 
   /**
@@ -73,5 +87,9 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     return autoCommand;
+  }
+
+  public static Limelight getVision() {
+    return vision;
   }
 }
