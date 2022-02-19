@@ -22,7 +22,7 @@ public class ShooterSubsystem extends SubsystemBase {
   private CANSparkMax shooterMotor2;
   private SparkMaxPIDController shooterPIDController;
   private CANSparkMax hoodMotor;
-  @SuppressWarnings("unused") private DigitalInput hoodLimit;
+  private DigitalInput hoodLimit;
   private SparkMaxPIDController hoodPidController;
   private MotorControllerGroup shooterMotorGroup ;
 
