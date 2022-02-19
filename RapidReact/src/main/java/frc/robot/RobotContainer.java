@@ -77,6 +77,17 @@ public class RobotContainer {
         .whenPressed(new InstantCommand(() -> feeder.setFeedMode(FeedMode.STOPPED), feeder));
     new JoystickButton(driveController, Button.kY.value)
         .whenPressed(new InstantCommand(() -> feeder.setFeedMode(FeedMode.CONTINUOUS), feeder));
+
+    // Button commands to test shooter subsystem.
+    new JoystickButton(driveController, Button.kStart.value)
+        .whenPressed(new InstantCommand(() -> shooter.start(), shooter));
+    new JoystickButton(driveController, Button.kBack.value)
+        .whenPressed(new InstantCommand(() -> shooter.stop(), shooter));
+    new JoystickButton(driveController, Button.kLeftBumper.value)
+        .whenPressed(new InstantCommand(() -> shooter.decreasePower(), shooter));
+    new JoystickButton(driveController, Button.kRightBumper.value)
+        .whenPressed(new InstantCommand(() -> shooter.increasePower(), shooter));
+
   }
 
   /**
