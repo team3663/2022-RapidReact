@@ -318,7 +318,7 @@ public class FeederSubsystem extends SubsystemBase {
     private class ContinuousMode extends FeedModeBase {
 
         private ContinuousMode() {
-            super(FeedMode.SHOOT_ONE);
+            super(FeedMode.CONTINUOUS);
         }
 
         @Override
