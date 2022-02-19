@@ -5,8 +5,10 @@ import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import frc.robot.drivers.Limelight;
 import frc.robot.subsystems.FeederSubsystem;
 import frc.robot.subsystems.FeederSubsystem.FeedMode;
+import frc.robot.subsystems.ShooterSubsystem;
 
 import static frc.robot.Constants.*;
 
@@ -16,12 +18,15 @@ import static frc.robot.Constants.*;
 public class RobotContainer {
 
   private Command autoCommand = null;
-  private final XboxController driveController = new XboxController(DRIVE_CONTROLLER_PORT);
+  private final XboxController driveController = new XboxController(Constants.DRIVE_CONTROLLER_PORT);
   @SuppressWarnings("unused")
-  private final XboxController operatorController = new XboxController(OPERATOR_CONTROLLER_PORT);
+  private final XboxController operatorController = new XboxController(Constants.OPERATOR_CONTROLLER_PORT);
+
+  private static final Limelight vision = new Limelight();
 
   // Subsystems
   FeederSubsystem feeder;
+  ShooterSubsystem shooter;
 
   // Commands
 
@@ -38,6 +43,8 @@ public class RobotContainer {
   void createSubsystems() {
 
     feeder = new FeederSubsystem(FEEDER_MOTOR_CAN_ID, FEEDER_ENTRY_SENSOR_DIO, FEEDER_EXIT_SENSOR_DIO);
+    shooter = new ShooterSubsystem(SHOOTER_MOTOR_1_CAN_ID, SHOOTER_MOTOR_2_CAN_ID, HOOD_MOTOR_1_CAN_ID,
+        HOOD_LIMITSWITCH_DIO);
   }
 
   /**
@@ -67,5 +74,9 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     return autoCommand;
+  }
+
+  public static Limelight getVision() {
+    return vision;
   }
 }
