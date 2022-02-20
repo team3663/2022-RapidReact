@@ -22,7 +22,7 @@ public final class Constants {
   // CAN IDs
   // CAN ID 1 - 8 are reserved for the swerve drivetrain motors
   // CAN ID 9-12 are reserved for the swerve angle encoders
-  public static final int INTAKE_MOTOR_ID = 15;
+  public static final int INTAKE_MOTOR_CAN_ID = 15;
 
   public static final int FEEDER_MOTOR_CAN_ID = 20;
 
