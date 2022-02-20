@@ -25,8 +25,7 @@ public class IntakeSubsystem extends SubsystemBase {
     intakeMotor.setIdleMode(IdleMode.kCoast);
     intakeMotor.setSmartCurrentLimit(MOTOR_CURRENT_LIMIT);
 
- //   intakeSolenoid = new DoubleSolenoid(PneumaticsModuleType.REVPH, retractSolenoidChan, extendSolenoidChan);
-    intakeSolenoid = null;
+    intakeSolenoid = new DoubleSolenoid(PneumaticsModuleType.REVPH, retractSolenoidChan, extendSolenoidChan);
   }
 
   @Override
