@@ -29,8 +29,8 @@ public class Limelight {
   public static final int DEFAULT_PIPELINE = BLUE_PIPELINE;
 
   //Distance constants
-  public static final double CAMERA_ANGLE = 32.5;
-  public static final double CAMERA_HEIGHT = 21.25; //in inches
+  public static final double CAMERA_ANGLE = 32.5; //in degrees (0 is horizontal, 90 is a straight up)
+  public static final double CAMERA_HEIGHT = 21.25; //in inches 
   public static final double TARGET_HEIGHT = 89.75; //center of vision target //98.25; center of target//in inches
 
   //vision network table

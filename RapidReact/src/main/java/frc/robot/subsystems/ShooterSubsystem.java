@@ -50,6 +50,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
   static final double powerIncrement = 0.05; 
   public double power = 0.0;
+  public int positions = 0;
 
   private NetworkTableEntry shooterRPMEntry;
   private NetworkTableEntry hoodAngleEntry;
@@ -123,15 +124,13 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   public void raiseHood() {
-    hoodMotor.set(0.05);
+    positions += 5;
+    hoodMotor.getEncoder().setPosition(positions);
   }
 
   public void lowerHood() {
-    hoodMotor.set(-0.05);
-  }
-
-  public void stopHood(){
-    hoodMotor.set(0);
+    positions -= 5;
+    hoodMotor.getEncoder().setPosition(positions);
   }
 
   public void increasePower() {
