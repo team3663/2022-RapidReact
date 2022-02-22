@@ -18,17 +18,14 @@ public class IntakeSubsystem extends SubsystemBase {
   private final int MOTOR_CURRENT_LIMIT = 25;
 
   /** Creates a new instance of the Shooter subsystem. */
-  public IntakeSubsystem(int motor1CANId, int solonoidInCanId, int solonoidOutCanId) {
+  public IntakeSubsystem(int motor1CANId, int retractSolenoidChan, int extendSolenoidChan) {
 
     intakeMotor = new CANSparkMax(motor1CANId, MotorType.kBrushless);
 
     intakeMotor.setIdleMode(IdleMode.kCoast);
     intakeMotor.setSmartCurrentLimit(MOTOR_CURRENT_LIMIT);
 
-    intakeSolenoid = new DoubleSolenoid(PneumaticsModuleType.REVPH, solonoidInCanId, solonoidOutCanId);
-
-
-
+    intakeSolenoid = new DoubleSolenoid(PneumaticsModuleType.REVPH, retractSolenoidChan, extendSolenoidChan);
   }
 
   @Override
