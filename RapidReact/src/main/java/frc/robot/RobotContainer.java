@@ -6,8 +6,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-
+import frc.robot.commands.TeleOpDriveCommand;
 import frc.robot.drivers.Limelight;
+import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.FeederSubsystem;
 import frc.robot.subsystems.FeederSubsystem.FeedMode;
 import frc.robot.subsystems.IntakeSubsystem;
@@ -31,34 +32,41 @@ public class RobotContainer {
   @SuppressWarnings("unused")
   private ShooterSubsystem shooter;
   private IntakeSubsystem intake;
+  private DrivetrainSubsystem drivetrain;
 
   // Commands
+  private TeleOpDriveCommand teleOpDrive;
 
   public RobotContainer() {
 
     createSubsystems(); // Create our subsystems.
     createCommands(); // Create our commands
     configureButtonBindings(); // Setup our button bindings
+
+    drivetrain.setDefaultCommand(teleOpDrive);
   }
 
   /**
    * Create all of our robot's subsystem objects here.
    */
   void createSubsystems() {
-
+    
     intake = new IntakeSubsystem(INTAKE_MOTOR_ID, SOLONOID_INWARD_CAN_ID, SOLONOID_OUTWARD_CAN_ID);
-
     feeder = new FeederSubsystem(FEEDER_MOTOR_CAN_ID, FEEDER_ENTRY_SENSOR_DIO, FEEDER_EXIT_SENSOR_DIO);
-
     shooter = new ShooterSubsystem(SHOOTER_MOTOR_1_CAN_ID, SHOOTER_MOTOR_2_CAN_ID, HOOD_MOTOR_1_CAN_ID,
         HOOD_LIMITSWITCH_DIO);
+    drivetrain = new DrivetrainSubsystem();
   }
 
   /**
    * Create all of our robot's command objects here.
    */
   void createCommands() {
-
+    teleOpDrive = new TeleOpDriveCommand(
+      drivetrain, 
+      () -> -modifyAxis(driveController.getLeftY()) * DrivetrainSubsystem.MAX_VELOCITY_METERS_PER_SECOND,
+      () -> -modifyAxis(driveController.getLeftX()) * DrivetrainSubsystem.MAX_VELOCITY_METERS_PER_SECOND,
+      () -> -modifyAxis(driveController.getRightX()) * DrivetrainSubsystem.MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND);
   }
 
   /**
@@ -77,6 +85,9 @@ public class RobotContainer {
         .whenPressed(new InstantCommand(() -> feeder.setFeedMode(FeedMode.STOPPED), feeder));
     new JoystickButton(driveController, Button.kY.value)
         .whenPressed(new InstantCommand(() -> feeder.setFeedMode(FeedMode.CONTINUOUS), feeder));
+
+    new JoystickButton(driveController, Button.kBack.value).whenPressed(drivetrain::resetGyroscope);
+    new JoystickButton(driveController, Button.kStart.value).whenPressed(drivetrain::resetPosition);
   }
 
   /**
@@ -91,5 +102,24 @@ public class RobotContainer {
 
   public static Limelight getVision() {
     return vision;
+  }
+
+  private static double modifyAxis(double value) {
+    value = deadband(value, 0.1);
+    value = Math.copySign(value * value, value);
+
+    return value;
+  }
+
+  private static double deadband(double value, double deadband) {
+    if (Math.abs(value) > deadband) {
+      if (value > 0.1) {
+        return (value - deadband) / (1.0 - deadband);
+      } else {
+        return (value + deadband) / (1.0 - deadband);
+      }
+    } else {
+      return 0.0;
+    }
   }
 }
