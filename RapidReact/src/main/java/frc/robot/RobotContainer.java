@@ -12,6 +12,7 @@ import frc.robot.drivers.Limelight;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.FeederSubsystem;
 import frc.robot.subsystems.FeederSubsystem.FeedMode;
+import frc.robot.utils.ControllerUtils;
 import frc.robot.utils.Ranger;
 import frc.robot.utils.SimpleRanger;
 import frc.robot.subsystems.IntakeSubsystem;
@@ -28,7 +29,7 @@ public class RobotContainer {
   @SuppressWarnings("unused")
   private final XboxController operatorController = new XboxController(Constants.OPERATOR_CONTROLLER_PORT);
 
-  private static final Limelight vision = new Limelight();
+  private static final Limelight limelight = new Limelight();
   private final Ranger ranger = new SimpleRanger();
 
   // Subsystems
@@ -56,7 +57,7 @@ public class RobotContainer {
     intake = new IntakeSubsystem(INTAKE_MOTOR_ID, INTAKE_RETRACT_SOLENOID_CHAN, INTAKE_EXTEND_SOLENOID_CHAN);
     feeder = new FeederSubsystem(FEEDER_MOTOR_CAN_ID, FEEDER_ENTRY_SENSOR_DIO, FEEDER_EXIT_SENSOR_DIO);
     shooter = new ShooterSubsystem(SHOOTER_MOTOR_1_CAN_ID, SHOOTER_MOTOR_2_CAN_ID, HOOD_MOTOR_CAN_ID,
-        HOOD_LIMITSWITCH_DIO, ranger);
+        HOOD_LIMITSWITCH_DIO, ranger, limelight);
     drivetrain = new DrivetrainSubsystem();
   }
 
@@ -66,9 +67,9 @@ public class RobotContainer {
   void createCommands() {
     teleOpDrive = new TeleOpDriveCommand(
       drivetrain, 
-      () -> -modifyAxis(driveController.getLeftY()) * DrivetrainSubsystem.MAX_VELOCITY_METERS_PER_SECOND,
-      () -> -modifyAxis(driveController.getLeftX()) * DrivetrainSubsystem.MAX_VELOCITY_METERS_PER_SECOND,
-      () -> -modifyAxis(driveController.getRightX()) * DrivetrainSubsystem.MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND);
+      () -> -ControllerUtils.modifyAxis(driveController.getLeftY()) * DrivetrainSubsystem.MAX_VELOCITY_METERS_PER_SECOND,
+      () -> -ControllerUtils.modifyAxis(driveController.getLeftX()) * DrivetrainSubsystem.MAX_VELOCITY_METERS_PER_SECOND,
+      () -> -ControllerUtils.modifyAxis(driveController.getRightX()) * DrivetrainSubsystem.MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND);
   }
 
   /**
@@ -114,28 +115,5 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     return autoCommand;
-  }
-
-  public static Limelight getVision() {
-    return vision;
-  }
-
-  private static double modifyAxis(double value) {
-    value = deadband(value, 0.1);
-    value = Math.copySign(value * value, value);
-
-    return value;
-  }
-
-  private static double deadband(double value, double deadband) {
-    if (Math.abs(value) > deadband) {
-      if (value > 0.1) {
-        return (value - deadband) / (1.0 - deadband);
-      } else {
-        return (value + deadband) / (1.0 - deadband);
-      }
-    } else {
-      return 0.0;
-    }
   }
 }
