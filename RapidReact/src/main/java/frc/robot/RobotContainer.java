@@ -53,10 +53,10 @@ public class RobotContainer {
    * Create all of our robot's subsystem objects here.
    */
   void createSubsystems() {
-    intake = new IntakeSubsystem(INTAKE_MOTOR_ID, SOLONOID_INWARD_CAN_ID, SOLONOID_OUTWARD_CAN_ID);
+    intake = new IntakeSubsystem(INTAKE_MOTOR_ID, INTAKE_RETRACT_SOLENOID_CHAN, INTAKE_EXTEND_SOLENOID_CHAN);
     feeder = new FeederSubsystem(FEEDER_MOTOR_CAN_ID, FEEDER_ENTRY_SENSOR_DIO, FEEDER_EXIT_SENSOR_DIO);
-    shooter = new ShooterSubsystem(SHOOTER_MOTOR_1_CAN_ID, SHOOTER_MOTOR_2_CAN_ID, HOOD_MOTOR_1_CAN_ID,
-        HOOD_LIMITSWITCH_DIO);
+    shooter = new ShooterSubsystem(SHOOTER_MOTOR_1_CAN_ID, SHOOTER_MOTOR_2_CAN_ID, HOOD_MOTOR_CAN_ID,
+        HOOD_LIMITSWITCH_DIO, ranger);
     drivetrain = new DrivetrainSubsystem();
   }
 
