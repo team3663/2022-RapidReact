@@ -2,14 +2,13 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotContainer;
 import frc.robot.drivers.Limelight;
 import frc.robot.utils.FiringSolution;
-import frc.robot.utils.Ranger;
+import frc.robot.utils.SimpleRanger;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.SparkMaxPIDController;
@@ -17,51 +16,56 @@ import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 public class ShooterSubsystem extends SubsystemBase {
-  private Ranger ranger;
+  private SimpleRanger ranger;
   private CANSparkMax shooterMotor1;
   private CANSparkMax shooterMotor2;
-  private SparkMaxPIDController shooterPIDController;
+  private SparkMaxPIDController shooterPidController;
   private CANSparkMax hoodMotor;
   private DigitalInput hoodLimit;
   private SparkMaxPIDController hoodPidController;
-  private MotorControllerGroup shooterMotorGroup ;
 
   private boolean running = false;
 
   private Limelight limelight;
 
-  private final int MAX_HOOD_ANGLE = 80; //THESE NUMBERS ARE ALL COMPLETELY IMAGINARY
-  private final int MIN_HOOD_ANGLE = 25; //THESE NUMBERS ARE ALL COMPLETELY IMAGINARY
+  // TODO fix numbers
+  private final int MAX_HOOD_ANGLE = 80;
+  private final int MIN_HOOD_ANGLE = 25;
+  private final int MAX_RPM = 500;
+  private final double ROTATIONS_PER_DEGREE = 5;
 
-  private final double ROTATIONS_PER_DEGREE = 5; //THESE NUMBERS ARE ALL COMPLETELY IMAGINARY
-
-  static final double powerIncrement = 0.05; 
-  public double power = 0.0;
-  public int positions = 0;
+  private static final int rpmIncrement = 100;
+  private static  final int hoodAngleIncrement = 5;
+  public int rpm = 0;
+  public int hoodAngle = 0;
 
   private NetworkTableEntry shooterRPMEntry;
   private NetworkTableEntry hoodAngleEntry;
   private NetworkTableEntry hoodLimitSwitchEntry;
 
-  /** Creates a new instance of the Shooter subsystem. */
-  public ShooterSubsystem(int shooterMotor1CANID, int shooterMotor2CANID, int hoodMotorCANID, int hoodLimitDio, Ranger ranger) {
+  public ShooterSubsystem(int shooterMotor1CANID, int shooterMotor2CANID, int hoodMotorCANID, int hoodLimitDio, SimpleRanger ranger) {
 
     this.ranger = ranger;
     
     shooterMotor1 = new CANSparkMax(shooterMotor1CANID, MotorType.kBrushless);
     shooterMotor2 = new CANSparkMax(shooterMotor2CANID, MotorType.kBrushless);
-    shooterPIDController = shooterMotor1.getPIDController();
     hoodMotor = new CANSparkMax(hoodMotorCANID, MotorType.kBrushless);
     hoodLimit = new DigitalInput(hoodLimitDio);
 
-    shooterMotorGroup = new MotorControllerGroup(shooterMotor1, shooterMotor2);
+    // TODO tune pids
+    shooterPidController = shooterMotor1.getPIDController();
+    shooterPidController.getP(0);
+    shooterPidController.getI(0);
+    shooterPidController.getD(0);
+    hoodPidController = hoodMotor.getPIDController();
+    hoodPidController.getP(0);
+    hoodPidController.getI(0);
+    hoodPidController.getD(0);
 
-    limelight = RobotContainer.getVision();
+    limelight = RobotContainer.getLimelight();
 
-    // The motors in the shooter run in opposition to each other by default
-    // invert one of them to fix this and initialize power to zero.
-    shooterMotor1.setInverted(true);
-    shooterMotorGroup.set(0);
+    // The motors in the shooter run in opposition to each other by default, invert one of them
+    shooterMotor2.follow(shooterMotor1, true);
 
     initTelemetry();
   }
@@ -84,17 +88,6 @@ public class ShooterSubsystem extends SubsystemBase {
             .withSize(1, 1)
             .getEntry();
   }
-  
-  @Override
-  public void periodic() {
-    
-    double range = limelight.getDistance();
-    FiringSolution solution = ranger.getFiringSolution(range);
-
-    setRPM(solution.rpm);
-
-    updateTelemetry();
-  }
 
   private void updateTelemetry() {
     shooterRPMEntry.setNumber(shooterMotor2.getEncoder().getVelocity());
@@ -105,43 +98,47 @@ public class ShooterSubsystem extends SubsystemBase {
 
   public void start() {
     running = true;
-    shooterMotorGroup.set(power);
+    setRPM(rpm);
   }
 
   public void stop() {
     running = false;
-    shooterMotorGroup.set(0.0);
+    setRPM(rpm);
   }
 
   public void raiseHood() {
-    positions += 5;
-    hoodMotor.getEncoder().setPosition(positions);
+    hoodAngle += hoodAngleIncrement;
+    if (running) {
+      setHoodAngle(hoodAngle);
+    }
   }
 
   public void lowerHood() {
-    positions -= 5;
-    hoodMotor.getEncoder().setPosition(positions);
+    hoodAngle -= hoodAngleIncrement;
+    if (running) {
+      setHoodAngle(hoodAngle);
+    }
   }
 
-  public void increasePower() {
-      power += powerIncrement;
-      if (power > 1.0) {
-        power = 1.0;
+  public void increaseRPM() {
+      rpm += rpmIncrement;
+      if (rpm > MAX_RPM) {
+        rpm = MAX_RPM;
       }
 
-      if ( running ) {
-        shooterMotorGroup.set(power);
+      if (running) {
+        setRPM(rpm);
       }
   }
 
-  public void decreasePower() {
-    power -= powerIncrement;
-    if (power < 0.0) {
-      power = 0.0;
+  public void decreaseRPM() {
+    rpm -= rpmIncrement;
+    if (rpm < 0) {
+      rpm = 0;
     }
 
     if (running) {
-      shooterMotorGroup.set(power);
+      setRPM(rpm);
     }
   }
 
@@ -151,18 +148,28 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   public void setRPM(int rpm){
-    shooterPIDController.setReference(rpm, ControlType.kVelocity);
+    shooterPidController.setReference(rpm, ControlType.kVelocity);
   }
 
-  public void setHoodAngle(int degree){
+  public void setHoodAngle(double degree){
     if(degree > MAX_HOOD_ANGLE){
       degree = MAX_HOOD_ANGLE;
     }
     if(degree < MIN_HOOD_ANGLE){
       degree = MIN_HOOD_ANGLE;
     }
-    resetHoodEncoder();
-    degree = MIN_HOOD_ANGLE;
     hoodPidController.setReference(degree * ROTATIONS_PER_DEGREE, ControlType.kPosition);
+  }
+
+  @Override
+  public void periodic() {
+    
+    double range = limelight.getDistance();
+    FiringSolution solution = ranger.getFiringSolution(range);
+
+    setRPM(solution.rpm);
+    setHoodAngle(solution.hoodAngle);
+
+    updateTelemetry();
   }
 }

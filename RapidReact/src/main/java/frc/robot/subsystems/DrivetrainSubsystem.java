@@ -171,6 +171,6 @@ ShuffleboardTab drivetrainRobotTab = Shuffleboard.getTab("drivetrain_robot");
       poseYEntry.setDouble(getPose().getTranslation().getY());
       poseAbsoluteAngleEntry.setDouble(getPose().getRotation().getDegrees());
 
-    // pose angle entry (for trajectory following tuning)
+    // TODO pose angle entry (for trajectory following tuning)
   }
 }

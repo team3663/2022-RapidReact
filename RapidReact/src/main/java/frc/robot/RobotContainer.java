@@ -12,7 +12,6 @@ import frc.robot.drivers.Limelight;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.FeederSubsystem;
 import frc.robot.subsystems.FeederSubsystem.FeedMode;
-import frc.robot.utils.Ranger;
 import frc.robot.utils.SimpleRanger;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
@@ -28,8 +27,8 @@ public class RobotContainer {
   @SuppressWarnings("unused")
   private final XboxController operatorController = new XboxController(Constants.OPERATOR_CONTROLLER_PORT);
 
-  private static final Limelight vision = new Limelight();
-  private final Ranger ranger = new SimpleRanger();
+  private static final Limelight limelight = new Limelight();
+  private final SimpleRanger ranger = new SimpleRanger();
 
   // Subsystems
   private FeederSubsystem feeder;
@@ -97,13 +96,13 @@ public class RobotContainer {
     new JoystickButton(driveController, Button.kBack.value)
         .whenPressed(new InstantCommand(() -> shooter.stop(), shooter));
     new JoystickButton(driveController, Button.kLeftBumper.value)
-        .whenPressed(new InstantCommand(() -> shooter.decreasePower(), shooter));
+        .whenPressed(new InstantCommand(() -> shooter.decreaseRPM(), shooter));
     new JoystickButton(driveController, Button.kRightBumper.value)
-        .whenPressed(new InstantCommand(() -> shooter.increasePower(), shooter));
+        .whenPressed(new InstantCommand(() -> shooter.increaseRPM(), shooter));
     new JoystickButton(driveController, Axis.kLeftTrigger.value)
-        .whenPressed(new InstantCommand(() -> shooter.decreasePower(), shooter));
+        .whenPressed(new InstantCommand(() -> shooter.decreaseRPM(), shooter));
     new JoystickButton(driveController, Axis.kRightTrigger.value)
-        .whenPressed(new InstantCommand(() -> shooter.increasePower(), shooter));
+        .whenPressed(new InstantCommand(() -> shooter.increaseRPM(), shooter));
   }
 
   /**
@@ -116,8 +115,8 @@ public class RobotContainer {
     return autoCommand;
   }
 
-  public static Limelight getVision() {
-    return vision;
+  public static Limelight getLimelight() {
+    return limelight;
   }
 
   private static double modifyAxis(double value) {
