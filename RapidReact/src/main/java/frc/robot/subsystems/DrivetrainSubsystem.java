@@ -18,97 +18,108 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.drivers.Pigeon;
 
-import static frc.robot.Constants.*;
+import frc.robot.drivers.Pigeon;
+import frc.robot.utils.SwerveDriveConfig;
 
 public class DrivetrainSubsystem extends SubsystemBase {
 
-  public static final double MAX_VOLTAGE = 12.0;
-  public static final double WHEEL_DIAMETER_METERS = 0.106325;
+    public static final double MAX_VOLTAGE = 12.0;
 
-  public static final double MAX_VELOCITY_METERS_PER_SECOND = 6380.0 / 60.0 *
-          SdsModuleConfigurations.MK4_L4.getDriveReduction() * WHEEL_DIAMETER_METERS * Math.PI;
+    public final double trackWidth;
+    public final double wheelbase;
+    public final double wheelDiameter;
+    public final double maxVelocity;
+    public final double maxAngularVelocity;
 
-  public static final double MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND = MAX_VELOCITY_METERS_PER_SECOND /
-          Math.hypot(DRIVETRAIN_TRACKWIDTH_METERS / 2.0, DRIVETRAIN_WHEELBASE_METERS / 2.0);
+    private final SwerveDriveKinematics kinematics;
+    private final SwerveDriveOdometry odometry;
+    private final Pigeon pigeon;
 
-  private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(
-          new Translation2d(DRIVETRAIN_TRACKWIDTH_METERS / 2.0, DRIVETRAIN_WHEELBASE_METERS / 2.0), // front left
-          new Translation2d(DRIVETRAIN_TRACKWIDTH_METERS / 2.0, -DRIVETRAIN_WHEELBASE_METERS / 2.0), // front right
-          new Translation2d(-DRIVETRAIN_TRACKWIDTH_METERS / 2.0, DRIVETRAIN_WHEELBASE_METERS / 2.0), // back left
-          new Translation2d(-DRIVETRAIN_TRACKWIDTH_METERS / 2.0, -DRIVETRAIN_WHEELBASE_METERS / 2.0) // back right
-  );
+    private final SwerveModule frontLeftModule;
+    private final SwerveModule frontRightModule;
+    private final SwerveModule backLeftModule;
+    private final SwerveModule backRightModule;
 
-  private final SwerveDriveOdometry odometry = new SwerveDriveOdometry(kinematics, new Rotation2d(), new Pose2d());
+    private SwerveModuleState[] states;
+    private ChassisSpeeds chassisSpeeds = new ChassisSpeeds(0.0, 0.0, 0.0);
 
-  private final Pigeon pigeon = new Pigeon(DRIVETRAIN_PIGEON_ID);
-        // counter-clockwise rotation increases angle
+    private NetworkTableEntry poseXEntry;
+    private NetworkTableEntry poseYEntry;
+    private NetworkTableEntry poseAbsoluteAngleEntry;
+    private NetworkTableEntry driveSignalXEntry;
+    private NetworkTableEntry driveSignalYEntry;
+    private NetworkTableEntry driveSignalRotationEntry;
 
-  private final SwerveModule frontLeftModule;
-  private final SwerveModule frontRightModule;
-  private final SwerveModule backLeftModule;
-  private final SwerveModule backRightModule;
+    public DrivetrainSubsystem(SwerveDriveConfig config, Pigeon pigeon) {
 
-  private SwerveModuleState[] states;
+        this.pigeon = pigeon;
 
-  private ChassisSpeeds chassisSpeeds = new ChassisSpeeds(0.0, 0.0, 0.0);
+        // Physical constants for this drive base.
+        trackWidth = config.trackWidth;
+        wheelbase = config.wheelbase;
+        wheelDiameter = config.wheelDiameter;
 
-  private NetworkTableEntry poseXEntry;
-  private NetworkTableEntry poseYEntry;
-  private NetworkTableEntry poseAbsoluteAngleEntry;
-  private NetworkTableEntry driveSignalXEntry;
-  private NetworkTableEntry driveSignalYEntry;
-  private NetworkTableEntry driveSignalRotationEntry;
+        // Maximum module velocity in meters/second
+        maxVelocity = 6380.0 / 60.0 * SdsModuleConfigurations.MK4_L4.getDriveReduction() * wheelDiameter
+                * Math.PI;
 
-  public DrivetrainSubsystem() {
-    ShuffleboardTab drivetrainModuletab = Shuffleboard.getTab("drivetrain_modules");
+        // Maximum angular velocity in radians/second.
+        maxAngularVelocity = maxVelocity / Math.hypot(trackWidth / 2.0, wheelbase / 2.0);
 
-    frontLeftModule = Mk4SwerveModuleHelper.createFalcon500(
-            drivetrainModuletab.getLayout("Front Left Module", BuiltInLayouts.kList)
-                    .withSize(2, 4)
-                    .withPosition(0, 0),
-            Mk4SwerveModuleHelper.GearRatio.L4,
-            FRONT_LEFT_MODULE_DRIVE_MOTOR,
-            FRONT_LEFT_MODULE_STEER_MOTOR,
-            FRONT_LEFT_MODULE_STEER_ENCODER,
-            FRONT_LEFT_MODULE_STEER_OFFSET
-    );
+        // Create the kinematics object used to calculate desired module states.
+        kinematics = new SwerveDriveKinematics(
+                new Translation2d(trackWidth / 2.0, wheelbase / 2.0), // FL
+                new Translation2d(trackWidth / 2.0, -wheelbase / 2.0), // FR
+                new Translation2d(-trackWidth / 2.0, wheelbase / 2.0), // BL
+                new Translation2d(-trackWidth / 2.0, -wheelbase / 2.0) // BR
+        );
 
-    frontRightModule = Mk4SwerveModuleHelper.createFalcon500(
-            drivetrainModuletab.getLayout("Front Right Module", BuiltInLayouts.kList)
-                    .withSize(2, 4)
-                    .withPosition(2, 0),
-            Mk4SwerveModuleHelper.GearRatio.L4,
-            FRONT_RIGHT_MODULE_DRIVE_MOTOR,
-            FRONT_RIGHT_MODULE_STEER_MOTOR,
-            FRONT_RIGHT_MODULE_STEER_ENCODER,
-            FRONT_RIGHT_MODULE_STEER_OFFSET
-    );
+        odometry = new SwerveDriveOdometry(kinematics, new Rotation2d(), new Pose2d());
 
-    backLeftModule = Mk4SwerveModuleHelper.createFalcon500(
-            drivetrainModuletab.getLayout("Back Left Module", BuiltInLayouts.kList)
-                    .withSize(2, 4)
-                    .withPosition(4, 0),
-            Mk4SwerveModuleHelper.GearRatio.L4,
-            BACK_LEFT_MODULE_DRIVE_MOTOR,
-            BACK_LEFT_MODULE_STEER_MOTOR,
-            BACK_LEFT_MODULE_STEER_ENCODER,
-            BACK_LEFT_MODULE_STEER_OFFSET
-    );
+        // Create our swerve module objects.
+        ShuffleboardTab drivetrainModuletab = Shuffleboard.getTab("Swerve Modules");
+        frontLeftModule = Mk4SwerveModuleHelper.createFalcon500(
+                drivetrainModuletab.getLayout("Front Left Module", BuiltInLayouts.kList)
+                        .withSize(2, 4)
+                        .withPosition(0, 0),
+                Mk4SwerveModuleHelper.GearRatio.L4,
+                config.frontLeft.driveMotorCanId,
+                config.frontLeft.steerMotorCanId,
+                config.frontLeft.encoderCanId,
+                config.frontLeft.encoderOffset);
 
-    backRightModule = Mk4SwerveModuleHelper.createFalcon500(
-            drivetrainModuletab.getLayout("Back Right Module", BuiltInLayouts.kList)
-                    .withSize(2, 4)
-                    .withPosition(6, 0),
-            Mk4SwerveModuleHelper.GearRatio.L4,
-            BACK_RIGHT_MODULE_DRIVE_MOTOR,
-            BACK_RIGHT_MODULE_STEER_MOTOR,
-            BACK_RIGHT_MODULE_STEER_ENCODER,
-            BACK_RIGHT_MODULE_STEER_OFFSET
-    );
+        frontRightModule = Mk4SwerveModuleHelper.createFalcon500(
+                drivetrainModuletab.getLayout("Front Right Module", BuiltInLayouts.kList)
+                        .withSize(2, 4)
+                        .withPosition(2, 0),
+                Mk4SwerveModuleHelper.GearRatio.L4,
+                config.frontRight.driveMotorCanId,
+                config.frontRight.steerMotorCanId,
+                config.frontRight.encoderCanId,
+                config.frontRight.encoderOffset);
 
-ShuffleboardTab drivetrainRobotTab = Shuffleboard.getTab("drivetrain_robot");
+        backLeftModule = Mk4SwerveModuleHelper.createFalcon500(
+                drivetrainModuletab.getLayout("Back Left Module", BuiltInLayouts.kList)
+                        .withSize(2, 4)
+                        .withPosition(4, 0),
+                Mk4SwerveModuleHelper.GearRatio.L4,
+                config.backLeft.driveMotorCanId,
+                config.backLeft.steerMotorCanId,
+                config.backLeft.encoderCanId,
+                config.backLeft.encoderOffset);
+
+        backRightModule = Mk4SwerveModuleHelper.createFalcon500(
+                drivetrainModuletab.getLayout("Back Right Module", BuiltInLayouts.kList)
+                        .withSize(2, 4)
+                        .withPosition(6, 0),
+                Mk4SwerveModuleHelper.GearRatio.L4,
+                config.backRight.driveMotorCanId,
+                config.backRight.steerMotorCanId,
+                config.backRight.encoderCanId,
+                config.backRight.encoderOffset);
+
+        ShuffleboardTab drivetrainRobotTab = Shuffleboard.getTab("Drivetrain");
         poseXEntry = drivetrainRobotTab.add("Pose X", 0.0)
                 .withPosition(0, 0)
                 .withSize(1, 1)
@@ -121,56 +132,61 @@ ShuffleboardTab drivetrainRobotTab = Shuffleboard.getTab("drivetrain_robot");
                 .withPosition(0, 2)
                 .withSize(1, 1)
                 .getEntry();
-        ShuffleboardLayout driveSignalContainer = drivetrainRobotTab.getLayout("Drive Signal", BuiltInLayouts.kGrid)
-                        .withPosition(0, 3)
-                        .withSize(3, 1);
-                driveSignalYEntry = driveSignalContainer.add("Drive Signal Strafe", 0.0).getEntry();
-                driveSignalXEntry = driveSignalContainer.add("Drive Signal Forward", 0.0).getEntry();
-                driveSignalRotationEntry = driveSignalContainer.add("Drive Signal Rotation", 0.0).getEntry();
-  }
+        ShuffleboardLayout driveSignalContainer = drivetrainRobotTab
+                .getLayout("Drive Signal", BuiltInLayouts.kGrid)
+                .withPosition(0, 3)
+                .withSize(3, 1);
+        driveSignalYEntry = driveSignalContainer.add("Drive Signal Strafe", 0.0).getEntry();
+        driveSignalXEntry = driveSignalContainer.add("Drive Signal Forward", 0.0).getEntry();
+        driveSignalRotationEntry = driveSignalContainer.add("Drive Signal Rotation", 0.0).getEntry();
+    }
 
-  public void resetPosition() {
-          odometry.resetPosition(new Pose2d(), pigeon.getRotation2d());
-  }
+    public void resetPosition() {
+        odometry.resetPosition(new Pose2d(), pigeon.getRotation2d());
+    }
 
-  public Pose2d getPose() {
-          return odometry.getPoseMeters();
-  }
+    public Pose2d getPose() {
+        return odometry.getPoseMeters();
+    }
 
-  public void resetGyroscope() {
-          pigeon.reset();
-  }
+    public void resetGyroscope() {
+        pigeon.reset();
+    }
 
-  public Rotation2d getGyroscopeRotation() {
-    return Rotation2d.fromDegrees(pigeon.getAngle());
-  }
+    public Rotation2d getGyroscopeRotation() {
+        return Rotation2d.fromDegrees(pigeon.getAngle());
+    }
 
-  public void drive(ChassisSpeeds chassisSpeeds) {
-          this.chassisSpeeds = chassisSpeeds;
-  }
+    public void drive(ChassisSpeeds chassisSpeeds) {
+        this.chassisSpeeds = chassisSpeeds;
+    }
 
-  public void setModuleStates() {
-      states = kinematics.toSwerveModuleStates(chassisSpeeds);
-      SwerveDriveKinematics.desaturateWheelSpeeds(states, MAX_VELOCITY_METERS_PER_SECOND);
-      
-      frontLeftModule.set(states[0].speedMetersPerSecond / MAX_VELOCITY_METERS_PER_SECOND * MAX_VOLTAGE, states[0].angle.getRadians());
-      frontRightModule.set(states[1].speedMetersPerSecond / MAX_VELOCITY_METERS_PER_SECOND * MAX_VOLTAGE, states[1].angle.getRadians());
-      backLeftModule.set(states[2].speedMetersPerSecond / MAX_VELOCITY_METERS_PER_SECOND * MAX_VOLTAGE, states[2].angle.getRadians());
-      backRightModule.set(states[3].speedMetersPerSecond / MAX_VELOCITY_METERS_PER_SECOND * MAX_VOLTAGE, states[3].angle.getRadians());
-  }
+    public void setModuleStates() {
+        states = kinematics.toSwerveModuleStates(chassisSpeeds);
+        SwerveDriveKinematics.desaturateWheelSpeeds(states, maxVelocity);
 
-@Override
-  public void periodic() {
-      setModuleStates();
-      odometry.updateWithTime(Timer.getFPGATimestamp(), getGyroscopeRotation(), states);
-      
-      driveSignalYEntry.setDouble(chassisSpeeds.vyMetersPerSecond);
-      driveSignalXEntry.setDouble(chassisSpeeds.vxMetersPerSecond);
-      driveSignalRotationEntry.setDouble(chassisSpeeds.omegaRadiansPerSecond);
-      poseXEntry.setDouble(getPose().getTranslation().getX());
-      poseYEntry.setDouble(getPose().getTranslation().getY());
-      poseAbsoluteAngleEntry.setDouble(getPose().getRotation().getDegrees());
+        frontLeftModule.set(states[0].speedMetersPerSecond / maxVelocity * MAX_VOLTAGE,
+                states[0].angle.getRadians());
+        frontRightModule.set(states[1].speedMetersPerSecond / maxVelocity * MAX_VOLTAGE,
+                states[1].angle.getRadians());
+        backLeftModule.set(states[2].speedMetersPerSecond / maxVelocity * MAX_VOLTAGE,
+                states[2].angle.getRadians());
+        backRightModule.set(states[3].speedMetersPerSecond / maxVelocity * MAX_VOLTAGE,
+                states[3].angle.getRadians());
+    }
 
-    // pose angle entry (for trajectory following tuning)
-  }
+    @Override
+    public void periodic() {
+        setModuleStates();
+        odometry.updateWithTime(Timer.getFPGATimestamp(), getGyroscopeRotation(), states);
+
+        driveSignalYEntry.setDouble(chassisSpeeds.vyMetersPerSecond);
+        driveSignalXEntry.setDouble(chassisSpeeds.vxMetersPerSecond);
+        driveSignalRotationEntry.setDouble(chassisSpeeds.omegaRadiansPerSecond);
+        poseXEntry.setDouble(getPose().getTranslation().getX());
+        poseYEntry.setDouble(getPose().getTranslation().getY());
+        poseAbsoluteAngleEntry.setDouble(getPose().getRotation().getDegrees());
+
+        // pose angle entry (for trajectory following tuning)
+    }
 }
