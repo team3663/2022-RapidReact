@@ -14,7 +14,6 @@ import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.FeederSubsystem;
 import frc.robot.subsystems.FeederSubsystem.FeedMode;
 import frc.robot.utils.ControllerUtils;
-import frc.robot.utils.Ranger;
 import frc.robot.utils.SimpleRanger;
 import frc.robot.utils.SwerveDriveConfig;
 import frc.robot.utils.SwerveModuleConfig;
@@ -34,7 +33,7 @@ public class RobotContainer {
 
     Pigeon pigeon = new Pigeon(DRIVETRAIN_PIGEON_ID);
     private static final Limelight limelight = new Limelight();
-    private final Ranger ranger = new SimpleRanger();
+    private final SimpleRanger ranger = new SimpleRanger();
 
     // Subsystems
     private FeederSubsystem feeder;
