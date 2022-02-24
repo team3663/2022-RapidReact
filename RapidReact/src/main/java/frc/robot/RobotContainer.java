@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.commands.TeleOpDriveCommand;
 import frc.robot.drivers.Limelight;
@@ -114,10 +115,10 @@ public class RobotContainer {
                 .whenPressed(new InstantCommand(() -> shooter.start(), shooter));
         new JoystickButton(driveController, Button.kBack.value)
                 .whenPressed(new InstantCommand(() -> shooter.stop(), shooter));
-        new JoystickButton(driveController, Button.kLeftBumper.value)
-                .whenPressed(new InstantCommand(() -> shooter.decreaseRPM(), shooter));
-        new JoystickButton(driveController, Button.kRightBumper.value)
-                .whenPressed(new InstantCommand(() -> shooter.increaseRPM(), shooter));
+        new POVButton(driveController, 0).whenPressed(new InstantCommand(() -> shooter.raiseHood(), shooter));      
+        new POVButton(driveController, 90).whenPressed(new InstantCommand(() -> shooter.increaseRPM(), shooter));
+        new POVButton(driveController, 180).whenPressed(new InstantCommand(() -> shooter.lowerHood(), shooter));
+        new POVButton(driveController, 270).whenPressed(new InstantCommand(() -> shooter.decreaseRPM(), shooter));
     }
 
     /**
