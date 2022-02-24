@@ -1,11 +1,11 @@
 package frc.robot.utils;
 
 public class FiringSolution {
-    public int rpm;
-    public double hoodAngle;
+    public int speed;
+    public double angle;
 
-    public FiringSolution(int rpm, double hoodAngle) {
-        this.rpm = rpm;
-        this.hoodAngle = hoodAngle;
+    public FiringSolution(int speed, double angle) {
+        this.speed = speed;
+        this.angle = angle;
     }
 }

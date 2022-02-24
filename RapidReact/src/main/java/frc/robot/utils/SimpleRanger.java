@@ -9,33 +9,33 @@ public class SimpleRanger implements Ranger {
     public final int DISTANCE_4 = 0;
     public final int DISTANCE_5 = 0;
 
-    public final int HOOD_ANGLE_1 = 0;
-    public final int HOOD_ANGLE_2 = 0;
-    public final int HOOD_ANGLE_3 = 0;
-    public final int HOOD_ANGLE_4 = 0;
-    public final int HOOD_ANGLE_5 = 0;
+    public final int ANGLE_1 = 0;
+    public final int ANGLE_2 = 0;
+    public final int ANGLE_3 = 0;
+    public final int ANGLE_4 = 0;
+    public final int ANGLE_5 = 0;
 
-    public final int RPM_1 = 0;
-    public final int RPM_2 = 0;
-    public final int RPM_3 = 0;
-    public final int RPM_4 = 0;
-    public final int RPM_5 = 0;
+    public final int SPEED_1 = 0;
+    public final int SPEED_2 = 0;
+    public final int SPEED_3 = 0;
+    public final int SPEED_4 = 0;
+    public final int SPEED_5 = 0;
 
     public final int DISTANCE_COLUMN_INDEX = 0;
-    public final int HOOD_ANGLE_COLUMN_INDEX = 0;
-    public final int RPM_COLUMN_INDEX = 0;
+    public final int ANGLE_COLUMN_INDEX = 0;
+    public final int SPEED_COLUMN_INDEX = 0;
 
     public int[][] KNOWN_DATA = new int[][] {
-        {DISTANCE_1, HOOD_ANGLE_1, RPM_1},
-        {DISTANCE_2, HOOD_ANGLE_2, RPM_2},
-        {DISTANCE_3, HOOD_ANGLE_3, RPM_3},
-        {DISTANCE_4, HOOD_ANGLE_4, RPM_4},
-        {DISTANCE_5, HOOD_ANGLE_5, RPM_5},
+        {DISTANCE_1, ANGLE_1, SPEED_1},
+        {DISTANCE_2, ANGLE_2, SPEED_2},
+        {DISTANCE_3, ANGLE_3, SPEED_3},
+        {DISTANCE_4, ANGLE_4, SPEED_4},
+        {DISTANCE_5, ANGLE_5, SPEED_5},
     };
 
     public enum InterpolationMode {
-        HOOD_ANGLE,
-        RPM
+        ANGLE,
+        SPEED
     }
 
     
@@ -43,10 +43,10 @@ public class SimpleRanger implements Ranger {
 
         // beyond endpoints
         if (range <= DISTANCE_1) {
-            return new FiringSolution(RPM_1, HOOD_ANGLE_1);
+            return new FiringSolution(SPEED_1, ANGLE_1);
         }
         if (range >= DISTANCE_5) {
-            return new FiringSolution(RPM_5, HOOD_ANGLE_5);
+            return new FiringSolution(SPEED_5, ANGLE_5);
         }
 
         // find the two data points to be used
@@ -59,27 +59,27 @@ public class SimpleRanger implements Ranger {
             }
         }
 
-        int rpm = (int) Math.round(linearInterpolation(range,distanceHigherBoundIndex, InterpolationMode.RPM));
-        double hoodAngle = linearInterpolation(range, distanceHigherBoundIndex, InterpolationMode.HOOD_ANGLE);
+        int rpm = (int) Math.round(linearInterpolation(range,distanceHigherBoundIndex, InterpolationMode.SPEED));
+        double hoodAngle = linearInterpolation(range, distanceHigherBoundIndex, InterpolationMode.ANGLE);
 
         return new FiringSolution(rpm, hoodAngle);
     }
 
     public double linearInterpolation(double range, int distanceHigherBoundIndex, InterpolationMode mode) {
         
-        int MODE_INDEX;
+        int modeIndex;
     
-        if (mode.equals(InterpolationMode.HOOD_ANGLE)) {
-            MODE_INDEX = HOOD_ANGLE_COLUMN_INDEX;
+        if (mode.equals(InterpolationMode.ANGLE)) {
+            modeIndex = ANGLE_COLUMN_INDEX;
         }
         else {
-            MODE_INDEX = RPM_COLUMN_INDEX;
+            modeIndex = SPEED_COLUMN_INDEX;
         }
 
         double x1 = KNOWN_DATA[distanceHigherBoundIndex - 1][DISTANCE_COLUMN_INDEX];
         double x2 = KNOWN_DATA[distanceHigherBoundIndex][DISTANCE_COLUMN_INDEX];
-        double y1 = KNOWN_DATA[distanceHigherBoundIndex - 1][MODE_INDEX];
-        double y2 = KNOWN_DATA[distanceHigherBoundIndex][MODE_INDEX];
+        double y1 = KNOWN_DATA[distanceHigherBoundIndex  - 1][modeIndex];
+        double y2 = KNOWN_DATA[distanceHigherBoundIndex][modeIndex];
 
         double x = range;
 
