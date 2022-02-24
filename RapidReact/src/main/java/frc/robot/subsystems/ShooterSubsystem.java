@@ -5,15 +5,15 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.RobotContainer;
-import frc.robot.drivers.Limelight;
-import frc.robot.utils.FiringSolution;
-import frc.robot.utils.SimpleRanger;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+
+import frc.robot.drivers.Limelight;
+import frc.robot.utils.FiringSolution;
+import frc.robot.utils.SimpleRanger;
 
 public class ShooterSubsystem extends SubsystemBase {
   private SimpleRanger ranger;
@@ -48,9 +48,11 @@ public class ShooterSubsystem extends SubsystemBase {
   private NetworkTableEntry targetAngleEntry;
   private NetworkTableEntry hoodLimitSwitchEntry;
 
-  public ShooterSubsystem(int shooterMotor1CANID, int shooterMotor2CANID, int hoodMotorCANID, int hoodLimitDio, SimpleRanger ranger) {
+  /** Creates a new instance of the Shooter subsystem. */
+  public ShooterSubsystem(int shooterMotor1CANID, int shooterMotor2CANID, int hoodMotorCANID, int hoodLimitDio, SimpleRanger ranger, Limelight limelight) {
 
     this.ranger = ranger;
+    this.limelight = limelight;
     
     shooterMotor1 = new CANSparkMax(shooterMotor1CANID, MotorType.kBrushless);
     shooterMotor2 = new CANSparkMax(shooterMotor2CANID, MotorType.kBrushless);
@@ -66,8 +68,6 @@ public class ShooterSubsystem extends SubsystemBase {
     hoodPidController.getP(0);
     hoodPidController.getI(0);
     hoodPidController.getD(0);
-
-    limelight = RobotContainer.getLimelight();
 
     // The motors in the shooter run in opposition to each other by default, invert one of them
     shooterMotor2.follow(shooterMotor1, true);
