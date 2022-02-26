@@ -101,6 +101,10 @@ public class RobotContainer {
         new JoystickButton(driveController, Button.kA.value).
                 whenReleased(new InstantCommand(() -> intake.intakeIn(), intake));
         new JoystickButton(driveController, Button.kB.value).
+                whenPressed(new InstantCommand(() -> intake.boomExtend(), intake));
+        new JoystickButton(driveController, Button.kX.value).
+                whenPressed(new InstantCommand(() -> intake.armExtend(), intake));
+        new JoystickButton(driveController, Button.kY.value).
                 whenPressed(new InstantCommand(() -> intake.boomRetract(), intake));
 
         

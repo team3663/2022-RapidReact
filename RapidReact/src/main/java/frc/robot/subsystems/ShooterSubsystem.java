@@ -106,7 +106,7 @@ public class ShooterSubsystem extends SubsystemBase {
   public void lowerAngle(String mode) {
     //count += hoodMotor.getEncoder().setPositionConversionFactor(factor).getPosition();
     hoodMotor.set(-HOOD_SPEED);
-    System.out.println(count);
+    // System.out.println(count);
   }
 
   public void lowerAngle() {
