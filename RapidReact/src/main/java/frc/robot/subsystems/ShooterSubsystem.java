@@ -51,8 +51,6 @@ public class ShooterSubsystem extends SubsystemBase {
   private NetworkTableEntry targetAngleEntry;
   private NetworkTableEntry hoodLimitSwitchEntry;
 
-  private int angle;
-
   /** Creates a new instance of the Shooter subsystem. */
   public ShooterSubsystem(int shooterMotor1CANID, int shooterMotor2CANID, int hoodMotorCANID, int hoodLimitDio, SimpleRanger ranger, Limelight limelight) {
 
@@ -98,7 +96,7 @@ public class ShooterSubsystem extends SubsystemBase {
   public void raiseAngle() {
     targetAngle += angleIncrement;
     if (running) {
-      goToAngle(angle);
+      goToAngle(currentAngle);
     }
   }
 
@@ -109,7 +107,7 @@ public class ShooterSubsystem extends SubsystemBase {
   public void lowerAngle() {
     targetAngle -= angleIncrement;
     if (running) {
-      goToAngle(angle);
+      goToAngle(currentAngle);
     }
   }
 
@@ -154,11 +152,11 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   public void setAngle(double angle){
-    this.angle = angle;
+    this.currentAngle = angle;
   }
 
   public void goToAngle(double angle){
-    this.angle = angle;
+    this.currentAngle = angle;
 
     if(targetAngle > MAX_HOOD_ANGLE){
       targetAngle = MAX_HOOD_ANGLE;
