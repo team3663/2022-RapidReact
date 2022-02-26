@@ -31,7 +31,6 @@ public class IntakeSubsystem extends SubsystemBase {
   private final int MOTOR_CURRENT_LIMIT = 25;
   private Timer timer;
   private boolean timerStarted = false;
-  private IntakeState currentState;
 
   // network table entries for Shuffleboard
   private NetworkTableEntry boomIsOutEntry;
