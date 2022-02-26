@@ -37,10 +37,10 @@ public class ShooterSubsystem extends SubsystemBase {
   private final double ROTATIONS_PER_DEGREE = 5;
 
   private static final int rpmIncrement = 100;
-  private static  final int hoodAngleIncrement = 5;
 
   public int speed = 0; // rpm
   public double angle = 0; // degrees
+  public final double HOODSPEED = 0.05;
 
   private NetworkTableEntry currentSpeedEntry;
   private NetworkTableEntry targetSpeedEntry;
@@ -115,6 +115,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
   public void start() {
     running = true;
+    System.out.print(getHoodLimitswitch().get());
     setSpeed(speed);
   }
 
@@ -123,15 +124,17 @@ public class ShooterSubsystem extends SubsystemBase {
     setSpeed(0);
   }
 
-  public void raiseHood() {
-    angle += hoodAngleIncrement;
+  public void raiseHood(double angle) {
     if (running) {
       setAngle(angle);
     }
   }
 
   public void lowerHood() {
-    angle -= hoodAngleIncrement;
+    hoodMotor.set(-HOODSPEED);
+  }
+
+  public void lowerHood(double angle) {
     if (running) {
       setAngle(angle);
     }
@@ -159,6 +162,13 @@ public class ShooterSubsystem extends SubsystemBase {
     }
   }
 
+  public DigitalInput getHoodLimitswitch(){
+    return hoodLimit;
+  }
+
+  public double getHoodAngle(){
+    return angle;
+  }
 
   public void resetHoodEncoder(){
     hoodMotor.getEncoder().setPosition(MIN_HOOD_ANGLE);
@@ -177,6 +187,7 @@ public class ShooterSubsystem extends SubsystemBase {
     if(angle < MIN_HOOD_ANGLE){
       angle = MIN_HOOD_ANGLE;
     }
+
     hoodPidController.setReference(angle * ROTATIONS_PER_DEGREE, ControlType.kPosition);
   }
 

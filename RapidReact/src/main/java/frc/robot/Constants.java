@@ -61,7 +61,7 @@ public final class Constants {
   // Digital IO ports
   public static final int FEEDER_ENTRY_SENSOR_DIO = 1;
   public static final int FEEDER_EXIT_SENSOR_DIO = 2;
-  public static final int HOOD_LIMITSWITCH_DIO = 3;
+  public static final int HOOD_LIMITSWITCH_DIO = 3; // maybe change name to zero limitswitch id
 
   // Analog IO ports
 
