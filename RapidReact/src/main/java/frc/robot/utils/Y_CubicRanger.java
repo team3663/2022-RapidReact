@@ -6,7 +6,7 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N4;
 
 
-public class Y_CubicRanger {
+public class Y_CubicRanger implements Ranger {
 
     // TODO collect data
     public final int DISTANCE_0 = 0;
