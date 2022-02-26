@@ -23,8 +23,8 @@ public class ShooterSubsystem extends SubsystemBase {
   private SparkMaxPIDController shooterPidController;
   
   private CANSparkMax hoodMotor;
-  private DigitalInput hoodLimit;
   private SparkMaxPIDController hoodPidController;
+  private DigitalInput hoodLimit; // TODO not used
 
   private Limelight limelight;
 
@@ -35,12 +35,15 @@ public class ShooterSubsystem extends SubsystemBase {
   private final int MIN_HOOD_ANGLE = 25;
   private final int MAX_RPM = 500;
   private final double ROTATIONS_PER_DEGREE = 5;
+  public final double HOOD_SPEED = 0.05;
 
-  private static final int rpmIncrement = 100;
+  private static final int speedIncrement = 100;
+  private static final int angleIncrement = 5;
 
-  public int speed = 0; // rpm
-  public double angle = 0; // degrees
-  public final double HOODSPEED = 0.05;
+  public int currentSpeed = 0; // rpm
+  public int targetSpeed = 0;
+  public double currentAngle = 0; // speed
+  public double targetAngle = 0; // degrees
 
   private NetworkTableEntry currentSpeedEntry;
   private NetworkTableEntry targetSpeedEntry;
@@ -75,6 +78,92 @@ public class ShooterSubsystem extends SubsystemBase {
     initTelemetry();
   }
 
+  public void start() {
+    running = true;
+    System.out.print(getHoodLimitswitch().get());
+    setSpeed(targetSpeed); // TODO this is setting speed to 0, which does nothing
+  }
+
+  public void stop() {
+    running = false;
+    setSpeed(0);
+  }
+
+  public void raiseAngle(String mode) {
+    shooterPidController.setReference(HOOD_SPEED, ControlType.kVoltage);
+  }
+
+  public void raiseAngle() {
+    targetAngle += angleIncrement;
+    if (running) {
+      setAngle(targetAngle);
+    }
+  }
+
+  public void lowerAngle(String mode) {
+    shooterPidController.setReference(-HOOD_SPEED, ControlType.kVelocity);
+  }
+
+  public void lowerAngle() {
+    targetAngle -= angleIncrement;
+    if (running) {
+      setAngle(targetAngle);
+    }
+  }
+
+  public void increaseSpeed() {
+      targetSpeed += speedIncrement;
+      if (targetSpeed > MAX_RPM) {
+        targetSpeed = MAX_RPM;
+      }
+
+      if (running) {
+        setSpeed(targetSpeed);
+      }
+  }
+
+  public void decreaseSpeed() {
+    targetSpeed -= speedIncrement;
+    if (targetSpeed < 0) {
+      targetSpeed = 0;
+    }
+
+    if (running) {
+      setSpeed(targetSpeed);
+    }
+  }
+
+  public DigitalInput getHoodLimitswitch(){
+    return hoodLimit;
+  }
+
+  public double getAngle(){
+    currentAngle = hoodMotor.getEncoder().getPosition() / ROTATIONS_PER_DEGREE;
+    return currentAngle;
+  }
+
+  public void resetHoodEncoder(){
+    hoodMotor.getEncoder().setPosition(MIN_HOOD_ANGLE);
+  }
+
+  public void setSpeed(int targetSpeed){
+    this.targetSpeed = targetSpeed;
+    shooterPidController.setReference(targetSpeed, ControlType.kVelocity);
+  }
+
+  public void setAngle(double targetAngle){
+    this.targetAngle = targetAngle;
+
+    if(targetAngle > MAX_HOOD_ANGLE){
+      targetAngle = MAX_HOOD_ANGLE;
+    }
+    if(targetAngle < MIN_HOOD_ANGLE){
+      targetAngle = MIN_HOOD_ANGLE;
+    }
+
+    hoodPidController.setReference(targetAngle * ROTATIONS_PER_DEGREE, ControlType.kPosition);
+  }
+
   private void initTelemetry() {
     ShuffleboardTab tab = Shuffleboard.getTab("Shooter"); // Data is grouped with shooter and intake.
 
@@ -105,94 +194,17 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   private void updateTelemetry() {
-    currentSpeedEntry.setNumber(shooterMotor2.getEncoder().getVelocity());
-    targetSpeedEntry.setNumber(speed);
-    currentAngleEntry.setNumber(hoodMotor.getEncoder().getPosition());
-    targetAngleEntry.setNumber(angle);
+    currentSpeedEntry.setNumber(currentSpeed);
+    targetSpeedEntry.setNumber(targetSpeed);
+    currentAngleEntry.setNumber(currentAngle);
+    targetAngleEntry.setNumber(targetAngle);
     hoodLimitSwitchEntry.setBoolean(hoodLimit.get());
-  }
-
-
-  public void start() {
-    running = true;
-    System.out.print(getHoodLimitswitch().get());
-    setSpeed(speed);
-  }
-
-  public void stop() {
-    running = false;
-    setSpeed(0);
-  }
-
-  public void raiseHood(double angle) {
-    if (running) {
-      setAngle(angle);
-    }
-  }
-
-  public void lowerHood() {
-    hoodMotor.set(-HOODSPEED);
-  }
-
-  public void lowerHood(double angle) {
-    if (running) {
-      setAngle(angle);
-    }
-  }
-
-  public void increaseRPM() {
-      speed += rpmIncrement;
-      if (speed > MAX_RPM) {
-        speed = MAX_RPM;
-      }
-
-      if (running) {
-        setSpeed(speed);
-      }
-  }
-
-  public void decreaseRPM() {
-    speed -= rpmIncrement;
-    if (speed < 0) {
-      speed = 0;
-    }
-
-    if (running) {
-      setSpeed(speed);
-    }
-  }
-
-  public DigitalInput getHoodLimitswitch(){
-    return hoodLimit;
-  }
-
-  public double getHoodAngle(){
-    return angle;
-  }
-
-  public void resetHoodEncoder(){
-    hoodMotor.getEncoder().setPosition(MIN_HOOD_ANGLE);
-  }
-
-  public void setSpeed(int rpm){
-    shooterPidController.setReference(rpm, ControlType.kVelocity);
-  }
-
-  public void setAngle(double angle){
-    this.angle = angle;
-
-    if(angle > MAX_HOOD_ANGLE){
-      angle = MAX_HOOD_ANGLE;
-    }
-    if(angle < MIN_HOOD_ANGLE){
-      angle = MIN_HOOD_ANGLE;
-    }
-
-    hoodPidController.setReference(angle * ROTATIONS_PER_DEGREE, ControlType.kPosition);
   }
 
   @Override
   public void periodic() {
+    currentAngle = hoodMotor.getEncoder().getPosition();
+    currentSpeed = (int) Math.round(shooterMotor2.getEncoder().getVelocity());
     
     double range = limelight.getDistance();
     FiringSolution solution = ranger.getFiringSolution(range);

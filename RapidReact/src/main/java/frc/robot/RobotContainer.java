@@ -114,10 +114,10 @@ public class RobotContainer {
                 .whenPressed(new InstantCommand(() -> shooter.start(), shooter));
         new JoystickButton(driveController, Button.kBack.value)
                 .whenPressed(new InstantCommand(() -> shooter.stop(), shooter));
-        new POVButton(driveController, 0).whenPressed(new InstantCommand(() -> shooter.raiseHood(), shooter));      
-        new POVButton(driveController, 90).whenPressed(new InstantCommand(() -> shooter.increaseRPM(), shooter));
-        new POVButton(driveController, 180).whenPressed(new InstantCommand(() -> shooter.lowerHood(), shooter));
-        new POVButton(driveController, 270).whenPressed(new InstantCommand(() -> shooter.decreaseRPM(), shooter));
+        new POVButton(driveController, 0).whenPressed(new InstantCommand(() -> shooter.raiseAngle(), shooter));      
+        new POVButton(driveController, 90).whenPressed(new InstantCommand(() -> shooter.increaseSpeed(), shooter));
+        new POVButton(driveController, 180).whenPressed(new InstantCommand(() -> shooter.lowerAngle(), shooter));
+        new POVButton(driveController, 270).whenPressed(new InstantCommand(() -> shooter.decreaseSpeed(), shooter));
     }
 
     /**
