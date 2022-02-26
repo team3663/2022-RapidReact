@@ -126,7 +126,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
   public void raiseHood(double angle) {
     if (running) {
-      setAngle(angle);
+      goToAngle(angle);
     }
   }
 
@@ -136,7 +136,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
   public void lowerHood(double angle) {
     if (running) {
-      setAngle(angle);
+      goToAngle(angle);
     }
   }
 
@@ -180,6 +180,10 @@ public class ShooterSubsystem extends SubsystemBase {
 
   public void setAngle(double angle){
     this.angle = angle;
+  }
+
+  public void goToAngle(double angle){
+    this.angle = angle;
 
     if(angle > MAX_HOOD_ANGLE){
       angle = MAX_HOOD_ANGLE;
@@ -197,7 +201,7 @@ public class ShooterSubsystem extends SubsystemBase {
     double range = limelight.getDistance();
     FiringSolution solution = ranger.getFiringSolution(range);
     setSpeed(solution.speed);
-    setAngle(solution.angle);
+    goToAngle(solution.angle);
 
     updateTelemetry();
   }

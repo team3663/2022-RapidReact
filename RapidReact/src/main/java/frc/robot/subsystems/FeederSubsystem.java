@@ -32,8 +32,8 @@ public class FeederSubsystem extends SubsystemBase {
     private final double KD = 0.0009;
 
     private final int FEED_RPM_STOPPED = 0;
-    private final int FEED_RPM_SHOOT = 100; // how fast the feeder should be running when we are shooting
-    private final int FEED_RPM_INTAKE = 100; // how fast the feeder should be running when indexing the balls
+    private final int FEED_RPM_SHOOT = 1000; // how fast the feeder should be running when we are shooting
+    private final int FEED_RPM_INTAKE = 1000; // how fast the feeder should be running when indexing the balls
 
     // The number of revolutions of the feed motor required to cycle a ball all the
     // way from the feeders entry to the exit.
