@@ -6,8 +6,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
-import frc.robot.commands.C_MoveHoodToMax;
-import frc.robot.commands.C_MoveHoodToZero;
 import frc.robot.commands.TeleOpDriveCommand;
 import frc.robot.drivers.Limelight;
 import frc.robot.drivers.Pigeon;
@@ -61,7 +59,7 @@ public class RobotContainer {
         //intake = new IntakeSubsystem(INTAKE_MOTOR_CAN_ID, INTAKE_RETRACT_SOLENOID_CHAN, INTAKE_EXTEND_SOLENOID_CHAN);
         feeder = new FeederSubsystem(FEEDER_MOTOR_CAN_ID, FEEDER_ENTRY_SENSOR_DIO, FEEDER_EXIT_SENSOR_DIO);
         shooter = new ShooterSubsystem(SHOOTER_MOTOR_1_CAN_ID, SHOOTER_MOTOR_2_CAN_ID, HOOD_MOTOR_CAN_ID,
-                HOOD_LIMITSWITCH_DIO, ranger, limelight);
+                HOOD_LIMITSWITCH_DIO, ranger);
         intake = new IntakeSubsystem(INTAKE_MOTOR_CAN_ID, BOOM_RETRACT_SOLENOID_CHAN, BOOM_EXTEND_SOLENOID_CHAN,
                 ARM_RETRACT_SOLENOID_CHAN, ARM_EXTEND_SOLENOID_CHAN);
 
@@ -115,15 +113,16 @@ public class RobotContainer {
         // Button.kStart.value).whenPressed(drivetrain::resetPosition);
 
         // Button commands to test shooter subsystem.
-        // new JoystickButton(driveController, Button.kStart.value)
-        //         .whenPressed(new InstantCommand(() -> shooter.start(), shooter));
-        // new JoystickButton(driveController, Button.kBack.value)
-        //         .whenPressed(new InstantCommand(() -> shooter.stop(), shooter));
-        new JoystickButton(driveController, Button.kBack.value).whenPressed(new C_MoveHoodToZero(shooter));
-        new JoystickButton(driveController, Button.kStart.value).whenPressed(new C_MoveHoodToMax(shooter));
-        new POVButton(driveController, 0).whenPressed(new InstantCommand(() -> shooter.raiseAngle(), shooter));      
+        new JoystickButton(driveController, Button.kStart.value)
+                .whenPressed(new InstantCommand(() -> shooter.start(), shooter));
+        new JoystickButton(driveController, Button.kBack.value)
+                .whenPressed(new InstantCommand(() -> shooter.stop(), shooter));
+
+        //new JoystickButton(driveController, Button.kBack.value).whenPressed(new C_MoveHoodToZero(shooter));
+        //new JoystickButton(driveController, Button.kStart.value).whenPressed(new C_MoveHoodToMax(shooter));
+        //new POVButton(driveController, 0).whenPressed(new InstantCommand(() -> shooter.raiseAngle(), shooter));      
         new POVButton(driveController, 90).whenPressed(new InstantCommand(() -> shooter.increaseSpeed(), shooter));
-        new POVButton(driveController, 180).whenPressed(new InstantCommand(() -> shooter.lowerAngle(), shooter));
+        //new POVButton(driveController, 180).whenPressed(new InstantCommand(() -> shooter.lowerAngle(), shooter));
         new POVButton(driveController, 270).whenPressed(new InstantCommand(() -> shooter.decreaseSpeed(), shooter));
     }
 

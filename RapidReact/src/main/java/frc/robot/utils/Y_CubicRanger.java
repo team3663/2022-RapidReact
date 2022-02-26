@@ -1,10 +1,7 @@
 package frc.robot.utils;
 
-import org.ejml.simple.SimpleMatrix;
-
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
-import edu.wpi.first.math.Num;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N4;
 
