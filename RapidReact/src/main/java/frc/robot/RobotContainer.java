@@ -98,16 +98,22 @@ public class RobotContainer {
         // Button commands to test intake subsystem
         new JoystickButton(driveController, Button.kA.value).
                 whenPressed(new InstantCommand(() -> intake.extendArm(), intake));
-
         new JoystickButton(driveController, Button.kB.value).
                 whenPressed(new InstantCommand(() -> intake.retractArm(), intake));
+        new JoystickButton(driveController, Button.kX.value).
+                whenPressed(new InstantCommand(() -> intake.extendBoom(), intake));
+        new JoystickButton(driveController, Button.kY.value).
+                whenPressed(new InstantCommand(() -> intake.retractBoom(), intake));
+
+        new JoystickButton(driveController, Button.kStart.value).
+                whenPressed(new InstantCommand(() -> intake.intakeOut(), intake));  
 
         
         // Button commands to help test the feeder subsystem.
-        new JoystickButton(driveController, Button.kX.value)
-                .whenPressed(new InstantCommand(() -> feeder.setFeedMode(FeedMode.STOPPED), feeder));
-        new JoystickButton(driveController, Button.kY.value)
-                .whenPressed(new InstantCommand(() -> feeder.setFeedMode(FeedMode.CONTINUOUS), feeder));
+        // new JoystickButton(driveController, Button.kX.value)
+        //         .whenPressed(new InstantCommand(() -> feeder.setFeedMode(FeedMode.STOPPED), feeder));
+        // new JoystickButton(driveController, Button.kY.value)
+        //         .whenPressed(new InstantCommand(() -> feeder.setFeedMode(FeedMode.CONTINUOUS), feeder));
 
         // new JoystickButton(driveController,
         // Button.kBack.value).whenPressed(drivetrain::resetGyroscope);
@@ -120,7 +126,7 @@ public class RobotContainer {
         // new JoystickButton(driveController, Button.kBack.value)
         //         .whenPressed(new InstantCommand(() -> shooter.stop(), shooter));
         new JoystickButton(driveController, Button.kBack.value).whenPressed(new C_MoveHoodToZero(shooter));
-        new JoystickButton(driveController, Button.kStart.value).whenPressed(new C_MoveHoodToMax(shooter));
+        // new JoystickButton(driveController, Button.kStart.value).whenPressed(new C_MoveHoodToMax(shooter));
         new POVButton(driveController, 0).whenPressed(new InstantCommand(() -> shooter.raiseAngle(), shooter));      
         new POVButton(driveController, 90).whenPressed(new InstantCommand(() -> shooter.increaseSpeed(), shooter));
         new POVButton(driveController, 180).whenPressed(new InstantCommand(() -> shooter.lowerAngle(), shooter));

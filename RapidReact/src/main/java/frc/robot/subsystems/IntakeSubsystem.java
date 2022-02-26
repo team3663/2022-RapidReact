@@ -9,8 +9,6 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-import javax.swing.plaf.basic.BasicInternalFrameTitlePane.SystemMenuBar;
-
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
@@ -32,6 +30,8 @@ public class IntakeSubsystem extends SubsystemBase {
   private boolean armIsOut;
   private final int MOTOR_CURRENT_LIMIT = 25;
   private Timer timer;
+  private boolean timerStarted = false;
+  private IntakeState currentState;
 
   // network table entries for Shuffleboard
   private NetworkTableEntry boomIsOutEntry;
@@ -60,6 +60,7 @@ public class IntakeSubsystem extends SubsystemBase {
         boomRetractSolenoidChan);
     armIntakeSolenoid = new DoubleSolenoid(PneumaticsModuleType.REVPH, armExtendSolenoidChan, armRetractSolenoidChan);
 
+    timer = new Timer();
     initTelemetry();
   }
 
@@ -93,6 +94,7 @@ public class IntakeSubsystem extends SubsystemBase {
    */
   public void extendArm() {
     armIntakeSolenoid.set(Value.kForward);
+    armIsOut = true;
   }
 
   /**
@@ -101,27 +103,37 @@ public class IntakeSubsystem extends SubsystemBase {
    */
   public void retractArm() {
     armIntakeSolenoid.set(Value.kReverse);
+    armIsOut = false;
   }
 
   public void spinBallIn() {
-    // if(getIsBoomOut() && getIsArmOut())
+    if(boomIsOut && armIsOut)
     intakeMotor.set(POWER);
   }
 
   public void spinBallOut() {
-    if (getIsBoomOut() && getIsArmOut())
+    if(boomIsOut && armIsOut)
       intakeMotor.set(-POWER);
   }
 
   public void intakeOut() {
-    timer.start();
-    if (!boomIsOut) {
-      extendBoom();
-      timer.reset();
-      if (!armIsOut && timer.get() >= 1000) {
-        extendArm();
-        if (timer.get() >= 2000) {
+    if(timerStarted == false){
+      System.out.print("Timer is Started -----------------");
+      timer.start();
+      timerStarted = true;
+    }
+    if(!armIsOut) {
+      extendArm();
+      System.out.println("ARM JUST GOT SENT OUT -----------------");
+    }
+    if(armIsOut){
+      System.out.println("ARM IS STILL OUT ------------------------");
+      if(timer.get() >= 1) {
+        System.out.println("TIMER.GET WORKS ------------------------------");
+        extendBoom();
+        if(timer.get() >= 2) {
           spinBallIn();
+          timerStarted = true;
         }
       }
     }
@@ -130,10 +142,10 @@ public class IntakeSubsystem extends SubsystemBase {
   public void intakeIn() {
     timer.start();
     stopMotor();
-    if (boomIsOut) {
+    if(boomIsOut) {
       retractBoom();
       timer.reset();
-      if (armIsOut && timer.get() >= 1000) {
+      if(armIsOut && timer.get() >= 1000) {
         retractArm();
       }
     }

@@ -64,8 +64,8 @@ public final class Constants {
   // Solenoid Channels
   public static final int ARM_RETRACT_SOLENOID_CHAN = 0;
   public static final int ARM_EXTEND_SOLENOID_CHAN = 1;
-  public static final int BOOM_RETRACT_SOLENOID_CHAN = 3;
-  public static final int BOOM_EXTEND_SOLENOID_CHAN = 4;
+  public static final int BOOM_RETRACT_SOLENOID_CHAN = 2;
+  public static final int BOOM_EXTEND_SOLENOID_CHAN = 3;
 
   // Digital IO ports
   public static final int FEEDER_ENTRY_SENSOR_DIO = 1;
