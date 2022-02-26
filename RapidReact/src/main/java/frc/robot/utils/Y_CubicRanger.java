@@ -5,6 +5,8 @@ import org.ejml.simple.SimpleMatrix;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.Num;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N4;
 
 
 public class Y_CubicRanger {
@@ -101,31 +103,35 @@ public class Y_CubicRanger {
 
         double x = range;
 
-        Matrix m = new Matrix(new SimpleMatrix(
-             new double[][] {
-                 {Math.pow(x1, 3), Math.pow(x1, 2), Math.pow(x1, 1), Math.pow(x1, 0)},
-                 {Math.pow(x2, 3), Math.pow(x2, 2), Math.pow(x2, 1), Math.pow(x2, 0)},
-                 {Math.pow(x3, 3), Math.pow(x3, 2), Math.pow(x3, 1), Math.pow(x3, 0)},
-                 {Math.pow(x4, 3), Math.pow(x4, 2), Math.pow(x4, 1), Math.pow(x4, 0)},
-             }
-         ));
+        double[][] storageM = new double[][] {
+            {Math.pow(x1, 3), Math.pow(x1, 2), Math.pow(x1, 1), Math.pow(x1, 0)},
+            {Math.pow(x2, 3), Math.pow(x2, 2), Math.pow(x2, 1), Math.pow(x2, 0)},
+            {Math.pow(x3, 3), Math.pow(x3, 2), Math.pow(x3, 1), Math.pow(x3, 0)},
+            {Math.pow(x4, 3), Math.pow(x4, 2), Math.pow(x4, 1), Math.pow(x4, 0)},
+        };
+        Matrix<N4, N4> m = new Matrix<>(Nat.N4(), Nat.N4());
+        for (int row = 0; row < 4; row ++) {
+            for (int column = 0; column < 4; column ++) {
+                m.set(row, column, storageM[row][column]);
+            }
+        }
 
-        Matrix n = new Matrix(new SimpleMatrix(
-             new double[][] {
-                 {y1},
-                 {y2},
-                 {y3},
-                 {y4},
-             }
-         ));
+        double[][] storageN = new double[][] {
+            {y1},
+            {y2},
+            {y3},
+            {y4},
+        };
+        Matrix<N4, N1> n = new Matrix<>(Nat.N4(), Nat.N1());
+        for (int row = 0; row < 4; row ++) {
+            m.set(row, 0, storageN[row][0]);
+        }
 
-        Matrix result = m.inv().times(n);
-
+        Matrix<N4, N1> result = m.inv().times(n);
         double a = result.get(0, 0);
         double b = result.get(1, 0);
         double c = result.get(2, 0);
         double d = result.get(3, 0);
-
         double y = a * Math.pow(x, 3) + b * Math.pow(x, 2) + c * Math.pow(x, 1) + d * Math.pow(x, 0);
 
         return y;

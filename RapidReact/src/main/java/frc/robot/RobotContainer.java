@@ -6,8 +6,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import frc.robot.commands.C_MoveHoodToZero;
 import frc.robot.commands.TeleOpDriveCommand;
 import frc.robot.drivers.Limelight;
 import frc.robot.drivers.Pigeon;
@@ -112,14 +110,13 @@ public class RobotContainer {
 
         // Button commands to test shooter subsystem.
         new JoystickButton(driveController, Button.kStart.value)
-                .whenPressed(new InstantCommand(() -> shooter.setAngle(45), shooter));
-        // new JoystickButton(driveController, Button.kBack.value)
-        //         .whenPressed(new InstantCommand(() -> shooter.stop(), shooter));
-        new JoystickButton(driveController, Button.kBack.value).whenPressed(new C_MoveHoodToZero(shooter)); 
-        // new POVButton(driveController, 0).whenPressed(new C_MoveHoodToZero(shooter));      
-        new POVButton(driveController, 90).whenPressed(new InstantCommand(() -> shooter.increaseRPM(), shooter));
-        new POVButton(driveController, 180).whenPressed(new InstantCommand(() -> shooter.lowerHood(), shooter));
-        new POVButton(driveController, 270).whenPressed(new InstantCommand(() -> shooter.decreaseRPM(), shooter));
+                .whenPressed(new InstantCommand(() -> shooter.start(), shooter));
+        new JoystickButton(driveController, Button.kBack.value)
+                .whenPressed(new InstantCommand(() -> shooter.stop(), shooter));
+        new POVButton(driveController, 0).whenPressed(new InstantCommand(() -> shooter.raiseAngle(), shooter));      
+        new POVButton(driveController, 90).whenPressed(new InstantCommand(() -> shooter.increaseSpeed(), shooter));
+        new POVButton(driveController, 180).whenPressed(new InstantCommand(() -> shooter.lowerAngle(), shooter));
+        new POVButton(driveController, 270).whenPressed(new InstantCommand(() -> shooter.decreaseSpeed(), shooter));
     }
 
     /**
