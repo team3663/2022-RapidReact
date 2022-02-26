@@ -33,7 +33,7 @@ public class RobotContainer {
     private final XboxController operatorController = new XboxController(Constants.OPERATOR_CONTROLLER_PORT);
 
     Pigeon pigeon = new Pigeon(DRIVETRAIN_PIGEON_ID);
-    private static final Limelight limelight = new Limelight();
+    private static final Limelight limelight = new Limelight(40, 0.635, 2.6414);
     private final SimpleRanger ranger = new SimpleRanger();
 
     // Subsystems
@@ -58,10 +58,12 @@ public class RobotContainer {
      * Create all of our robot's subsystem objects here.
      */
     void createSubsystems() {
-        intake = new IntakeSubsystem(INTAKE_MOTOR_CAN_ID, INTAKE_RETRACT_SOLENOID_CHAN, INTAKE_EXTEND_SOLENOID_CHAN);
+        //intake = new IntakeSubsystem(INTAKE_MOTOR_CAN_ID, INTAKE_RETRACT_SOLENOID_CHAN, INTAKE_EXTEND_SOLENOID_CHAN);
         feeder = new FeederSubsystem(FEEDER_MOTOR_CAN_ID, FEEDER_ENTRY_SENSOR_DIO, FEEDER_EXIT_SENSOR_DIO);
         shooter = new ShooterSubsystem(SHOOTER_MOTOR_1_CAN_ID, SHOOTER_MOTOR_2_CAN_ID, HOOD_MOTOR_CAN_ID,
                 HOOD_LIMITSWITCH_DIO, ranger, limelight);
+        intake = new IntakeSubsystem(INTAKE_MOTOR_CAN_ID, BOOM_RETRACT_SOLENOID_CHAN, BOOM_EXTEND_SOLENOID_CHAN,
+                ARM_RETRACT_SOLENOID_CHAN, ARM_EXTEND_SOLENOID_CHAN);
 
         // Setup our server drivetrain subsystem
         SwerveModuleConfig fl = new SwerveModuleConfig(FRONT_LEFT_MODULE_DRIVE_MOTOR, FRONT_LEFT_MODULE_STEER_MOTOR,
@@ -94,16 +96,19 @@ public class RobotContainer {
     private void configureButtonBindings() {
 
         // Button commands to test intake subsystem
-        // new JoystickButton(driveController, Button.kA.value).whenHeld(new SequentialCommandGroup(
-        //         new InstantCommand(() -> intake.extend(), intake), new InstantCommand(() -> intake.start(), intake)));
-        // new JoystickButton(driveController, Button.kA.value).whenReleased(new SequentialCommandGroup(
-        //         new InstantCommand(() -> intake.retract(), intake), new InstantCommand(() -> intake.stop(), intake)));
+        new JoystickButton(driveController, Button.kA.value).
+                whenHeld(new InstantCommand(() -> intake.intakeOut(), intake));
+        new JoystickButton(driveController, Button.kA.value).
+                whenReleased(new InstantCommand(() -> intake.intakeIn(), intake));
+        new JoystickButton(driveController, Button.kB.value).
+                whenPressed(new InstantCommand(() -> intake.boomRetract(), intake));
 
+        
         // Button commands to help test the feeder subsystem.
-        new JoystickButton(driveController, Button.kX.value)
-                .whenPressed(new InstantCommand(() -> feeder.setFeedMode(FeedMode.STOPPED), feeder));
-        new JoystickButton(driveController, Button.kY.value)
-                .whenPressed(new InstantCommand(() -> feeder.setFeedMode(FeedMode.CONTINUOUS), feeder));
+        // new JoystickButton(driveController, Button.kX.value)
+        //         .whenPressed(new InstantCommand(() -> feeder.setFeedMode(FeedMode.STOPPED), feeder));
+        // new JoystickButton(driveController, Button.kY.value)
+        //         .whenPressed(new InstantCommand(() -> feeder.setFeedMode(FeedMode.CONTINUOUS), feeder));
 
         // new JoystickButton(driveController,
         // Button.kBack.value).whenPressed(drivetrain::resetGyroscope);

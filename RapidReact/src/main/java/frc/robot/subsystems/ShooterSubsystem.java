@@ -152,6 +152,14 @@ public class ShooterSubsystem extends SubsystemBase {
     return currentAngle;
   }
 
+  public double getMinAngle(){
+    return MIN_HOOD_ANGLE;
+  }
+
+  public double getMaxAngle(){
+    return MAX_HOOD_ANGLE;
+  }
+
   public void resetHoodEncoder(){
     hoodMotor.getEncoder().setPosition(MIN_HOOD_ANGLE);
   }
