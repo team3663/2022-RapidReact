@@ -97,18 +97,17 @@ public class RobotContainer {
 
         // Button commands to test intake subsystem
         new JoystickButton(driveController, Button.kA.value).
-                whenHeld(new InstantCommand(() -> intake.intakeOut(), intake));
-        new JoystickButton(driveController, Button.kA.value).
-                whenReleased(new InstantCommand(() -> intake.intakeIn(), intake));
+                whenPressed(new InstantCommand(() -> intake.extendArm(), intake));
+
         new JoystickButton(driveController, Button.kB.value).
-                whenPressed(new InstantCommand(() -> intake.boomRetract(), intake));
+                whenPressed(new InstantCommand(() -> intake.retractArm(), intake));
 
         
         // Button commands to help test the feeder subsystem.
-        // new JoystickButton(driveController, Button.kX.value)
-        //         .whenPressed(new InstantCommand(() -> feeder.setFeedMode(FeedMode.STOPPED), feeder));
-        // new JoystickButton(driveController, Button.kY.value)
-        //         .whenPressed(new InstantCommand(() -> feeder.setFeedMode(FeedMode.CONTINUOUS), feeder));
+        new JoystickButton(driveController, Button.kX.value)
+                .whenPressed(new InstantCommand(() -> feeder.setFeedMode(FeedMode.STOPPED), feeder));
+        new JoystickButton(driveController, Button.kY.value)
+                .whenPressed(new InstantCommand(() -> feeder.setFeedMode(FeedMode.CONTINUOUS), feeder));
 
         // new JoystickButton(driveController,
         // Button.kBack.value).whenPressed(drivetrain::resetGyroscope);
