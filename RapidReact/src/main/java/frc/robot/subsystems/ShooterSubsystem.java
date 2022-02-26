@@ -83,7 +83,7 @@ public class ShooterSubsystem extends SubsystemBase {
   public void start() {
     running = true;
     System.out.print(getHoodLimitswitch().get());
-    setSpeed(targetSpeed); // TODO this is setting speed to 0, which does nothing
+    setSpeed(targetSpeed);
   }
 
   public void stop() {
@@ -93,7 +93,6 @@ public class ShooterSubsystem extends SubsystemBase {
 
   public void raiseAngle(String mode) {
     hoodMotor.set(HOOD_SPEED);
-    // shooterPidController.setReference(HOOD_SPEED, ControlType.kVoltage);
   }
 
   public void raiseAngle() {
