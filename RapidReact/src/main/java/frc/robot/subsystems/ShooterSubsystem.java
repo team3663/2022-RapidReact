@@ -13,10 +13,10 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import frc.robot.drivers.Limelight;
 import frc.robot.utils.FiringSolution;
-import frc.robot.utils.SimpleRanger;
+import frc.robot.utils.Ranger;
 
 public class ShooterSubsystem extends SubsystemBase {
-  private SimpleRanger ranger;
+  private Ranger ranger;
 
   private CANSparkMax shooterMotor1;
   private CANSparkMax shooterMotor2;
@@ -54,7 +54,7 @@ public class ShooterSubsystem extends SubsystemBase {
   private int count;
 
   /** Creates a new instance of the Shooter subsystem. */
-  public ShooterSubsystem(int shooterMotor1CANID, int shooterMotor2CANID, int hoodMotorCANID, int hoodLimitDio, SimpleRanger ranger, Limelight limelight) {
+  public ShooterSubsystem(int shooterMotor1CANID, int shooterMotor2CANID, int hoodMotorCANID, int hoodLimitDio, Ranger ranger, Limelight limelight) {
 
     this.ranger = ranger;
     this.limelight = limelight;
@@ -83,7 +83,7 @@ public class ShooterSubsystem extends SubsystemBase {
   public void start() {
     running = true;
     System.out.print(getHoodLimitswitch().get());
-    setSpeed(targetSpeed); // TODO this is setting speed to 0, which does nothing
+    setSpeed(targetSpeed);
   }
 
   public void stop() {
@@ -93,7 +93,6 @@ public class ShooterSubsystem extends SubsystemBase {
 
   public void raiseAngle(String mode) {
     hoodMotor.set(HOOD_SPEED);
-    // shooterPidController.setReference(HOOD_SPEED, ControlType.kVoltage);
   }
 
   public void raiseAngle() {
