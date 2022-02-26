@@ -31,7 +31,7 @@ public class ShooterSubsystem extends SubsystemBase {
   private boolean running = false;
 
   // TODO fix numbers
-  private final int MAX_HOOD_ANGLE = 80;
+  private final int MAX_HOOD_ANGLE = 285;
   private final int MIN_HOOD_ANGLE = 25;
   private final int MAX_RPM = 500;
   private final double ROTATIONS_PER_DEGREE = 5;
@@ -50,6 +50,8 @@ public class ShooterSubsystem extends SubsystemBase {
   private NetworkTableEntry currentAngleEntry;
   private NetworkTableEntry targetAngleEntry;
   private NetworkTableEntry hoodLimitSwitchEntry;
+
+  private int count;
 
   /** Creates a new instance of the Shooter subsystem. */
   public ShooterSubsystem(int shooterMotor1CANID, int shooterMotor2CANID, int hoodMotorCANID, int hoodLimitDio, SimpleRanger ranger, Limelight limelight) {
@@ -90,7 +92,8 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   public void raiseAngle(String mode) {
-    shooterPidController.setReference(HOOD_SPEED, ControlType.kVoltage);
+    hoodMotor.set(HOOD_SPEED);
+    // shooterPidController.setReference(HOOD_SPEED, ControlType.kVoltage);
   }
 
   public void raiseAngle() {
@@ -101,7 +104,9 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   public void lowerAngle(String mode) {
-    shooterPidController.setReference(-HOOD_SPEED, ControlType.kVelocity);
+    //count += hoodMotor.getEncoder().setPositionConversionFactor(factor).getPosition();
+    hoodMotor.set(-HOOD_SPEED);
+    System.out.println(count);
   }
 
   public void lowerAngle() {
@@ -109,6 +114,11 @@ public class ShooterSubsystem extends SubsystemBase {
     if (running) {
       goToAngle(currentAngle);
     }
+  }
+
+  public Boolean atMaxAngle(){
+    if(currentAngle >= MAX_HOOD_ANGLE) return true;
+    return false;
   }
 
   public void increaseSpeed() {

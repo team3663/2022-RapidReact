@@ -7,11 +7,11 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.ShooterSubsystem;
 
-public class C_MoveHoodToZero extends CommandBase {
-  private ShooterSubsystem shooterSubsystem;
+public class C_MoveHoodToMax extends CommandBase {
+  ShooterSubsystem shooterSubsystem;
   private String mode = "";
-  /** Creates a new C_MoveHoodToZero. */
-  public C_MoveHoodToZero(ShooterSubsystem shooterSubsystem) {
+  /** Creates a new C_MoveHoodToMax. */
+  public C_MoveHoodToMax(ShooterSubsystem shooterSubsystem) {
     this.shooterSubsystem = shooterSubsystem;
     addRequirements(shooterSubsystem);
   }
@@ -23,20 +23,21 @@ public class C_MoveHoodToZero extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if(!shooterSubsystem.getHoodLimitswitch().get()){
-      shooterSubsystem.lowerAngle(mode);
+    if(shooterSubsystem.getAngle() < 285){
+      System.out.println(shooterSubsystem.getAngle());
+      shooterSubsystem.raiseAngle(mode);
     }
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    shooterSubsystem.setAngle(0);
+    //
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return shooterSubsystem.getHoodLimitswitch().get();
+    return shooterSubsystem.getAngle() >= 285;
   }
 }
