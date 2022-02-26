@@ -168,27 +168,28 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   private void initTelemetry() {
-    ShuffleboardTab tab = Shuffleboard.getTab("Shooter/Intake"); // Data is grouped with shooter and intake.
-    boomIsOutEntry = tab.add("Boom Is Out", false)
-        .withPosition(0, 3)
+    ShuffleboardTab tab = Shuffleboard.getTab("Shooter");
+
+    intakeMotorSpeedEntry = tab.add("Motor Speed", 0)
+        .withPosition(0, 0)
         .withSize(1, 1)
         .getEntry();
 
-    armIsOutEntry = tab.add("Arm Is Out", false)
-        .withPosition(1, 3)
+    boomIsOutEntry = tab.add("Boom Extended", false)
+        .withPosition(1, 0)
         .withSize(1, 1)
         .getEntry();
 
-    intakeMotorSpeedEntry = tab.add("Intake Motor Speed", 0)
-        .withPosition(2, 3)
+    armIsOutEntry = tab.add("Arm Extended", false)
+        .withPosition(2, 0)
         .withSize(1, 1)
         .getEntry();
   }
 
   private void updateTelemetry() {
+    intakeMotorSpeedEntry.setValue(intakeMotor.get());
     boomIsOutEntry.setBoolean(boomIsOut);
     armIsOutEntry.setBoolean(armIsOut);
-    intakeMotorSpeedEntry.setValue(intakeMotor.get());
   }
 
 }
