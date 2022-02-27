@@ -92,12 +92,12 @@ public class FeederSubsystem extends SubsystemBase {
                 .withSize(1, 1)
                 .getEntry();
 
-        entrySensorEntry = tab.add("Entry Sensor", 0)
+        entrySensorEntry = tab.add("Entry Sensor", false)
                 .withPosition(1, 1)
                 .withSize(1, 1)
                 .getEntry();
 
-        exitSensorEntry = tab.add("Exit Sensor", 0)
+        exitSensorEntry = tab.add("Exit Sensor", false)
                 .withPosition(2, 1)
                 .withSize(1, 1)
                 .getEntry();

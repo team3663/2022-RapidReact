@@ -261,7 +261,7 @@ public class ShooterSubsystem extends SubsystemBase {
         .withSize(1, 1)
         .getEntry();
 
-    hoodLimitSwitchEntry = tab.add("Hood Limit", 0)
+    hoodLimitSwitchEntry = tab.add("Hood Limit", false)
         .withPosition(6, 2)
         .withSize(1, 1)
         .getEntry();
