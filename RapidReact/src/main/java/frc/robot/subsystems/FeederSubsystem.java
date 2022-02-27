@@ -119,8 +119,10 @@ public class FeederSubsystem extends SubsystemBase {
 
     private void updateTelemetry() {
         feederRPMEntry.setNumber(feedMotor.getEncoder().getVelocity());
-        entrySensorEntry.setBoolean(entrySensor.get());
-        exitSensorEntry.setBoolean(exitSensor.get());
+        // entrySensorEntry.setBoolean(entrySensor.get());
+        entrySensorEntry.forceSetBoolean(entrySensor.get());
+        // exitSensorEntry.setBoolean(exitSensor.get());
+        exitSensorEntry.forceSetBoolean(exitSensor.get());
     }
 
     /**
