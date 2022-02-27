@@ -22,6 +22,7 @@ public class IntakeSubsystem extends SubsystemBase {
     RETRACTING
   }
 
+  private IntakeState currentState = IntakeState.RETRACTED;
   private CANSparkMax intakeMotor;
   private final double POWER = 0.4;
   private final DoubleSolenoid boomIntakeSolenoid;
@@ -29,8 +30,8 @@ public class IntakeSubsystem extends SubsystemBase {
   private boolean boomIsOut;
   private boolean armIsOut;
   private final int MOTOR_CURRENT_LIMIT = 25;
-  private Timer timer;
-  private boolean timerStarted = false;
+  private double startTime = 0;
+  private final double DELAYTIME = 0.5;
 
   // network table entries for Shuffleboard
   private NetworkTableEntry boomIsOutEntry;
@@ -59,13 +60,33 @@ public class IntakeSubsystem extends SubsystemBase {
         boomRetractSolenoidChan);
     armIntakeSolenoid = new DoubleSolenoid(PneumaticsModuleType.REVPH, armExtendSolenoidChan, armRetractSolenoidChan);
 
-    timer = new Timer();
     initTelemetry();
   }
 
   @Override
   public void periodic() {
-
+    switch (currentState) {
+      case EXTENDING:
+        extendArm();
+        if(!boomIsOut && Timer.getFPGATimestamp() - startTime > DELAYTIME) extendBoom();
+        if(boomIsOut && Timer.getFPGATimestamp() - startTime > 2 * DELAYTIME) {
+          spinBallIn();
+          currentState = IntakeState.EXTENDED;
+        }
+        break;
+      case EXTENDED:
+        break;
+      case RETRACTING:
+        stopMotor();
+        if(boomIsOut && Timer.getFPGATimestamp() - startTime > DELAYTIME)retractBoom();
+        if(!boomIsOut && Timer.getFPGATimestamp() - startTime > 2 * DELAYTIME){
+          retractArm();
+          currentState = IntakeState.RETRACTED;
+        }
+        break;
+      case RETRACTED:
+        break;    
+    }
     updateTelemetry();
   }
 
@@ -74,8 +95,10 @@ public class IntakeSubsystem extends SubsystemBase {
    * boomExtend() lowers the intake mechanism
    */
   public void extendBoom() {
-    boomIntakeSolenoid.set(Value.kForward);
-    boomIsOut = true;
+    if(armIsOut){
+      boomIntakeSolenoid.set(Value.kForward);
+      boomIsOut = true;
+    }
   }
 
   /**
@@ -116,38 +139,13 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   public void intakeOut() {
-    if(timerStarted == false){
-      System.out.print("Timer is Started -----------------");
-      timer.start();
-      timerStarted = true;
-    }
-    if(!armIsOut) {
-      extendArm();
-      System.out.println("ARM JUST GOT SENT OUT -----------------");
-    }
-    if(armIsOut){
-      System.out.println("ARM IS STILL OUT ------------------------");
-      if(timer.get() >= 1) {
-        System.out.println("TIMER.GET WORKS ------------------------------");
-        extendBoom();
-        if(timer.get() >= 2) {
-          spinBallIn();
-          timerStarted = true;
-        }
-      }
-    }
+    startTime = Timer.getFPGATimestamp();
+    currentState = IntakeState.EXTENDING;
   }
 
   public void intakeIn() {
-    timer.start();
-    stopMotor();
-    if(boomIsOut) {
-      retractBoom();
-      timer.reset();
-      if(armIsOut && timer.get() >= 1000) {
-        retractArm();
-      }
-    }
+    startTime = Timer.getFPGATimestamp();
+    currentState = IntakeState.RETRACTING;
   }
 
   public void stopMotor() {
