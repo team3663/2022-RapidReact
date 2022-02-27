@@ -16,6 +16,7 @@ import frc.robot.utils.ControllerUtils;
 import frc.robot.utils.SimpleRanger;
 import frc.robot.utils.SwerveDriveConfig;
 import frc.robot.utils.SwerveModuleConfig;
+import frc.robot.utils.Y_CubicRanger;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import static frc.robot.Constants.*;
@@ -32,7 +33,7 @@ public class RobotContainer {
 
     Pigeon pigeon = new Pigeon(DRIVETRAIN_PIGEON_ID);
     private static final Limelight limelight = new Limelight(40, 0.635, 2.6414);
-    private final SimpleRanger ranger = new SimpleRanger();
+    private final Y_CubicRanger ranger = new Y_CubicRanger();
 
     // Subsystems
     private FeederSubsystem feeder;
