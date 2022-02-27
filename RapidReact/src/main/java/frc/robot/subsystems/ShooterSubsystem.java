@@ -19,7 +19,7 @@ import frc.robot.utils.Ranger;
 public class ShooterSubsystem extends SubsystemBase {
 
   // Subsystem Constants
-  private static final double MAX_RPM = 5000;
+  private static final double MAX_RPM = 4000;
   private static final double shooterBeltRatio = 0.66;
 
   private static final double MAX_HOOD_ANGLE = 85;
@@ -91,6 +91,7 @@ public class ShooterSubsystem extends SubsystemBase {
     shooterEncoder.setPositionConversionFactor(shooterBeltRatio);
 
     shooterMotor2 = new CANSparkMax(shooterMotor2CANID, MotorType.kBrushless);
+    shooterMotor2.setIdleMode(IdleMode.kCoast);
     shooterMotor2.follow(shooterMotor1, true);
 
     hoodMotor = new CANSparkMax(hoodMotorCANID, MotorType.kBrushless);
