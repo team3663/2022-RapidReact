@@ -115,17 +115,15 @@ public class RobotContainer {
         new JoystickButton(driveController, Button.kY.value)
                 .whenPressed(new InstantCommand(() -> feeder.setFeedMode(FeedMode.CONTINUOUS), feeder));
 
-        // Button commands to test shooter subsystem.
+        // Button commands to test shooter subsystem
          new JoystickButton(driveController, Button.kStart.value)
                  .whenPressed(new InstantCommand(() -> shooter.start(), shooter));
          new JoystickButton(driveController, Button.kBack.value)
                  .whenPressed(new InstantCommand(() -> shooter.stop(), shooter));
 
-        //new JoystickButton(driveController, Button.kBack.value).whenPressed(new C_MoveHoodToZero(shooter));
-        //new JoystickButton(driveController, Button.kStart.value).whenPressed(new C_MoveHoodToMax(shooter));
-        //new POVButton(driveController, 0).whenPressed(new InstantCommand(() -> shooter.raiseAngle(), shooter));      
+        new POVButton(driveController, 0).whenPressed(new InstantCommand(() -> shooter.setAngle(67.0), shooter));      
         new POVButton(driveController, 90).whenPressed(new InstantCommand(() -> shooter.increaseSpeed(), shooter));
-        //new POVButton(driveController, 180).whenPressed(new InstantCommand(() -> shooter.lowerAngle(), shooter));
+        new POVButton(driveController, 180).whenPressed(new InstantCommand(() -> shooter.setAngle(85.0), shooter));
         new POVButton(driveController, 270).whenPressed(new InstantCommand(() -> shooter.decreaseSpeed(), shooter));
     }
 

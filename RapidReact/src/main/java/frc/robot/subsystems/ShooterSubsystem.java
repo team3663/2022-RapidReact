@@ -10,6 +10,7 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.CANSparkMax.ControlType;
+import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import frc.robot.utils.FiringSolution;
@@ -18,12 +19,35 @@ import frc.robot.utils.Ranger;
 public class ShooterSubsystem extends SubsystemBase {
 
   // Subsystem Constants
-  private static final double MAX_RPM = 2000.0;
-  private static final int MAX_HOOD_ANGLE = 285;
-  private static final int MIN_HOOD_ANGLE = 25;
-  private static final double ROTATIONS_PER_DEGREE = 5;
-  private static final double speedIncrement = 200.0;
-  private static final int angleIncrement = 5;
+  private static final double MAX_RPM = 5000;
+  private static final double shooterBeltRatio = 0.66;
+
+  private static final double MAX_HOOD_ANGLE = 85;
+  private static final double MIN_HOOD_ANGLE = 67;
+  private static final double HOOD_LOWER_LIMIT = 0;
+  private static final double HOOD_UPPER_LIMIT = 13.5;
+  private static final double ROTATIONS_PER_DEGREE = (HOOD_UPPER_LIMIT - HOOD_LOWER_LIMIT)
+      / (MAX_HOOD_ANGLE - MIN_HOOD_ANGLE);
+  private static final double speedIncrement = 200;
+  private static final double angleIncrement = 1;
+
+  // Shooter PID coefficients
+  private static final double kShooterP = 6e-4;
+  private static final double kShooterI = 0;
+  private static final double kShooterD = 0;
+  private static final double kShooterIz = 0;
+  private static final double kShooterFF = 0.000015;
+  private static final double kShooterMaxOutput = 1;
+  private static final double kShooterMinOutput = 0;
+
+  // Hood PID coefficients
+  private static final double kHoodP = 0.1;
+  private static final double kHoodI = 1e-4;
+  private static final double kHoodD = 1;
+  private static final double kHoodIz = 0;
+  private static final double kHoodFF = 0;
+  private static final double kHoodMaxOutput = 1;
+  private static final double kHoodMinOutput = -1;
 
   private Ranger ranger;
   private CANSparkMax shooterMotor1;
@@ -35,12 +59,12 @@ public class ShooterSubsystem extends SubsystemBase {
   private RelativeEncoder hoodEncoder;
   private SparkMaxPIDController hoodPidController;
   private DigitalInput hoodLimit;
-  
-  
-  private boolean running = false;
-  public double currentSpeed = 0.0;
-  public double targetSpeed = 500.0;
 
+  private boolean running = false;
+  public double currentSpeed = 0;
+  public double targetSpeed = 0;
+
+  private boolean parkingHood = false;
   public double currentAngle = 0;
   public double targetAngle = 0;
 
@@ -48,6 +72,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
   private NetworkTableEntry currentSpeedEntry;
   private NetworkTableEntry targetSpeedEntry;
+  private NetworkTableEntry shooterEncoderEntry;
   private NetworkTableEntry currentAngleEntry;
   private NetworkTableEntry targetAngleEntry;
   private NetworkTableEntry hoodEncoderEntry;
@@ -60,26 +85,36 @@ public class ShooterSubsystem extends SubsystemBase {
     this.ranger = ranger;
 
     shooterMotor1 = new CANSparkMax(shooterMotor1CANID, MotorType.kBrushless);
-    shooterMotor2 = new CANSparkMax(shooterMotor2CANID, MotorType.kBrushless);
+    shooterMotor1.setInverted(true);
+    shooterMotor1.setIdleMode(IdleMode.kCoast);
     shooterEncoder = shooterMotor1.getEncoder();
-    // The motors in the shooter run in opposition to each other by default, invert
-    // one of them
+    shooterEncoder.setPositionConversionFactor(shooterBeltRatio);
+
+    shooterMotor2 = new CANSparkMax(shooterMotor2CANID, MotorType.kBrushless);
     shooterMotor2.follow(shooterMotor1, true);
 
     hoodMotor = new CANSparkMax(hoodMotorCANID, MotorType.kBrushless);
+    hoodMotor.setIdleMode(IdleMode.kBrake);
     hoodEncoder = hoodMotor.getEncoder();
     hoodLimit = new DigitalInput(hoodLimitDio);
 
     shooterPidController = shooterMotor1.getPIDController();
-    shooterPidController.setP(0);
-    shooterPidController.setI(0);
-    shooterPidController.getD(0);
+    shooterPidController.setP(kShooterP);
+    shooterPidController.setI(kShooterI);
+    shooterPidController.setD(kShooterD);
+    shooterPidController.setIZone(kShooterIz);
+    shooterPidController.setFF(kShooterFF);
+    shooterPidController.setOutputRange(kShooterMinOutput, kShooterMaxOutput);
 
     hoodPidController = hoodMotor.getPIDController();
-    hoodPidController.setP(0);
-    hoodPidController.setI(0);
-    hoodPidController.setD(0);
-
+    hoodPidController.setP(kHoodP);
+    hoodPidController.setI(kHoodI);
+    hoodPidController.setD(kHoodD);
+    hoodPidController.setIZone(kHoodIz);
+    hoodPidController.setFF(kHoodFF);
+    hoodPidController.setOutputRange(kHoodMinOutput, kHoodMaxOutput);
+   
+    parkHood();
     initTelemetry();
   }
 
@@ -88,7 +123,9 @@ public class ShooterSubsystem extends SubsystemBase {
     currentSpeed = (int) Math.round(shooterEncoder.getVelocity());
     currentAngle = hoodMotor.getEncoder().getPosition();
 
-    shooterPidController.setReference(targetSpeed, ControlType.kVelocity);
+    if (parkingHood) {
+      parkHood();
+    }
 
     updateTelemetry();
   }
@@ -123,8 +160,10 @@ public class ShooterSubsystem extends SubsystemBase {
     if (targetSpeed > MAX_RPM) {
       targetSpeed = MAX_RPM;
     } else if (targetSpeed < 0) {
-      targetSpeed = 0.0;
+      targetSpeed = 0;
     }
+
+    shooterPidController.setReference(targetSpeed, ControlType.kVelocity);
   }
 
   public void increaseSpeed() {
@@ -155,30 +194,37 @@ public class ShooterSubsystem extends SubsystemBase {
 
     if (targetAngle > MAX_HOOD_ANGLE) {
       targetAngle = MAX_HOOD_ANGLE;
-    }
-
-    if (targetAngle < MIN_HOOD_ANGLE) {
+    } else if (targetAngle < MIN_HOOD_ANGLE) {
       targetAngle = MIN_HOOD_ANGLE;
     }
 
-    hoodPidController.setReference(targetAngle * ROTATIONS_PER_DEGREE, ControlType.kPosition);
+    hoodPidController.setReference((MAX_HOOD_ANGLE - targetAngle) * ROTATIONS_PER_DEGREE, ControlType.kPosition);
   }
 
-  public void raiseAngle() {
-    targetAngle += angleIncrement;
+  public void raiseHood() {
+    setAngle(targetAngle - angleIncrement);
   }
 
-  public void lowerAngle() {
-    targetAngle -= angleIncrement;
+  public void lowerHood() {
+    setAngle(targetAngle + angleIncrement);
   }
 
-  public void resetHoodEncoder() {
-    hoodMotor.getEncoder().setPosition(MIN_HOOD_ANGLE);
-  }
+  private void parkHood() {
 
+    if (!hoodLimit.get()) {
+      parkingHood = true;
+      hoodMotor.set(-0.05);
+      return;
+    }
+
+    parkingHood = false;
+    hoodMotor.set(0);
+    hoodEncoder.setPosition(0);
+    targetAngle = MAX_HOOD_ANGLE;
+  }
 
   // ---------------------------------------------------------------------------
-  //  Telemetry
+  // Telemetry
   // ---------------------------------------------------------------------------
 
   private void initTelemetry() {
@@ -194,23 +240,28 @@ public class ShooterSubsystem extends SubsystemBase {
         .withSize(1, 1)
         .getEntry();
 
-    currentAngleEntry = tab.add("Current Angle", 0)
+    shooterEncoderEntry = tab.add("Shooter Encoder", 0)
         .withPosition(2, 2)
         .withSize(1, 1)
         .getEntry();
 
-    targetAngleEntry = tab.add("Target Angle", 0)
+    currentAngleEntry = tab.add("Current Angle", 0)
         .withPosition(3, 2)
         .withSize(1, 1)
         .getEntry();
 
-    hoodEncoderEntry = tab.add("Hood Encoder", 0)
+    targetAngleEntry = tab.add("Target Angle", 0)
         .withPosition(4, 2)
         .withSize(1, 1)
         .getEntry();
 
-    hoodLimitSwitchEntry = tab.add("Hood Limit", 0)
+    hoodEncoderEntry = tab.add("Hood Encoder", 0)
         .withPosition(5, 2)
+        .withSize(1, 1)
+        .getEntry();
+
+    hoodLimitSwitchEntry = tab.add("Hood Limit", 0)
+        .withPosition(6, 2)
         .withSize(1, 1)
         .getEntry();
   }
@@ -218,6 +269,8 @@ public class ShooterSubsystem extends SubsystemBase {
   private void updateTelemetry() {
     currentSpeedEntry.setNumber(currentSpeed);
     targetSpeedEntry.setNumber(targetSpeed);
+    shooterEncoderEntry.setNumber(shooterEncoder.getPosition());
+
     currentAngleEntry.setNumber(currentAngle);
     targetAngleEntry.setNumber(targetAngle);
     hoodEncoderEntry.setNumber(hoodEncoder.getPosition());
