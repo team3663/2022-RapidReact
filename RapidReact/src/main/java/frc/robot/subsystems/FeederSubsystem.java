@@ -92,12 +92,12 @@ public class FeederSubsystem extends SubsystemBase {
                 .withSize(1, 1)
                 .getEntry();
 
-        entrySensorEntry = tab.add("Entry Sensor", 0)
+        entrySensorEntry = tab.add("Entry Sensor", false)
                 .withPosition(1, 1)
                 .withSize(1, 1)
                 .getEntry();
 
-        exitSensorEntry = tab.add("Exit Sensor", 0)
+        exitSensorEntry = tab.add("Exit Sensor", false)
                 .withPosition(2, 1)
                 .withSize(1, 1)
                 .getEntry();
@@ -119,8 +119,10 @@ public class FeederSubsystem extends SubsystemBase {
 
     private void updateTelemetry() {
         feederRPMEntry.setNumber(feedMotor.getEncoder().getVelocity());
-        entrySensorEntry.setBoolean(entrySensor.get());
-        exitSensorEntry.setBoolean(exitSensor.get());
+        // entrySensorEntry.setBoolean(entrySensor.get());
+        entrySensorEntry.forceSetBoolean(entrySensor.get());
+        // exitSensorEntry.setBoolean(exitSensor.get());
+        exitSensorEntry.forceSetBoolean(exitSensor.get());
     }
 
     /**
