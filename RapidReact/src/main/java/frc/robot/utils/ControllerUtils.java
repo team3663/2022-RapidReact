@@ -4,7 +4,7 @@ public class ControllerUtils {
     private static final double DEADBAND = 0.05;
 
     /**
-     * 
+     * Modify joystick's sensitivity range to fit driver's preference 
      * @param value
      * @return options: linear, squared, cubed, squareRoot, cubicRoot
      */
