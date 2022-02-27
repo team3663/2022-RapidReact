@@ -103,8 +103,8 @@ public class RobotContainer {
         new JoystickButton(driveController, Button.kY.value).
                 whenPressed(new InstantCommand(() -> intake.retractBoom(), intake));
 
-        new JoystickButton(driveController, Button.kStart.value).
-                whenPressed(new InstantCommand(() -> intake.intakeOut(), intake));  
+        //new JoystickButton(driveController, Button.kStart.value).
+        //        whenPressed(new InstantCommand(() -> intake.intakeOut(), intake));  
 
         
         // Button commands to help test the feeder subsystem.

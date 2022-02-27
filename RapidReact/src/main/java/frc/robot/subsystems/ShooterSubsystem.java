@@ -18,16 +18,17 @@ import frc.robot.utils.Ranger;
 public class ShooterSubsystem extends SubsystemBase {
 
   // Subsystem Constants
-  private static final int MAX_RPM = 500;
+  private static final double MAX_RPM = 2000.0;
   private static final int MAX_HOOD_ANGLE = 285;
   private static final int MIN_HOOD_ANGLE = 25;
   private static final double ROTATIONS_PER_DEGREE = 5;
-  private static final int speedIncrement = 200;
+  private static final double speedIncrement = 200.0;
   private static final int angleIncrement = 5;
 
   private Ranger ranger;
   private CANSparkMax shooterMotor1;
   private CANSparkMax shooterMotor2;
+  private RelativeEncoder shooterEncoder;
   private SparkMaxPIDController shooterPidController;
 
   private CANSparkMax hoodMotor;
@@ -37,8 +38,8 @@ public class ShooterSubsystem extends SubsystemBase {
   
   
   private boolean running = false;
-  public int currentSpeed = 0;
-  public int targetSpeed = 500;
+  public double currentSpeed = 0.0;
+  public double targetSpeed = 500.0;
 
   public double currentAngle = 0;
   public double targetAngle = 0;
@@ -60,7 +61,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
     shooterMotor1 = new CANSparkMax(shooterMotor1CANID, MotorType.kBrushless);
     shooterMotor2 = new CANSparkMax(shooterMotor2CANID, MotorType.kBrushless);
-
+    shooterEncoder = shooterMotor1.getEncoder();
     // The motors in the shooter run in opposition to each other by default, invert
     // one of them
     shooterMotor2.follow(shooterMotor1, true);
@@ -84,12 +85,10 @@ public class ShooterSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    currentSpeed = (int) Math.round(shooterMotor2.getEncoder().getVelocity());
+    currentSpeed = (int) Math.round(shooterEncoder.getVelocity());
     currentAngle = hoodMotor.getEncoder().getPosition();
 
-    FiringSolution solution = ranger.getFiringSolution(currentRange);
-    setSpeed(solution.speed);
-    setAngle(solution.angle);
+    shooterPidController.setReference(targetSpeed, ControlType.kVelocity);
 
     updateTelemetry();
   }
@@ -99,32 +98,37 @@ public class ShooterSubsystem extends SubsystemBase {
   // ---------------------------------------------------------------------------
 
   public void start() {
+    System.out.println("Starting shooter");
     running = true;
     setSpeed(targetSpeed);
   }
 
   public void stop() {
+    System.out.println("Stopping shooter");
     running = false;
     setSpeed(0);
   }
 
   public void setRange(double range) {
     currentRange = range;
+
+    FiringSolution solution = ranger.getFiringSolution(currentRange);
+    setSpeed(solution.speed);
+    setAngle(solution.angle);
   }
 
-  public void setSpeed(int targetSpeed) {
+  public void setSpeed(double targetSpeed) {
     this.targetSpeed = targetSpeed;
 
     if (targetSpeed > MAX_RPM) {
       targetSpeed = MAX_RPM;
     } else if (targetSpeed < 0) {
-      targetSpeed = 0;
+      targetSpeed = 0.0;
     }
-
-    shooterPidController.setReference(targetSpeed, ControlType.kVelocity);
   }
 
   public void increaseSpeed() {
+    System.out.println("Increase Shooter speed");
     targetSpeed += speedIncrement;
 
     if (running) {
@@ -133,6 +137,7 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   public void decreaseSpeed() {
+    System.out.println("Decrease Shooter speed");
     targetSpeed -= speedIncrement;
 
     if (running) {
@@ -170,6 +175,11 @@ public class ShooterSubsystem extends SubsystemBase {
   public void resetHoodEncoder() {
     hoodMotor.getEncoder().setPosition(MIN_HOOD_ANGLE);
   }
+
+
+  // ---------------------------------------------------------------------------
+  //  Telemetry
+  // ---------------------------------------------------------------------------
 
   private void initTelemetry() {
     ShuffleboardTab tab = Shuffleboard.getTab("Shooter"); // Data is grouped with shooter and intake.
