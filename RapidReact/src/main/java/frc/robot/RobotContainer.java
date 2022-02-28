@@ -95,47 +95,8 @@ public class RobotContainer {
      */
     private void configureButtonBindings() {
 
-        // Button commands to test intake subsystem
-        // new JoystickButton(driveController, Button.kA.value).
-        //         whenPressed(new InstantCommand(() -> intake.extendArm(), intake));
-        // new JoystickButton(driveController, Button.kB.value).
-        //         whenPressed(new InstantCommand(() -> intake.retractArm(), intake));
-        // // new JoystickButton(driveController, Button.kX.value).
-        //         whenPressed(new InstantCommand(() -> intake.extendBoom(), intake));
-        // new JoystickButton(driveController, Button.kY.value).
-        //         whenPressed(new InstantCommand(() -> intake.retractBoom(), intake));
-
-        // new JoystickButton(driveController, Button.kLeftBumper.value).
-        //         whenPressed(new InstantCommand(() -> intake.extend(), intake));  
-        // new JoystickButton(driveController, Button.kRightBumper.value).
-        //         whenPressed(new InstantCommand(() -> intake.retract(), intake));  
-
         new JoystickButton(driveController, Button.kRightBumper.value).
-                whenHeld(new IntakeCommand(intake, feeder));  
-        new JoystickButton(driveController, Button.kLeftBumper.value).
-                whenPressed(new InstantCommand(() -> intake.spinBallOut(), intake));  
-
-        // Button commands to help test the feeder subsystem.
-        // new JoystickButton(driveController, Button.kX.value)
-        //         .whenPressed(new InstantCommand(() -> feeder.setFeedMode(FeedMode.STOPPED), feeder));
-        // new JoystickButton(driveController, Button.kY.value)
-        //         .whenPressed(new InstantCommand(() -> feeder.setFeedMode(FeedMode.CONTINUOUS), feeder));
-
-        new JoystickButton(driveController, Button.kX.value)
-                .whenPressed(new InstantCommand(() -> shooter.raiseHood(), shooter));
-        new JoystickButton(driveController, Button.kY.value)
-                .whenPressed(new InstantCommand(() -> shooter.lowerHood(), shooter));
-
-        // Button commands to test shooter subsystem
-         new JoystickButton(driveController, Button.kStart.value)
-                 .whenPressed(new InstantCommand(() -> shooter.start(), shooter));
-         new JoystickButton(driveController, Button.kBack.value)
-                 .whenPressed(new InstantCommand(() -> shooter.stop(), shooter));
-
-        new POVButton(driveController, 0).whenPressed(new InstantCommand(() -> shooter.setAngle(67.0), shooter));      
-        new POVButton(driveController, 90).whenPressed(new InstantCommand(() -> shooter.increaseSpeed(), shooter));
-        new POVButton(driveController, 180).whenPressed(new InstantCommand(() -> shooter.setAngle(85.0), shooter));
-        new POVButton(driveController, 270).whenPressed(new InstantCommand(() -> shooter.decreaseSpeed(), shooter));
+                whenHeld(new IntakeCommand(intake, feeder));
     }
 
     /**
