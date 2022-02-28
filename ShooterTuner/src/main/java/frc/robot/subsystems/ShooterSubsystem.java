@@ -141,11 +141,13 @@ public class ShooterSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    currentSpeed = (int) Math.round(shooterEncoder.getVelocity());
+    currentSpeed = shooterEncoder.getVelocity();
+    currentAngle = encoderPositionToAngle(hoodEncoder.getPosition());
 
     if (parkingHood) {
       parkHood();
     }
+
     updateTelemetry();
   }
 
@@ -250,7 +252,7 @@ public class ShooterSubsystem extends SubsystemBase {
       targetAngle = MIN_HOOD_ANGLE;
     }
 
-    hoodPidController.setReference((MAX_HOOD_ANGLE - targetAngle) * ROTATIONS_PER_DEGREE, ControlType.kPosition);
+    hoodPidController.setReference(angleToEncoderPosition(targetAngle), ControlType.kPosition);
   }
 
   public void raiseHood() {
@@ -261,6 +263,18 @@ public class ShooterSubsystem extends SubsystemBase {
     setAngle(targetAngle + angleIncrement);
   }
 
+  private double angleToEncoderPosition(double angle){
+    return (MAX_HOOD_ANGLE - angle) * ROTATIONS_PER_DEGREE;
+  }
+
+  private double encoderPositionToAngle(double position){
+    return ((HOOD_UPPER_LIMIT - position) / ROTATIONS_PER_DEGREE) + MIN_HOOD_ANGLE;
+  }
+
+  /**
+   * Lower the hood until it trips the limit switch and then reset the encoder to
+   * establish our zero position.
+   */
   private void parkHood() {
 
     if (!hoodLimit.get()) {
