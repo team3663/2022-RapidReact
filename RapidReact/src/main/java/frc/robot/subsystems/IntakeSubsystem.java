@@ -90,45 +90,53 @@ public class IntakeSubsystem extends SubsystemBase {
     updateTelemetry();
   }
 
-  /**
-   * Boom is the upper-arm part of the intake mechanism
-   * boomExtend() lowers the intake mechanism
-   */
-  public void extendBoom() {
-    if(armIsOut){
-      boomIntakeSolenoid.set(Value.kForward);
-      boomIsOut = true;
-    }
+  public IntakeState getCurrentState(){
+    return currentState;
   }
 
-  /**
-   * Boom is the upper-arm part of the intake mechanism
-   * boomExtend() lowers the intake mechanism
-   */
-  public void retractBoom() {
+  // ---------------------------------------------------------------------------
+  // Intake control methods
+  // ---------------------------------------------------------------------------
+
+  public void extend() {
+    startTime = Timer.getFPGATimestamp();
+    currentState = IntakeState.EXTENDING;
+  }
+
+  public void retract() {
+    startTime = Timer.getFPGATimestamp();
+    currentState = IntakeState.RETRACTING;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Solenoid movement methods
+  // ---------------------------------------------------------------------------
+
+  private void extendBoom() {
+    boomIntakeSolenoid.set(Value.kForward);
+    boomIsOut = true;
+  }
+
+  private void retractBoom() {
     boomIntakeSolenoid.set(Value.kReverse);
     boomIsOut = false;
   }
 
-  /**
-   * Arm is the fore-arm part of the intake mechanism
-   * armExtend() lowers the intake mechanism
-   */
-  public void extendArm() {
+  private void extendArm() {
     armIntakeSolenoid.set(Value.kForward);
     armIsOut = true;
   }
 
-  /**
-   * Arm is the fore-arm part of the intake mechanism
-   * armExtend() lowers the intake mechanism
-   */
-  public void retractArm() {
+  private void retractArm() {
     armIntakeSolenoid.set(Value.kReverse);
     armIsOut = false;
   }
 
-  public void spinBallIn() {
+  // ---------------------------------------------------------------------------
+  // Intake motor control methods 
+  // ---------------------------------------------------------------------------
+
+  private void spinBallIn() {
     if(boomIsOut && armIsOut)
     intakeMotor.set(POWER);
   }
@@ -138,31 +146,13 @@ public class IntakeSubsystem extends SubsystemBase {
       intakeMotor.set(-POWER);
   }
 
-  public void intakeOut() {
-    startTime = Timer.getFPGATimestamp();
-    currentState = IntakeState.EXTENDING;
-  }
-
-  public void intakeIn() {
-    startTime = Timer.getFPGATimestamp();
-    currentState = IntakeState.RETRACTING;
-  }
-
-  public void stopMotor() {
+  private void stopMotor() {
     intakeMotor.set(0);
   }
 
-  public double getPower() {
-    return intakeMotor.get();
-  }
-
-  public boolean getIsBoomOut() {
-    return boomIsOut;
-  }
-
-  public boolean getIsArmOut() {
-    return armIsOut;
-  }
+  // ---------------------------------------------------------------------------
+  // Telemetry
+  // ---------------------------------------------------------------------------
 
   private void initTelemetry() {
     ShuffleboardTab tab = Shuffleboard.getTab("Shooter");
@@ -188,5 +178,4 @@ public class IntakeSubsystem extends SubsystemBase {
     boomIsOutEntry.setBoolean(boomIsOut);
     armIsOutEntry.setBoolean(armIsOut);
   }
-
 }

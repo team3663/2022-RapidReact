@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
+import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.TeleOpDriveCommand;
 import frc.robot.drivers.Limelight;
 import frc.robot.drivers.Pigeon;
@@ -104,11 +105,15 @@ public class RobotContainer {
         //         whenPressed(new InstantCommand(() -> intake.retractBoom(), intake));
 
         // new JoystickButton(driveController, Button.kLeftBumper.value).
-        //         whenPressed(new InstantCommand(() -> intake.intakeOut(), intake));  
+        //         whenPressed(new InstantCommand(() -> intake.extend(), intake));  
         // new JoystickButton(driveController, Button.kRightBumper.value).
-        //         whenPressed(new InstantCommand(() -> intake.intakeIn(), intake));  
+        //         whenPressed(new InstantCommand(() -> intake.retract(), intake));  
 
-        
+        new JoystickButton(driveController, Button.kRightBumper.value).
+                whenHeld(new IntakeCommand(intake, feeder));  
+        new JoystickButton(driveController, Button.kLeftBumper.value).
+                whenPressed(new InstantCommand(() -> intake.spinBallOut(), intake));  
+
         // Button commands to help test the feeder subsystem.
         // new JoystickButton(driveController, Button.kX.value)
         //         .whenPressed(new InstantCommand(() -> feeder.setFeedMode(FeedMode.STOPPED), feeder));

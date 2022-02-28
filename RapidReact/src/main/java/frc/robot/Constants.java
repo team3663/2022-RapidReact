@@ -18,10 +18,10 @@ public final class Constants {
   public static final double DRIVETRAIN_TRACKWIDTH_METERS = .6604; // 0.5461 for both
   public static final double DRIVETRAIN_WHEELBASE_METERS = 0.6604;
   public static final double DRIVE_TRAIN_WHEEL_DIAMETER_METERS = 0.106325;
-  public static final double FRONT_LEFT_MODULE_STEER_OFFSET = Math.toRadians(0);// 224.126953125
-  public static final double FRONT_RIGHT_MODULE_STEER_OFFSET = Math.toRadians(0);// 27.078857421875
-  public static final double BACK_LEFT_MODULE_STEER_OFFSET = Math.toRadians(0);// 275.1566162109375
-  public static final double BACK_RIGHT_MODULE_STEER_OFFSET = Math.toRadians(0);// 190.38397216796875
+  public static final double FRONT_LEFT_MODULE_STEER_OFFSET = -Math.toRadians(64.764404296875);//297.7734375
+  public static final double FRONT_RIGHT_MODULE_STEER_OFFSET = -Math.toRadians(261.749267578125);//23.291015625
+  public static final double BACK_LEFT_MODULE_STEER_OFFSET = -Math.toRadians(11.865234375);//95.27343750000001
+  public static final double BACK_RIGHT_MODULE_STEER_OFFSET = -Math.toRadians(94.482421875);//310.60546875
 
   // Xbox Controllers Port Indexes
   public static final int DRIVE_CONTROLLER_PORT = 0;
