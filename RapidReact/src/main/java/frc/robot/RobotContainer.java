@@ -9,7 +9,6 @@ import edu.wpi.first.wpilibj2.command.button.POVButton;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.ShootCommand;
 import frc.robot.commands.TeleOpDriveCommand;
-import frc.robot.drivers.Limelight;
 import frc.robot.drivers.Pigeon;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.FeederSubsystem;
@@ -20,6 +19,7 @@ import frc.robot.utils.SwerveDriveConfig;
 import frc.robot.utils.SwerveModuleConfig;
 import frc.robot.utils.Y_CubicRanger;
 import frc.robot.subsystems.IntakeSubsystem;
+import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import static frc.robot.Constants.*;
 
@@ -34,7 +34,6 @@ public class RobotContainer {
     private final XboxController operatorController = new XboxController(Constants.OPERATOR_CONTROLLER_PORT);
 
     Pigeon pigeon = new Pigeon(DRIVETRAIN_PIGEON_ID);
-    private static final Limelight limelight = new Limelight(57, 0.5842, 2.6414);
     private final SimpleRanger ranger = new SimpleRanger();
 
     // Subsystems
@@ -42,6 +41,7 @@ public class RobotContainer {
     private ShooterSubsystem shooter;
     private IntakeSubsystem intake;
     private DrivetrainSubsystem drivetrain;
+    private LimelightSubsystem limelight;
 
     // Commands
     private TeleOpDriveCommand teleOpDrive;
@@ -78,6 +78,8 @@ public class RobotContainer {
         SwerveDriveConfig swerveConfig = new SwerveDriveConfig(fl, fr, bl, br, DRIVETRAIN_TRACKWIDTH_METERS,
                 DRIVETRAIN_WHEELBASE_METERS, DRIVE_TRAIN_WHEEL_DIAMETER_METERS);
         drivetrain = new DrivetrainSubsystem(swerveConfig, pigeon);
+
+        limelight = new LimelightSubsystem(57, 0.5842, 2.6414);
     }
 
     /**

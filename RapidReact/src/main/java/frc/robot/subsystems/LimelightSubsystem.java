@@ -1,14 +1,15 @@
-package frc.robot.drivers;
+package frc.robot.subsystems;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 /**
  * @see http://docs.limelightvision.io/en/latest/getting_started.html#basic-programming 
  */
-public class Limelight {
+public class LimelightSubsystem extends SubsystemBase {
 
   //led mode constants
   public static final int LED_PIPELINE = 0; //use the LED Mode set in the current pipeline
@@ -42,7 +43,7 @@ public class Limelight {
   private NetworkTableEntry ts; //Skew or rotation (-90 degrees to 0 degrees)
   private NetworkTableEntry camtran; //Results of a 3D position solution, 6 numbers: Translation (x,y,y) Rotation(pitch,yaw,roll)
   
-  public Limelight(double cameraAngle, double cameraHeight, double targetHeight) {
+  public LimelightSubsystem(double cameraAngle, double cameraHeight, double targetHeight) {
     camera_Angle = cameraAngle;
     camera_Height = cameraHeight;
     target_Height = targetHeight;
@@ -55,6 +56,15 @@ public class Limelight {
     ts = visionTable.getEntry("ts");
     camtran = visionTable.getEntry("camtran");
     setMode(CAMERA_DEFAULT_MODE, LED_DEFAULT_MODE, DEFAULT_PIPELINE);
+  }
+
+  /**
+   * Perform background processing for subsystem
+   */
+  @Override
+  public void periodic() {
+
+    updateTelemetry();
   }
 
   public void updateTelemetry() {

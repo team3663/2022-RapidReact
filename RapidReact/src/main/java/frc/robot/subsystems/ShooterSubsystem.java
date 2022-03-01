@@ -21,6 +21,7 @@ public class ShooterSubsystem extends SubsystemBase {
   // Subsystem Constants
   private static final double MAX_RPM = 6000;
   private static final double shooterBeltRatio = 0.66;
+  private static final double speedIncrement = 100;
 
   private static final double MAX_HOOD_ANGLE = 85;
   private static final double MIN_HOOD_ANGLE = 67;
@@ -28,7 +29,6 @@ public class ShooterSubsystem extends SubsystemBase {
   private static final double HOOD_UPPER_LIMIT = 13.5;
   private static final double ROTATIONS_PER_DEGREE = (HOOD_UPPER_LIMIT - HOOD_LOWER_LIMIT)
       / (MAX_HOOD_ANGLE - MIN_HOOD_ANGLE);
-  private static final double speedIncrement = 200;
   private static final double angleIncrement = 1;
 
   // Shooter PID coefficients
@@ -89,7 +89,7 @@ public class ShooterSubsystem extends SubsystemBase {
     shooterMotor1.setInverted(true);
     shooterMotor1.setIdleMode(IdleMode.kCoast);
     shooterEncoder = shooterMotor1.getEncoder();
-    shooterEncoder.setPositionConversionFactor(shooterBeltRatio);
+    shooterEncoder.setVelocityConversionFactor(shooterBeltRatio);
 
     shooterMotor2 = new CANSparkMax(shooterMotor2CANID, MotorType.kBrushless);
     shooterMotor2.setIdleMode(IdleMode.kCoast);
@@ -122,8 +122,9 @@ public class ShooterSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    currentSpeed = (int) Math.round(shooterEncoder.getVelocity());
-    currentAngle = hoodMotor.getEncoder().getPosition();
+    currentSpeed = shooterEncoder.getVelocity();
+
+    currentAngle = encoderPositionToAngle(hoodEncoder.getPosition());
 
     if (parkingHood) {
       parkHood();
@@ -144,13 +145,11 @@ public class ShooterSubsystem extends SubsystemBase {
   // ---------------------------------------------------------------------------
 
   public void start() {
-    System.out.println("Starting shooter");
     running = true;
     setSpeed(targetSpeed);
   }
 
   public void stop() {
-    System.out.println("Stopping shooter");
     running = false;
     setSpeed(0);
   }
@@ -176,7 +175,6 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   public void increaseSpeed() {
-    System.out.println("Increase Shooter speed");
     targetSpeed += speedIncrement;
 
     if (running) {
@@ -185,7 +183,6 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   public void decreaseSpeed() {
-    System.out.println("Decrease Shooter speed");
     targetSpeed -= speedIncrement;
 
     if (running) {
@@ -207,7 +204,7 @@ public class ShooterSubsystem extends SubsystemBase {
       targetAngle = MIN_HOOD_ANGLE;
     }
 
-    hoodPidController.setReference((MAX_HOOD_ANGLE - targetAngle) * ROTATIONS_PER_DEGREE, ControlType.kPosition);
+    hoodPidController.setReference(angleToEncoderPosition(targetAngle), ControlType.kPosition);
   }
 
   public void raiseHood() {
@@ -218,6 +215,18 @@ public class ShooterSubsystem extends SubsystemBase {
     setAngle(targetAngle + angleIncrement);
   }
 
+  private double angleToEncoderPosition(double angle){
+    return (MAX_HOOD_ANGLE - angle) * ROTATIONS_PER_DEGREE;
+  }
+
+  private double encoderPositionToAngle(double position){
+    return ((HOOD_UPPER_LIMIT - position) / ROTATIONS_PER_DEGREE) + MIN_HOOD_ANGLE;
+  }
+
+  /**
+   * Lower the hood until it trips the limit switch and then reset the encoder to
+   * establish our zero position.
+   */
   private void parkHood() {
 
     if (!hoodLimit.get()) {
