@@ -100,7 +100,7 @@ public class RobotContainer {
         //         whenPressed(new InstantCommand(() -> intake.extendArm(), intake));
         // new JoystickButton(driveController, Button.kB.value).
         //         whenPressed(new InstantCommand(() -> intake.retractArm(), intake));
-        // // new JoystickButton(driveController, Button.kX.value).
+        // new JoystickButton(driveController, Button.kX.value).
         //         whenPressed(new InstantCommand(() -> intake.extendBoom(), intake));
         // new JoystickButton(driveController, Button.kY.value).
         //         whenPressed(new InstantCommand(() -> intake.retractBoom(), intake));
@@ -121,10 +121,10 @@ public class RobotContainer {
         // new JoystickButton(driveController, Button.kY.value)
         //         .whenPressed(new InstantCommand(() -> feeder.setFeedMode(FeedMode.CONTINUOUS), feeder));
 
-        new JoystickButton(driveController, Button.kX.value)
-                .whenPressed(new InstantCommand(() -> shooter.raiseHood(), shooter));
-        new JoystickButton(driveController, Button.kY.value)
-                .whenPressed(new InstantCommand(() -> shooter.lowerHood(), shooter));
+        // new JoystickButton(driveController, Button.kX.value)
+        //         .whenPressed(new InstantCommand(() -> shooter.raiseHood(), shooter));
+        // new JoystickButton(driveController, Button.kY.value)
+        //         .whenPressed(new InstantCommand(() -> shooter.lowerHood(), shooter));
 
         // Button commands to test shooter subsystem
          new JoystickButton(driveController, Button.kStart.value)

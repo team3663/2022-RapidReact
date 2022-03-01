@@ -5,27 +5,30 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.drivers.Limelight;
 import frc.robot.subsystems.FeederSubsystem;
-import frc.robot.subsystems.IntakeSubsystem;
+import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.FeederSubsystem.FeedMode;
 
-public class IntakeCommand extends CommandBase {
-  private IntakeSubsystem intakeSubsystem;
+public class ShootCommand extends CommandBase {
+  //put feeder in preshoot mode check isIdle
+  /** Creates a new ShootCommand. */
+  private ShooterSubsystem shooterSubsystem;
   private FeederSubsystem feederSubsystem;
+  private Limelight limelight;
 
-  /** Creates a new IntakeCommand. */
-  public IntakeCommand(IntakeSubsystem intakeSubsystem, FeederSubsystem feederSubsystem) {
-    this.intakeSubsystem = intakeSubsystem;
+  public ShootCommand(ShooterSubsystem shooterSubsystem, FeederSubsystem feederSubsystem, Limelight limelight) {
+    this.shooterSubsystem = shooterSubsystem;
     this.feederSubsystem = feederSubsystem;
-
-    addRequirements(intakeSubsystem, feederSubsystem);
+    this.limelight = limelight;
+    
+    addRequirements(shooterSubsystem, feederSubsystem);
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    intakeSubsystem.extend();
-    feederSubsystem.setFeedMode(FeedMode.INTAKE);
+    feederSubsystem.setFeedMode(FeedMode.PRESHOOT);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -37,7 +40,6 @@ public class IntakeCommand extends CommandBase {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    intakeSubsystem.retract();
     feederSubsystem.setFeedMode(FeedMode.STOPPED);
   }
 
