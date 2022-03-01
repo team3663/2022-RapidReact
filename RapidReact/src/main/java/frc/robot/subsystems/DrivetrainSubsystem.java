@@ -20,7 +20,9 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.robot.drivers.Pigeon;
+import frc.robot.drivers.Pixy;
 import frc.robot.utils.SwerveDriveConfig;
+import io.github.pseudoresonance.pixy2api.Pixy2CCC.Block;
 
 public class DrivetrainSubsystem extends SubsystemBase {
 
@@ -35,6 +37,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     private final SwerveDriveKinematics kinematics;
     private final SwerveDriveOdometry odometry;
     private final Pigeon pigeon;
+    private final Pixy pixy;
 
     private final SwerveModule frontLeftModule;
     private final SwerveModule frontRightModule;
@@ -50,10 +53,13 @@ public class DrivetrainSubsystem extends SubsystemBase {
     private NetworkTableEntry driveSignalXEntry;
     private NetworkTableEntry driveSignalYEntry;
     private NetworkTableEntry driveSignalRotationEntry;
+    private NetworkTableEntry cargoAreaEntry;
+    private NetworkTableEntry cargoXEntry;
 
-    public DrivetrainSubsystem(SwerveDriveConfig config, Pigeon pigeon) {
+    public DrivetrainSubsystem(SwerveDriveConfig config, Pigeon pigeon, Pixy pixy) {
 
         this.pigeon = pigeon;
+        this.pixy = pixy;
 
         // Physical constants for this drive base.
         trackWidth = config.trackWidth;
@@ -186,6 +192,10 @@ public class DrivetrainSubsystem extends SubsystemBase {
         poseXEntry.setDouble(getPose().getTranslation().getX());
         poseYEntry.setDouble(getPose().getTranslation().getY());
         poseAbsoluteAngleEntry.setDouble(getPose().getRotation().getDegrees());
+
+        Block cargo = pixy.getLargestBlock();
+        cargoAreaEntry.setDouble(pixy.getArea(cargo));
+        cargoXEntry.setDouble(pixy.getX(cargo));
 
         // pose angle entry (for trajectory following tuning)
     }

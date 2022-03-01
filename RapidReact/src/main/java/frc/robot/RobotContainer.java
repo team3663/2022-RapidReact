@@ -7,9 +7,11 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import frc.robot.commands.AutoFollowCargoCommand;
 import frc.robot.commands.TeleOpDriveCommand;
 import frc.robot.drivers.Limelight;
 import frc.robot.drivers.Pigeon;
+import frc.robot.drivers.Pixy;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.FeederSubsystem;
 import frc.robot.subsystems.FeederSubsystem.FeedMode;
@@ -27,14 +29,17 @@ import static frc.robot.Constants.*;
  */
 public class RobotContainer {
 
-    private Command autoCommand = null;
+   
     private final XboxController driveController = new XboxController(Constants.DRIVE_CONTROLLER_PORT);
     @SuppressWarnings("unused")
     private final XboxController operatorController = new XboxController(Constants.OPERATOR_CONTROLLER_PORT);
 
     Pigeon pigeon = new Pigeon(DRIVETRAIN_PIGEON_ID);
     private static final Limelight limelight = new Limelight();
+    private final Pixy pixy = new Pixy(Pixy.TEAM_RED);
     private final Ranger ranger = new SimpleRanger();
+
+    private Command autoCommand;
 
     // Subsystems
     private FeederSubsystem feeder;
@@ -74,7 +79,7 @@ public class RobotContainer {
                 BACK_RIGHT_MODULE_STEER_ENCODER, BACK_RIGHT_MODULE_STEER_OFFSET);
         SwerveDriveConfig swerveConfig = new SwerveDriveConfig(fl, fr, bl, br, DRIVETRAIN_TRACKWIDTH_METERS,
                 DRIVETRAIN_WHEELBASE_METERS, DRIVE_TRAIN_WHEEL_DIAMETER_METERS);
-        drivetrain = new DrivetrainSubsystem(swerveConfig, pigeon);
+        drivetrain = new DrivetrainSubsystem(swerveConfig, pigeon, pixy);
     }
 
     /**
@@ -132,6 +137,7 @@ public class RobotContainer {
      * @return the command to run in autonomous
      */
     public Command getAutonomousCommand() {
+            autoCommand = new AutoFollowCargoCommand(drivetrain, pixy);
         return autoCommand;
     }
 }
