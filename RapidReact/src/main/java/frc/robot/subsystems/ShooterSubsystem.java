@@ -144,13 +144,11 @@ public class ShooterSubsystem extends SubsystemBase {
   // ---------------------------------------------------------------------------
 
   public void start() {
-    System.out.println("Starting shooter");
     running = true;
     setSpeed(targetSpeed);
   }
 
   public void stop() {
-    System.out.println("Stopping shooter");
     running = false;
     setSpeed(0);
   }
@@ -176,7 +174,6 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   public void increaseSpeed() {
-    System.out.println("Increase Shooter speed");
     targetSpeed += speedIncrement;
 
     if (running) {
@@ -185,7 +182,6 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   public void decreaseSpeed() {
-    System.out.println("Decrease Shooter speed");
     targetSpeed -= speedIncrement;
 
     if (running) {
