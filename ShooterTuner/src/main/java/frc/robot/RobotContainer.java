@@ -25,7 +25,7 @@ public class RobotContainer {
    */
   public RobotContainer() {
 
-    shooter = new ShooterSubsystem(SHOOTER_MOTOR_1_CAN_ID, SHOOTER_MOTOR_1_CAN_ID, HOOD_MOTOR_CAN_ID, HOOD_LIMITSWITCH_DIO);
+    shooter = new ShooterSubsystem(SHOOTER_MOTOR_1_CAN_ID, SHOOTER_MOTOR_2_CAN_ID, HOOD_MOTOR_CAN_ID, HOOD_LIMITSWITCH_DIO);
 
     feeder = new FeederSubsystem(FEEDER_MOTOR_CAN_ID, FEEDER_ENTRY_SENSOR_DIO, FEEDER_EXIT_SENSOR_DIO);
 
