@@ -1,0 +1,429 @@
+package frc.robot.subsystems;
+
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkMaxPIDController;
+import com.revrobotics.CANSparkMax.ControlType;
+import com.revrobotics.CANSparkMax.IdleMode;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+
+public class ShooterSubsystem extends SubsystemBase {
+
+  // Shooter related constants
+  private static final double MAX_RPM = 4000;
+  private static final double shooterBeltRatio = 0.66;
+  private static final double speedIncrement = 100;
+
+  // Hood related constants
+  private static final double MAX_HOOD_ANGLE = 85;
+  private static final double MIN_HOOD_ANGLE = 67;
+  private static final double HOOD_LOWER_LIMIT = 0;
+  private static final double HOOD_UPPER_LIMIT = 13.5;
+  private static final double ROTATIONS_PER_DEGREE = (HOOD_UPPER_LIMIT - HOOD_LOWER_LIMIT)
+      / (MAX_HOOD_ANGLE - MIN_HOOD_ANGLE);
+  private static final double angleIncrement = 1;
+
+  // Shooter PID coefficients constants
+  private static final double kShooterP = 6e-4;
+  private static final double kShooterI = 0;
+  private static final double kShooterD = 0;
+  private static final double kShooterIz = 0;
+  private static final double kShooterFF = 0.000015;
+  private static final double kShooterMaxOutput = 1;
+  private static final double kShooterMinOutput = 0;
+
+  // Hood PID coefficients
+  private static final double kHoodP = 0.1;
+  private static final double kHoodI = 1e-4;
+  private static final double kHoodD = 1;
+  private static final double kHoodIz = 0;
+  private static final double kHoodFF = 0;
+  private static final double kHoodMaxOutput = 1;
+  private static final double kHoodMinOutput = -1;
+
+  // Live PID coefficients
+  private double currentP = kShooterP;
+  private double currentI = kShooterI;
+  private double currentD = kShooterD;
+  private double currentIz = kShooterIz;
+  private double currentFF = kShooterFF;
+  private double currentMaxOutput = kShooterMaxOutput;
+  private double currentMinOutput = kShooterMinOutput;
+
+  private CANSparkMax shooterMotor1;
+  private CANSparkMax shooterMotor2;
+  private RelativeEncoder shooterEncoder;
+  private SparkMaxPIDController shooterPidController;
+
+  private CANSparkMax hoodMotor;
+  private RelativeEncoder hoodEncoder;
+  private SparkMaxPIDController hoodPidController;
+  private DigitalInput hoodLimit;
+
+  private boolean running = false;
+  public double currentSpeed = 0;
+  public double targetSpeed = 0;
+
+  private boolean parkingHood = false;
+  public double currentAngle = 0;
+  public double targetAngle = 0;
+
+  // Shuffleboard constants
+  private final int kShooterRow = 0;
+  private final int kHoodRow = 1;
+  private final int kConstantsRow = 2;
+  private final int kCurrentRow = 3;
+
+  private NetworkTableEntry currentSpeedEntry;
+  private NetworkTableEntry targetSpeedEntry;
+  private NetworkTableEntry shooterEncoderEntry;
+  private NetworkTableEntry currentAngleEntry;
+  private NetworkTableEntry targetAngleEntry;
+  private NetworkTableEntry hoodEncoderEntry;
+  private NetworkTableEntry hoodLimitSwitchEntry;
+
+  // Network table entries to display default PID coefficients for reference
+  private NetworkTableEntry kPEntry;
+  private NetworkTableEntry kIEntry;
+  private NetworkTableEntry kDEntry;
+  private NetworkTableEntry kIzEntry;
+  private NetworkTableEntry kFFEntry;
+  private NetworkTableEntry kMaxOutputEntry;
+  private NetworkTableEntry kMinOutputEntry;
+
+  // Network table entries for active PID coefficient
+  private NetworkTableEntry curPEntry;
+  private NetworkTableEntry curIEntry;
+  private NetworkTableEntry curDEntry;
+  private NetworkTableEntry curIzEntry;
+  private NetworkTableEntry curFFEntry;
+  private NetworkTableEntry curMaxOutputEntry;
+  private NetworkTableEntry curMinOutputEntry;
+
+  /** Creates a new instance of the Shooter subsystem. */
+  public ShooterSubsystem(int shooterMotor1CANID, int shooterMotor2CANID, int hoodMotorCANID, int hoodLimitDio) {
+
+    shooterMotor1 = new CANSparkMax(shooterMotor1CANID, MotorType.kBrushless);
+    shooterMotor1.setInverted(true);
+    shooterMotor1.setIdleMode(IdleMode.kCoast);
+    shooterEncoder = shooterMotor1.getEncoder();
+    shooterEncoder.setPositionConversionFactor(shooterBeltRatio);
+
+    shooterMotor2 = new CANSparkMax(shooterMotor2CANID, MotorType.kBrushless);
+    shooterMotor2.setIdleMode(IdleMode.kCoast);
+    shooterMotor2.follow(shooterMotor1, true);
+
+    shooterPidController = shooterMotor1.getPIDController();
+    updatePIDController();
+
+    hoodMotor = new CANSparkMax(hoodMotorCANID, MotorType.kBrushless);
+    hoodMotor.setIdleMode(IdleMode.kBrake);
+    hoodEncoder = hoodMotor.getEncoder();
+    hoodLimit = new DigitalInput(hoodLimitDio);
+
+    hoodPidController = hoodMotor.getPIDController();
+    hoodPidController.setP(kHoodP);
+    hoodPidController.setI(kHoodI);
+    hoodPidController.setD(kHoodD);
+    hoodPidController.setIZone(kHoodIz);
+    hoodPidController.setFF(kHoodFF);
+    hoodPidController.setOutputRange(kHoodMinOutput, kHoodMaxOutput);
+
+    parkHood();
+    initTelemetry();
+  }
+
+  @Override
+  public void periodic() {
+    currentSpeed = shooterEncoder.getVelocity();
+    currentAngle = encoderPositionToAngle(hoodEncoder.getPosition());
+
+    if (parkingHood) {
+      parkHood();
+    }
+
+    updateTelemetry();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Shooter control methods
+  // ---------------------------------------------------------------------------
+
+  public void start() {
+    System.out.println("Starting shooter");
+    running = true;
+    setSpeed(targetSpeed);
+  }
+
+  public void stop() {
+    System.out.println("Stopping shooter");
+    running = false;
+    setSpeed(0);
+  }
+
+  public void setSpeed(double targetSpeed) {
+    this.targetSpeed = targetSpeed;
+
+    if (targetSpeed > MAX_RPM) {
+      targetSpeed = MAX_RPM;
+    } else if (targetSpeed < 0) {
+      targetSpeed = 0;
+    }
+
+    shooterPidController.setReference(targetSpeed, ControlType.kVelocity);
+  }
+
+  public void increaseSpeed() {
+    System.out.println("Increase Shooter speed");
+    targetSpeed += speedIncrement;
+
+    if (running) {
+      setSpeed(targetSpeed);
+    }
+  }
+
+  public void decreaseSpeed() {
+    System.out.println("Decrease Shooter speed");
+    targetSpeed -= speedIncrement;
+
+    if (running) {
+      setSpeed(targetSpeed);
+    }
+  }
+
+  /**
+   * Update the cached coefficients values from the network tables and write them
+   * out to the motor controller.
+   */
+  public void updatePIDCoefficients() {
+    currentP = curPEntry.getDouble(kShooterP);
+    currentI = curIEntry.getDouble(kShooterI);
+    currentD = curDEntry.getDouble(kShooterD);
+    currentIz = curIzEntry.getDouble(kShooterIz);
+    currentFF = curFFEntry.getDouble(kShooterFF);
+    currentMaxOutput = curMaxOutputEntry.getDouble(kShooterMaxOutput);
+    currentMinOutput = curMinOutputEntry.getDouble(kShooterMinOutput);
+
+    updatePIDController();
+  }
+
+  /**
+   * Update the PID coefficents in the motor controller from the cached values
+   */
+  public void updatePIDController() {
+    shooterPidController.setP(currentP);
+    shooterPidController.setI(currentI);
+    shooterPidController.setD(currentD);
+    shooterPidController.setIZone(currentIz);
+    shooterPidController.setFF(currentFF);
+    shooterPidController.setOutputRange(currentMinOutput, currentMaxOutput);
+  }
+
+  public void dumpPIDCoefficients() {
+
+    System.out.println("--------------------------------------------------------");
+    System.out.printf("private static final double kShooterP = %f;", currentP);
+    System.out.printf("private static final double kShooterI = %f;", currentI);
+    System.out.printf("private static final double kShooterD = %f;", currentD);
+    System.out.printf("private static final double kShooterIz = %f;", currentIz);
+    System.out.printf("private static final double kShooterFF = %f;", currentFF);
+    System.out.printf("private static final double kShooterMaxOutput = %f;", currentMaxOutput);
+    System.out.printf("private static final double kShooterMinOutput = %f;", currentMinOutput);
+    System.out.println("--------------------------------------------------------");
+  }
+
+  // ---------------------------------------------------------------------------
+  // Hood Control methods
+  // ---------------------------------------------------------------------------
+
+  public void setAngle(double angle) {
+
+    targetAngle = angle;
+
+    if (targetAngle > MAX_HOOD_ANGLE) {
+      targetAngle = MAX_HOOD_ANGLE;
+    } else if (targetAngle < MIN_HOOD_ANGLE) {
+      targetAngle = MIN_HOOD_ANGLE;
+    }
+
+    hoodPidController.setReference(angleToEncoderPosition(targetAngle), ControlType.kPosition);
+  }
+
+  public void raiseHood() {
+    setAngle(targetAngle - angleIncrement);
+  }
+
+  public void lowerHood() {
+    setAngle(targetAngle + angleIncrement);
+  }
+
+  private double angleToEncoderPosition(double angle){
+    return (MAX_HOOD_ANGLE - angle) * ROTATIONS_PER_DEGREE;
+  }
+
+  private double encoderPositionToAngle(double position){
+    return ((HOOD_UPPER_LIMIT - position) / ROTATIONS_PER_DEGREE) + MIN_HOOD_ANGLE;
+  }
+
+  /**
+   * Lower the hood until it trips the limit switch and then reset the encoder to
+   * establish our zero position.
+   */
+  private void parkHood() {
+
+    if (!hoodLimit.get()) {
+      parkingHood = true;
+      hoodMotor.set(-0.05);
+      return;
+    }
+
+    parkingHood = false;
+    hoodMotor.set(0);
+    hoodEncoder.setPosition(0);
+    targetAngle = MAX_HOOD_ANGLE;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Telemetry
+  // ---------------------------------------------------------------------------
+
+  private void initTelemetry() {
+    ShuffleboardTab tab = Shuffleboard.getTab("Shooter Tuner");
+
+    // Shooter data values
+    currentSpeedEntry = tab.add("Current Speed", 0)
+        .withPosition(0, kShooterRow)
+        .withSize(1, 1)
+        .getEntry();
+
+    targetSpeedEntry = tab.add("Target Speed", 0)
+        .withPosition(1, kShooterRow)
+        .withSize(1, 1)
+        .getEntry();
+
+    shooterEncoderEntry = tab.add("Shooter Encoder", 0)
+        .withPosition(2, kShooterRow)
+        .withSize(1, 1)
+        .getEntry();
+
+    // Hood data values
+    currentAngleEntry = tab.add("Current Angle", 0)
+        .withPosition(0, kHoodRow)
+        .withSize(1, 1)
+        .getEntry();
+
+    targetAngleEntry = tab.add("Target Angle", 0)
+        .withPosition(1, kHoodRow)
+        .withSize(1, 1)
+        .getEntry();
+
+    hoodEncoderEntry = tab.add("Hood Encoder", 0)
+        .withPosition(2, kHoodRow)
+        .withSize(1, 1)
+        .getEntry();
+
+    hoodLimitSwitchEntry = tab.add("Hood Limit", false)
+        .withPosition(3, kHoodRow)
+        .withSize(1, 1)
+        .getEntry();
+
+    // Constant value entries
+    kPEntry = tab.add("kP", kConstantsRow)
+        .withPosition(0, 1)
+        .withSize(1, 1)
+        .getEntry();
+
+    kIEntry = tab.add("kI", kConstantsRow)
+        .withPosition(1, 1)
+        .withSize(1, 1)
+        .getEntry();
+
+    kDEntry = tab.add("kD", kConstantsRow)
+        .withPosition(2, 1)
+        .withSize(1, 1)
+        .getEntry();
+
+    kIzEntry = tab.add("kIz", kConstantsRow)
+        .withPosition(3, 1)
+        .withSize(1, 1)
+        .getEntry();
+
+    kFFEntry = tab.add("kFF", kConstantsRow)
+        .withPosition(4, 1)
+        .withSize(1, 1)
+        .getEntry();
+
+    kMaxOutputEntry = tab.add("kMaxOutput", kConstantsRow)
+        .withPosition(5, 1)
+        .withSize(1, 1)
+        .getEntry();
+
+    kMinOutputEntry = tab.add("kMinOutput", kConstantsRow)
+        .withPosition(6, 1)
+        .withSize(1, 1)
+        .getEntry();
+
+    // Live value entries
+    curPEntry = tab.add("Current P", kCurrentRow)
+        .withPosition(0, 2)
+        .withSize(1, 1)
+        .getEntry();
+
+    curIEntry = tab.add("Current I", kCurrentRow)
+        .withPosition(1, 2)
+        .withSize(1, 1)
+        .getEntry();
+
+    curDEntry = tab.add("Current D", kCurrentRow)
+        .withPosition(2, 2)
+        .withSize(1, 1)
+        .getEntry();
+
+    curIzEntry = tab.add("Current Iz", kCurrentRow)
+        .withPosition(3, 2)
+        .withSize(1, 1)
+        .getEntry();
+
+    curFFEntry = tab.add("Current FF", kCurrentRow)
+        .withPosition(4, 2)
+        .withSize(1, 1)
+        .getEntry();
+
+    curMaxOutputEntry = tab.add("Current MaxOutput", kCurrentRow)
+        .withPosition(5, 2)
+        .withSize(1, 1)
+        .getEntry();
+
+    curMinOutputEntry = tab.add("Current MinOutput", kCurrentRow)
+        .withPosition(6, 2)
+        .withSize(1, 1)
+        .getEntry();
+
+  }
+
+  private void updateTelemetry() {
+    currentSpeedEntry.setNumber(currentSpeed);
+    targetSpeedEntry.setNumber(targetSpeed);
+    shooterEncoderEntry.setNumber(shooterEncoder.getPosition());
+
+    currentAngleEntry.setNumber(currentAngle);
+    targetAngleEntry.setNumber(targetAngle);
+    hoodEncoderEntry.setNumber(hoodEncoder.getPosition());
+    hoodLimitSwitchEntry.setBoolean(hoodLimit.get());
+
+    // Update the contant values in the network table even though they never change.
+    kPEntry.setDouble(kShooterP);
+    kIEntry.setDouble(kShooterI);
+    kDEntry.setDouble(kShooterD);
+    kIzEntry.setDouble(kShooterIz);
+    kFFEntry.setDouble(kShooterFF);
+    kMaxOutputEntry.setDouble(kShooterMaxOutput);
+    kMinOutputEntry.setDouble(kShooterMinOutput);
+  }
+}
