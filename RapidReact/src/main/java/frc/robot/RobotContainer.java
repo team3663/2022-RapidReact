@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.commands.TeleOpDriveCommand;
 import frc.robot.drivers.Limelight;
 import frc.robot.drivers.Pigeon;
+import frc.robot.subsystems.DriverVisionSubsystem;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.FeederSubsystem;
 import frc.robot.subsystems.FeederSubsystem.FeedMode;
@@ -41,6 +42,7 @@ public class RobotContainer {
     private ShooterSubsystem shooter;
     private IntakeSubsystem intake;
     private DrivetrainSubsystem drivetrain;
+    private DriverVisionSubsystem driver;
 
     // Commands
     private TeleOpDriveCommand teleOpDrive;
@@ -75,6 +77,8 @@ public class RobotContainer {
         SwerveDriveConfig swerveConfig = new SwerveDriveConfig(fl, fr, bl, br, DRIVETRAIN_TRACKWIDTH_METERS,
                 DRIVETRAIN_WHEELBASE_METERS, DRIVE_TRAIN_WHEEL_DIAMETER_METERS);
         drivetrain = new DrivetrainSubsystem(swerveConfig, pigeon);
+
+        driver = new DriverVisionSubsystem(feeder);
     }
 
     /**

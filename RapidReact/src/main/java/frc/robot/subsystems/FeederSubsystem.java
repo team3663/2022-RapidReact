@@ -156,7 +156,7 @@ public class FeederSubsystem extends SubsystemBase {
      * 
      * @return True if a ball is present at the exit sensor, false otherwise.
      */
-    private boolean ballInExit() {
+    public boolean ballInExit() {
         return !exitSensor.get();
     }
 
