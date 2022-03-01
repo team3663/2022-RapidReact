@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import frc.robot.commands.IntakeCommand;
+import frc.robot.commands.ShootCommand;
 import frc.robot.commands.TeleOpDriveCommand;
 import frc.robot.drivers.Limelight;
 import frc.robot.drivers.Pigeon;
@@ -33,8 +34,8 @@ public class RobotContainer {
     private final XboxController operatorController = new XboxController(Constants.OPERATOR_CONTROLLER_PORT);
 
     Pigeon pigeon = new Pigeon(DRIVETRAIN_PIGEON_ID);
-    private static final Limelight limelight = new Limelight(40, 0.635, 2.6414);
-    private final Y_CubicRanger ranger = new Y_CubicRanger();
+    private static final Limelight limelight = new Limelight(36, 0.5842, 2.6414);
+    private final SimpleRanger ranger = new SimpleRanger();
 
     // Subsystems
     private FeederSubsystem feeder;
@@ -102,13 +103,9 @@ public class RobotContainer {
         //         whenPressed(new InstantCommand(() -> intake.retractArm(), intake));
         // new JoystickButton(driveController, Button.kX.value).
         //         whenPressed(new InstantCommand(() -> intake.extendBoom(), intake));
-        // new JoystickButton(driveController, Button.kY.value).
-        //         whenPressed(new InstantCommand(() -> intake.retractBoom(), intake));
-
-        // new JoystickButton(driveController, Button.kLeftBumper.value).
-        //         whenPressed(new InstantCommand(() -> intake.extend(), intake));  
-        // new JoystickButton(driveController, Button.kRightBumper.value).
-        //         whenPressed(new InstantCommand(() -> intake.retract(), intake));  
+        new JoystickButton(driveController, Button.kY.value).
+                whenPressed(new ShootCommand(shooter, feeder, limelight));
+  
 
         new JoystickButton(driveController, Button.kRightBumper.value).
                 whenHeld(new IntakeCommand(intake, feeder));  
