@@ -77,6 +77,7 @@ public class ShooterSubsystem extends SubsystemBase {
   private NetworkTableEntry targetAngleEntry;
   private NetworkTableEntry hoodEncoderEntry;
   private NetworkTableEntry hoodLimitSwitchEntry;
+  private NetworkTableEntry readyToShootEntry;
 
   /** Creates a new instance of the Shooter subsystem. */
   public ShooterSubsystem(int shooterMotor1CANID, int shooterMotor2CANID, int hoodMotorCANID, int hoodLimitDio,
@@ -129,6 +130,13 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     updateTelemetry();
+  }
+
+  public boolean readyToShoot(){
+    if(currentAngle == targetAngle && currentSpeed == targetSpeed){
+      return true;
+    }
+    return false;
   }
 
   // ---------------------------------------------------------------------------
@@ -265,6 +273,11 @@ public class ShooterSubsystem extends SubsystemBase {
         .withPosition(6, 2)
         .withSize(1, 1)
         .getEntry();
+
+    readyToShootEntry = tab.add("Ready to Shoot", false)
+        .withPosition(7, 2)
+        .withSize(1, 1)
+        .getEntry();
   }
 
   private void updateTelemetry() {
@@ -276,5 +289,6 @@ public class ShooterSubsystem extends SubsystemBase {
     targetAngleEntry.setNumber(targetAngle);
     hoodEncoderEntry.setNumber(hoodEncoder.getPosition());
     hoodLimitSwitchEntry.setBoolean(hoodLimit.get());
+    readyToShootEntry.setBoolean(readyToShoot());
   }
 }

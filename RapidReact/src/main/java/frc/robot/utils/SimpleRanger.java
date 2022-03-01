@@ -3,27 +3,27 @@ package frc.robot.utils;
 public class SimpleRanger implements Ranger {
 
     // TODO collect data
-    public final int DISTANCE_0 = 0;
-    public final int DISTANCE_1 = 0;
-    public final int DISTANCE_2 = 0;
-    public final int DISTANCE_3 = 0;
-    public final int DISTANCE_4 = 0;
+    private final int DISTANCE_0 = 0;
+    private final int DISTANCE_1 = 0;
+    private final int DISTANCE_2 = 0;
+    private final int DISTANCE_3 = 0;
+    private final int DISTANCE_4 = 0;
 
-    public final int ANGLE_0 = 0;
-    public final int ANGLE_1 = 0;
-    public final int ANGLE_2 = 0;
-    public final int ANGLE_3 = 0;
-    public final int ANGLE_4 = 0;
+    private final int ANGLE_0 = 0;
+    private final int ANGLE_1 = 0;
+    private final int ANGLE_2 = 0;
+    private final int ANGLE_3 = 0;
+    private final int ANGLE_4 = 0;
 
-    public final int SPEED_0 = 0;
-    public final int SPEED_1 = 0;
-    public final int SPEED_2 = 0;
-    public final int SPEED_3 = 0;
-    public final int SPEED_4 = 0;
+    private final int SPEED_0 = 0;
+    private final int SPEED_1 = 0;
+    private final int SPEED_2 = 0;
+    private final int SPEED_3 = 0;
+    private final int SPEED_4 = 0;
 
-    public final int DISTANCE_COLUMN_INDEX = 0;
-    public final int ANGLE_COLUMN_INDEX = 0;
-    public final int SPEED_COLUMN_INDEX = 0;
+    private final int DISTANCE_COLUMN_INDEX = 0;
+    private final int ANGLE_COLUMN_INDEX = 1;
+    private final int SPEED_COLUMN_INDEX = 2;
 
     public int[][] KNOWN_DATA = new int[][] {
         {DISTANCE_0, ANGLE_0, SPEED_0},
@@ -64,8 +64,8 @@ public class SimpleRanger implements Ranger {
 
         return new FiringSolution(speed, angle);
     }
-
-    public double linearInterpolation(double range, int distanceHigherBoundIndex, InterpolationMode mode) {
+    
+    private double linearInterpolation(double range, int distanceHigherBoundIndex, InterpolationMode mode) {
         
         int modeIndex;
         if (mode.equals(InterpolationMode.ANGLE)) {

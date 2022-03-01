@@ -34,7 +34,7 @@ public class RobotContainer {
     private final XboxController operatorController = new XboxController(Constants.OPERATOR_CONTROLLER_PORT);
 
     Pigeon pigeon = new Pigeon(DRIVETRAIN_PIGEON_ID);
-    private static final Limelight limelight = new Limelight(36, 0.5842, 2.6414);
+    private static final Limelight limelight = new Limelight(57, 0.5842, 2.6414);
     private final SimpleRanger ranger = new SimpleRanger();
 
     // Subsystems
@@ -104,7 +104,7 @@ public class RobotContainer {
         // new JoystickButton(driveController, Button.kX.value).
         //         whenPressed(new InstantCommand(() -> intake.extendBoom(), intake));
         new JoystickButton(driveController, Button.kY.value).
-                whenPressed(new ShootCommand(shooter, feeder, limelight));
+                whenHeld(new ShootCommand(shooter, feeder, limelight));
   
 
         new JoystickButton(driveController, Button.kRightBumper.value).
