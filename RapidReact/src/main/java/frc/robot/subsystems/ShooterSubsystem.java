@@ -19,7 +19,7 @@ import frc.robot.utils.Ranger;
 public class ShooterSubsystem extends SubsystemBase {
 
   // Subsystem Constants
-  private static final double MAX_RPM = 4000;
+  private static final double MAX_RPM = 6000;
   private static final double shooterBeltRatio = 0.66;
 
   private static final double MAX_HOOD_ANGLE = 85;
@@ -32,7 +32,7 @@ public class ShooterSubsystem extends SubsystemBase {
   private static final double angleIncrement = 1;
 
   // Shooter PID coefficients
-  private static final double kShooterP = 6e-4;
+  private static final double kShooterP = 0.0012;
   private static final double kShooterI = 0;
   private static final double kShooterD = 0;
   private static final double kShooterIz = 0;

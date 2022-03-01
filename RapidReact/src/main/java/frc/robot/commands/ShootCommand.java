@@ -28,17 +28,18 @@ public class ShootCommand extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    // feederSubsystem.setFeedMode(FeedMode.PRESHOOT);
+    feederSubsystem.setFeedMode(FeedMode.PRESHOOT);
     limelight.setLEDMode(limelight.LED_ON);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    System.out.println("-----------------------"  + limelight.getDistance());
+    limelight.updateTelemetry();
+    System.out.println(limelight.getDistance());
     // shooterSubsystem.setRange(limelight.getDistance());
-    // if(shooterSubsystem.readyToShoot()){
-    //   //if a button pressed set feed position shoot
+    // if(shooterSubsystem.readyToShoot() && feederSubsystem.isIdle()){
+    //   feederSubsystem.setFeedMode(FeedMode.CONTINUOUS);
     // }
   }
 

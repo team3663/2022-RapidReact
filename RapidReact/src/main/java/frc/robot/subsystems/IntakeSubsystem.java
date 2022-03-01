@@ -24,7 +24,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
   private IntakeState currentState = IntakeState.RETRACTED;
   private CANSparkMax intakeMotor;
-  private final double POWER = 0.4;
+  private final double POWER = 0.7;
   private final DoubleSolenoid boomIntakeSolenoid;
   private final DoubleSolenoid armIntakeSolenoid;
   private boolean boomIsOut;
