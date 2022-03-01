@@ -113,14 +113,13 @@ public class ShooterSubsystem extends SubsystemBase {
     shooterMotor1.setInverted(true);
     shooterMotor1.setIdleMode(IdleMode.kCoast);
     shooterEncoder = shooterMotor1.getEncoder();
-    shooterEncoder.setPositionConversionFactor(shooterBeltRatio);
+    shooterEncoder.setVelocityConversionFactor(shooterBeltRatio);
 
     shooterMotor2 = new CANSparkMax(shooterMotor2CANID, MotorType.kBrushless);
     shooterMotor2.setIdleMode(IdleMode.kCoast);
     shooterMotor2.follow(shooterMotor1, true);
 
     shooterPidController = shooterMotor1.getPIDController();
-    updatePIDController();
 
     hoodMotor = new CANSparkMax(hoodMotorCANID, MotorType.kBrushless);
     hoodMotor.setIdleMode(IdleMode.kBrake);
@@ -137,11 +136,14 @@ public class ShooterSubsystem extends SubsystemBase {
 
     parkHood();
     initTelemetry();
+
+    updatePIDController();
   }
 
   @Override
   public void periodic() {
     currentSpeed = shooterEncoder.getVelocity();
+
     currentAngle = encoderPositionToAngle(hoodEncoder.getPosition());
 
     if (parkingHood) {
@@ -223,6 +225,8 @@ public class ShooterSubsystem extends SubsystemBase {
     shooterPidController.setIZone(currentIz);
     shooterPidController.setFF(currentFF);
     shooterPidController.setOutputRange(currentMinOutput, currentMaxOutput);
+
+    updateCurrentValues();
   }
 
   public void dumpPIDCoefficients() {
@@ -334,74 +338,74 @@ public class ShooterSubsystem extends SubsystemBase {
         .getEntry();
 
     // Constant value entries
-    kPEntry = tab.add("kP", kConstantsRow)
-        .withPosition(0, 1)
+    kPEntry = tab.add("kP", 0)
+        .withPosition(0, kConstantsRow)
         .withSize(1, 1)
         .getEntry();
 
-    kIEntry = tab.add("kI", kConstantsRow)
-        .withPosition(1, 1)
+    kIEntry = tab.add("kI", 0)
+        .withPosition(1, kConstantsRow)
         .withSize(1, 1)
         .getEntry();
 
-    kDEntry = tab.add("kD", kConstantsRow)
-        .withPosition(2, 1)
+    kDEntry = tab.add("kD", 0)
+        .withPosition(2, kConstantsRow)
         .withSize(1, 1)
         .getEntry();
 
-    kIzEntry = tab.add("kIz", kConstantsRow)
-        .withPosition(3, 1)
+    kIzEntry = tab.add("kIz", 0)
+        .withPosition(3, kConstantsRow)
         .withSize(1, 1)
         .getEntry();
 
-    kFFEntry = tab.add("kFF", kConstantsRow)
-        .withPosition(4, 1)
+    kFFEntry = tab.add("kF", 0)
+        .withPosition(4, kConstantsRow)
         .withSize(1, 1)
         .getEntry();
 
-    kMaxOutputEntry = tab.add("kMaxOutput", kConstantsRow)
-        .withPosition(5, 1)
+    kMaxOutputEntry = tab.add("kMaxOutput", 0)
+        .withPosition(5, kConstantsRow)
         .withSize(1, 1)
         .getEntry();
 
-    kMinOutputEntry = tab.add("kMinOutput", kConstantsRow)
-        .withPosition(6, 1)
+    kMinOutputEntry = tab.add("kMinOutput", 0)
+        .withPosition(6, kConstantsRow)
         .withSize(1, 1)
         .getEntry();
 
     // Live value entries
-    curPEntry = tab.add("Current P", kCurrentRow)
-        .withPosition(0, 2)
+    curPEntry = tab.add("Current P", 0)
+        .withPosition(0, kCurrentRow)
         .withSize(1, 1)
         .getEntry();
 
-    curIEntry = tab.add("Current I", kCurrentRow)
-        .withPosition(1, 2)
+    curIEntry = tab.add("Current I", 0)
+        .withPosition(1, kCurrentRow)
         .withSize(1, 1)
         .getEntry();
 
-    curDEntry = tab.add("Current D", kCurrentRow)
-        .withPosition(2, 2)
+    curDEntry = tab.add("Current D", 0)
+        .withPosition(2, kCurrentRow)
         .withSize(1, 1)
         .getEntry();
 
-    curIzEntry = tab.add("Current Iz", kCurrentRow)
-        .withPosition(3, 2)
+    curIzEntry = tab.add("Current Iz", 0)
+        .withPosition(3, kCurrentRow)
         .withSize(1, 1)
         .getEntry();
 
-    curFFEntry = tab.add("Current FF", kCurrentRow)
-        .withPosition(4, 2)
+    curFFEntry = tab.add("Current FF", 0)
+        .withPosition(4, kCurrentRow)
         .withSize(1, 1)
         .getEntry();
 
-    curMaxOutputEntry = tab.add("Current MaxOutput", kCurrentRow)
-        .withPosition(5, 2)
+    curMaxOutputEntry = tab.add("Current MaxOutput", 0)
+        .withPosition(5, kCurrentRow)
         .withSize(1, 1)
         .getEntry();
 
-    curMinOutputEntry = tab.add("Current MinOutput", kCurrentRow)
-        .withPosition(6, 2)
+    curMinOutputEntry = tab.add("Current MinOutput", 0)
+        .withPosition(6, kCurrentRow)
         .withSize(1, 1)
         .getEntry();
 
@@ -425,5 +429,15 @@ public class ShooterSubsystem extends SubsystemBase {
     kFFEntry.setDouble(kShooterFF);
     kMaxOutputEntry.setDouble(kShooterMaxOutput);
     kMinOutputEntry.setDouble(kShooterMinOutput);
+  }
+
+  private void updateCurrentValues() {
+    curPEntry.setDouble(currentP);
+    curIEntry.setDouble(currentI);
+    curDEntry.setDouble(currentD);
+    curIzEntry.setDouble(currentIz);
+    curFFEntry.setDouble(currentFF);
+    curMaxOutputEntry.setDouble(currentMaxOutput);
+    curMinOutputEntry.setDouble(currentMinOutput);    
   }
 }
