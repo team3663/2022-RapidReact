@@ -5,8 +5,8 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.drivers.Limelight;
 import frc.robot.subsystems.FeederSubsystem;
+import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.FeederSubsystem.FeedMode;
 
@@ -15,9 +15,9 @@ public class ShootCommand extends CommandBase {
   /** Creates a new ShootCommand. */
   private ShooterSubsystem shooterSubsystem;
   private FeederSubsystem feederSubsystem;
-  private Limelight limelight;
+  private LimelightSubsystem limelight;
 
-  public ShootCommand(ShooterSubsystem shooterSubsystem, FeederSubsystem feederSubsystem, Limelight limelight) {
+  public ShootCommand(ShooterSubsystem shooterSubsystem, FeederSubsystem feederSubsystem, LimelightSubsystem limelight) {
     this.shooterSubsystem = shooterSubsystem;
     this.feederSubsystem = feederSubsystem;
     this.limelight = limelight;
