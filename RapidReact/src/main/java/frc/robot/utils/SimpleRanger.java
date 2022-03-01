@@ -2,24 +2,21 @@ package frc.robot.utils;
 
 public class SimpleRanger implements Ranger {
 
-    // TODO collect data
     private final int DISTANCE_0 = 0;
-    private final int DISTANCE_1 = 0;
-    private final int DISTANCE_2 = 0;
-    private final int DISTANCE_3 = 0;
-    private final int DISTANCE_4 = 0;
+    private final int DISTANCE_1 = 5;
+    private final int DISTANCE_2 = 10;
+    private final int DISTANCE_3 = 15;
 
-    private final int ANGLE_0 = 0;
-    private final int ANGLE_1 = 0;
-    private final int ANGLE_2 = 0;
-    private final int ANGLE_3 = 0;
-    private final int ANGLE_4 = 0;
+    private final int ANGLE_0 = 76;
+    private final int ANGLE_1 = 71;
+    private final int ANGLE_2 = 67;
+    private final int ANGLE_3 = 67;
 
-    private final int SPEED_0 = 0;
-    private final int SPEED_1 = 0;
-    private final int SPEED_2 = 0;
-    private final int SPEED_3 = 0;
-    private final int SPEED_4 = 0;
+    private final int SPEED_0 = 2900;
+    private final int SPEED_1 = 3100;
+    private final int SPEED_2 = 3700;
+    private final int SPEED_3 = 4400;
+
 
     private final int DISTANCE_COLUMN_INDEX = 0;
     private final int ANGLE_COLUMN_INDEX = 1;
@@ -29,8 +26,7 @@ public class SimpleRanger implements Ranger {
         {DISTANCE_0, ANGLE_0, SPEED_0},
         {DISTANCE_1, ANGLE_1, SPEED_1},
         {DISTANCE_2, ANGLE_2, SPEED_2},
-        {DISTANCE_3, ANGLE_3, SPEED_3},
-        {DISTANCE_4, ANGLE_4, SPEED_4}
+        {DISTANCE_3, ANGLE_3, SPEED_3}
     };
 
     public enum InterpolationMode {
@@ -45,8 +41,8 @@ public class SimpleRanger implements Ranger {
         if (range <= DISTANCE_0) {
             return new FiringSolution(SPEED_0, ANGLE_0);
         }
-        if (range >= DISTANCE_4) {
-            return new FiringSolution(SPEED_4, ANGLE_4);
+        if (range >= DISTANCE_3) {
+            return new FiringSolution(SPEED_3, ANGLE_3);
         }
 
         // find the two data points to be used
