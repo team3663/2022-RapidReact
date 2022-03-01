@@ -16,7 +16,7 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 public class ShooterSubsystem extends SubsystemBase {
 
   // Shooter related constants
-  private static final double MAX_RPM = 4000;
+  private static final double MAX_RPM = 6000;
   private static final double shooterBeltRatio = 0.66;
   private static final double speedIncrement = 100;
 
@@ -30,7 +30,7 @@ public class ShooterSubsystem extends SubsystemBase {
   private static final double angleIncrement = 1;
 
   // Shooter PID coefficients constants
-  private static final double kShooterP = 6e-4;
+  private static final double kShooterP = 0.0013;
   private static final double kShooterI = 0;
   private static final double kShooterD = 0;
   private static final double kShooterIz = 0;
