@@ -143,7 +143,7 @@ public class ShooterSubsystem extends SubsystemBase {
     // speed down so the momentum of the flywheels don't damage the belts.
     if (motorState == MotorState.STOPPING)
     {
-      setSpeed( targetSpeed - 100);
+      setSpeed( targetSpeed - 20);
     }
 
     updateTelemetry();

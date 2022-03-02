@@ -107,10 +107,10 @@ public class RobotContainer {
         //         whenPressed(new InstantCommand(() -> intake.extendBoom(), intake));
         // new JoystickButton(driveController, Button.kY.value).
         //         whenPressed(new InstantCommand(() -> intake.retractBoom(), intake));
+        // new JoystickButton(driveController, Button.kY.value).
+        //         whenHeld(new ShootCommand(shooter, feeder, limelight, (() -> driveController.getAButton())));
         new JoystickButton(driveController, Button.kY.value).
-                whenHeld(new ShootCommand(shooter, feeder, limelight, (() -> driveController.getAButton())));
-                // new JoystickButton(driveController, Button.kY.value).
-                // whenHeld(new ShootCommand(shooter, feeder, limelight, (() -> driveController.getRightTriggerAxis() > 0.8)));
+                whenHeld(new ShootCommand(shooter, feeder, limelight, (() -> driveController.getRightTriggerAxis() > 0.8)));
 
         new JoystickButton(driveController, Button.kRightBumper.value).
                 whenHeld(new IntakeCommand(intake, feeder, (() -> driveController.getLeftBumper())));  
