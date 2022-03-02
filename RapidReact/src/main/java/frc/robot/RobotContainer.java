@@ -5,7 +5,6 @@ import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
-import edu.wpi.first.wpilibj2.command.button.POVButton;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.ShootCommand;
 import frc.robot.commands.TeleOpDriveCommand;
@@ -19,7 +18,6 @@ import frc.robot.utils.SwerveModuleConfig;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
-import frc.robot.subsystems.FeederSubsystem.FeedMode;
 
 import static frc.robot.Constants.*;
 
@@ -98,39 +96,21 @@ public class RobotContainer {
      */
     private void configureButtonBindings() {
 
-        // Button commands to test intake subsystem
-        // new JoystickButton(driveController, Button.kA.value).
-        //         whenPressed(new InstantCommand(() -> intake.extendArm(), intake));
-        // new JoystickButton(driveController, Button.kB.value).
-        //         whenPressed(new InstantCommand(() -> intake.retractArm(), intake));
-        // new JoystickButton(driveController, Button.kX.value).
-        //         whenPressed(new InstantCommand(() -> intake.extendBoom(), intake));
-        // new JoystickButton(driveController, Button.kY.value).
-        //         whenPressed(new InstantCommand(() -> intake.retractBoom(), intake));
-        // new JoystickButton(driveController, Button.kY.value).
-        //         whenHeld(new ShootCommand(shooter, feeder, limelight, (() -> driveController.getAButton())));
+        // Reset the gyroscope on the Pigeon.
+        new JoystickButton(driveController, Button.kStart.value)
+                .whenPressed(new InstantCommand(() -> drivetrain.resetGyroscope()));
+
+        // Schedule the Shoot command to fire a cargo       
         new JoystickButton(driveController, Button.kY.value).
                 whenHeld(new ShootCommand(shooter, feeder, limelight, (() -> driveController.getRightTriggerAxis() > 0.8)));
 
+        // Schedule the Intake command to pick-up cargo        
         new JoystickButton(driveController, Button.kRightBumper.value).
                 whenHeld(new IntakeCommand(intake, feeder, (() -> driveController.getLeftBumper())));  
         
+        // Temporary test commands to be removed before competition
 
-        // Button commands to help test the feeder subsystem.
-        new JoystickButton(driveController, Button.kX.value)
-                .whenPressed(new InstantCommand(() -> feeder.setFeedMode(FeedMode.PRESHOOT), feeder));
-        // new JoystickButton(driveController, Button.kY.value)
-        //         .whenPressed(new InstantCommand(() -> feeder.setFeedMode(FeedMode.CONTINUOUS), feeder));
-
-        // new JoystickButton(driveController, Button.kX.value)
-        //         .whenPressed(new InstantCommand(() -> shooter.raiseHood(), shooter));
-        // new JoystickButton(driveController, Button.kY.value)
-        //         .whenPressed(new InstantCommand(() -> shooter.lowerHood(), shooter));
-
-        new POVButton(driveController, 0).whenPressed(new InstantCommand(() -> shooter.setAngle(67.0), shooter));      
-        new POVButton(driveController, 90).whenPressed(new InstantCommand(() -> shooter.increaseSpeed(), shooter));
-        new POVButton(driveController, 180).whenPressed(new InstantCommand(() -> shooter.setAngle(85.0), shooter));
-        new POVButton(driveController, 270).whenPressed(new InstantCommand(() -> shooter.decreaseSpeed(), shooter));
+        //new POVButton(driveController, 0).whenPressed(new InstantCommand(() -> shooter.setAngle(67.0), shooter));      
     }
 
     /**
