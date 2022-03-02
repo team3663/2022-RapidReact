@@ -12,11 +12,11 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class LimelightSubsystem extends SubsystemBase {
 
   //led mode constants
-  public static final int LED_PIPELINE = 0; //use the LED Mode set in the current pipeline
-  public static final int LED_OFF = 1; //force off
-  public static final int LED_BLINK = 2; //force blink
-  public static final int LED_ON = 3; //force on
-  public static final int LED_DEFAULT_MODE = LED_OFF;
+  public  final int LED_PIPELINE = 0; //use the LED Mode set in the current pipeline
+  public  final int LED_OFF = 1; //force off
+  public  final int LED_BLINK = 2; //force blink
+  public  final int LED_ON = 3; //force on
+  public  final int LED_DEFAULT_MODE = LED_OFF;
 
   //camera mode constants
   public static final int CAMERA_VISION = 0; //Vision processor

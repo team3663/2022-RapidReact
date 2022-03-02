@@ -106,8 +106,8 @@ public class RobotContainer {
         // new JoystickButton(driveController, Button.kX.value).
         //         whenPressed(new InstantCommand(() -> intake.extendBoom(), intake));
         new JoystickButton(driveController, Button.kY.value).
-                whenHeld(new ShootCommand(shooter, feeder, limelight));
-  
+                whenHeld(new ShootCommand(shooter, feeder, limelight, (() -> driveController.getRightTriggerAxis() > 0.8)));
+
 
         new JoystickButton(driveController, Button.kRightBumper.value).
                 whenHeld(new IntakeCommand(intake, feeder));  
