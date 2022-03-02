@@ -121,6 +121,7 @@ public class RobotContainer {
         // Button.kStart.value).whenPressed(drivetrain::resetPosition);
 
         // Button commands to test shooter subsystem.
+        /*
         new JoystickButton(driveController, Button.kStart.value)
                 .whenPressed(new InstantCommand(() -> shooter.start(), shooter));
         new JoystickButton(driveController, Button.kBack.value)
@@ -133,6 +134,20 @@ public class RobotContainer {
                 .whenPressed(new InstantCommand(() -> shooter.raiseHood(), shooter));
         new JoystickButton(driveController, Axis.kRightTrigger.value)
                 .whenPressed(new InstantCommand(() -> shooter.lowerHood(), shooter));
+        */
+
+        Path backOutOfTarmac = new Path(PATH.backOutOfTarmac);
+        followTrajectory = new SwerveControllerCommand(backOutOfTarmac.getTrajectory(),
+                                                drivetrain::getPose,
+                                                drivetrain.getKinematics(),
+                                                backOutOfTarmac.getPidController(),
+                                                backOutOfTarmac.getPidController(),
+                                                backOutOfTarmac.getAnglePidController(),
+                                                drivetrain::setModuleStates,
+                                                drivetrain);
+
+        new JoystickButton(driveController, Button.kStart.value)
+                .whenPressed(followTrajectory);
     }
 
     /**
@@ -153,6 +168,6 @@ public class RobotContainer {
                                                 drivetrain::setModuleStates,
                                                 drivetrain);
       followCargo = new AutoFollowCargoCommand(drivetrain, pixy);
-      return new SequentialCommandGroup(shoot, followTrajectory, followCargo, shoot); // intake
+      return new SequentialCommandGroup(followTrajectory);// followCargo // shoot * 2
     }
 }

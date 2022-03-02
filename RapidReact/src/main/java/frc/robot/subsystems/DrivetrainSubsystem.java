@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.drivers.Pigeon;
 import frc.robot.drivers.Pixy;
 import frc.robot.utils.SwerveDriveConfig;
+import io.github.pseudoresonance.pixy2api.Pixy2CCC.Block;
 
 public class DrivetrainSubsystem extends SubsystemBase {
 
@@ -206,5 +207,8 @@ public class DrivetrainSubsystem extends SubsystemBase {
         poseYEntry.setDouble(getPose().getTranslation().getY());
         poseAbsoluteAngleEntry.setDouble(getPose().getRotation().getDegrees());
         
+        Block cargo = pixy.getLargestBlock();
+        cargoAreaEntry.setDouble(pixy.getArea(cargo));
+        cargoXEntry.setDouble(pixy.getX(cargo));
     }
 }

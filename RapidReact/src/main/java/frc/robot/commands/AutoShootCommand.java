@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.drivers.Limelight;
 import frc.robot.subsystems.FeederSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.subsystems.FeederSubsystem.FeedMode;
 
 public class AutoShootCommand extends CommandBase {
   private ShooterSubsystem shooter;
@@ -20,6 +21,8 @@ public class AutoShootCommand extends CommandBase {
 
   @Override
   public void initialize() {
+    feeder.setFeedMode(FeedMode.PRESHOOT);
+    limelight.setLEDMode(limelight.LED_ON);
   }
 
   @Override
@@ -27,6 +30,7 @@ public class AutoShootCommand extends CommandBase {
     double distance = limelight.getDistance();
     shooter.setRange(distance);
     if (shooter.readyToShoot() && feeder.isIdle()){
+      feeder.setFeedMode(FeedMode.CONTINUOUS);
       shooter.start();
       finished = true;
     }
@@ -35,6 +39,8 @@ public class AutoShootCommand extends CommandBase {
   @Override
   public void end(boolean interrupted) {
     shooter.stop();
+    feeder.setFeedMode(FeedMode.STOPPED);
+    limelight.setLEDMode(limelight.LED_OFF);
   }
 
   @Override
@@ -42,3 +48,5 @@ public class AutoShootCommand extends CommandBase {
     return finished;
   }
 }
+
+
