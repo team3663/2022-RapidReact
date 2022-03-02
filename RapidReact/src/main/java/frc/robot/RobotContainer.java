@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 import frc.robot.commands.AutoFollowCargoCommand;
+import frc.robot.commands.AutoShootCommand;
 import frc.robot.commands.TeleOpDriveCommand;
 import frc.robot.drivers.Limelight;
 import frc.robot.drivers.Pigeon;
@@ -50,10 +51,9 @@ public class RobotContainer {
 
     // Commands
     private TeleOpDriveCommand teleOpDrive;
-    private AutoShootCommand shoot1;
+    private AutoShootCommand shoot;
     private SwerveControllerCommand followTrajectory;
     private AutoFollowCargoCommand followCargo;
-    private AutoShootCommand shoot2;
 
     public RobotContainer() {
 
@@ -126,13 +126,13 @@ public class RobotContainer {
         new JoystickButton(driveController, Button.kBack.value)
                 .whenPressed(new InstantCommand(() -> shooter.stop(), shooter));
         new JoystickButton(driveController, Button.kLeftBumper.value)
-                .whenPressed(new InstantCommand(() -> shooter.decreasePower(), shooter));
+                .whenPressed(new InstantCommand(() -> shooter.decreaseSpeed(), shooter));
         new JoystickButton(driveController, Button.kRightBumper.value)
-                .whenPressed(new InstantCommand(() -> shooter.increasePower(), shooter));
+                .whenPressed(new InstantCommand(() -> shooter.increaseSpeed(), shooter));
         new JoystickButton(driveController, Axis.kLeftTrigger.value)
-                .whenPressed(new InstantCommand(() -> shooter.decreasePower(), shooter));
+                .whenPressed(new InstantCommand(() -> shooter.raiseHood(), shooter));
         new JoystickButton(driveController, Axis.kRightTrigger.value)
-                .whenPressed(new InstantCommand(() -> shooter.increasePower(), shooter));
+                .whenPressed(new InstantCommand(() -> shooter.lowerHood(), shooter));
     }
 
     /**
@@ -142,7 +142,7 @@ public class RobotContainer {
      * @return the command to run in autonomous
      */
     public Command getAutonomousCommand() {
-      shoot1 = ?
+      shoot = new AutoShootCommand(shooter, feeder, limelight);
       Path backOutOfTarmac = new Path(PATH.backOutOfTarmac);
       followTrajectory = new SwerveControllerCommand(backOutOfTarmac.getTrajectory(),
                                                 drivetrain::getPose,
@@ -153,7 +153,6 @@ public class RobotContainer {
                                                 drivetrain::setModuleStates,
                                                 drivetrain);
       followCargo = new AutoFollowCargoCommand(drivetrain, pixy);
-      shoot2 = ?
-      return 
+      return new SequentialCommandGroup(shoot, followTrajectory, followCargo, shoot); // intake
     }
 }

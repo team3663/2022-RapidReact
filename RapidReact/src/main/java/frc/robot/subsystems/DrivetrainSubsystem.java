@@ -205,7 +205,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
         poseXEntry.setDouble(getPose().getTranslation().getX());
         poseYEntry.setDouble(getPose().getTranslation().getY());
         poseAbsoluteAngleEntry.setDouble(getPose().getRotation().getDegrees());
-
-        // pose angle entry (for trajectory following tuning)
+        
     }
 }
