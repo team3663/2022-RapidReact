@@ -45,6 +45,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     private final SwerveModule backRightModule;
 
     private SwerveModuleState[] states;
+    private Pose2d robotPosition;
     private ChassisSpeeds chassisSpeeds = new ChassisSpeeds(0.0, 0.0, 0.0);
 
     private NetworkTableEntry poseXEntry;
@@ -153,6 +154,8 @@ public class DrivetrainSubsystem extends SubsystemBase {
         driveSignalYEntry = driveSignalContainer.add("Drive Signal Strafe", 0.0).getEntry();
         driveSignalXEntry = driveSignalContainer.add("Drive Signal Forward", 0.0).getEntry();
         driveSignalRotationEntry = driveSignalContainer.add("Drive Signal Rotation", 0.0).getEntry();
+
+        resetGyroscope();
     }
 
     public void resetPosition() {
@@ -160,7 +163,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     }
 
     public Pose2d getPose() {
-        return odometry.getPoseMeters();
+        return robotPosition;
     }
 
     public void resetGyroscope() {
@@ -180,8 +183,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
     }
 
     public void setModuleStates(SwerveModuleState[] states) {
-        states = kinematics.toSwerveModuleStates(chassisSpeeds);
-
         frontLeftModule.set(states[0].speedMetersPerSecond / maxVelocity * MAX_VOLTAGE,
                 states[0].angle.getRadians());
         frontRightModule.set(states[1].speedMetersPerSecond / maxVelocity * MAX_VOLTAGE,
@@ -191,7 +192,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
         backRightModule.set(states[3].speedMetersPerSecond / maxVelocity * MAX_VOLTAGE,
                 states[3].angle.getRadians());
         
-        odometry.updateWithTime(Timer.getFPGATimestamp(), getGyroscopeRotation(), states);
+        robotPosition = odometry.update(getGyroscopeRotation(), states);
     }
 
     @Override

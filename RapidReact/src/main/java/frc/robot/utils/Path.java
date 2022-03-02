@@ -33,10 +33,10 @@ public class Path {
     private Pose2d end = new Pose2d(0, 0, Rotation2d.fromDegrees(0));
 
     public Path(PATH path) {
-        if (path.equals(PATH.backOutOfTarmac)) {
+        // if (path.equals(PATH.backOutOfTarmac)) {
             waypoints = List.of(new Translation2d(1, 0));
-            end = new Pose2d(2, 0, Rotation2d.fromDegrees(90));
-        }
+            end = new Pose2d(2, 0, Rotation2d.fromDegrees(0));
+        // }
         trajectory = TrajectoryGenerator.generateTrajectory(start, waypoints, end, config);
     }
 

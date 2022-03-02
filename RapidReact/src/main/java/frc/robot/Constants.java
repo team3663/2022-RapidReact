@@ -15,8 +15,8 @@ package frc.robot;
 public final class Constants {
 
   // Swerve drivetrain physical constants
-  public static final double DRIVETRAIN_TRACKWIDTH_METERS = 0.5461;
-  public static final double DRIVETRAIN_WHEELBASE_METERS = 0.5461;
+  public static final double DRIVETRAIN_TRACKWIDTH_METERS = 0.46697332;
+  public static final double DRIVETRAIN_WHEELBASE_METERS = 0.46697332;
   public static final double DRIVE_TRAIN_WHEEL_DIAMETER_METERS = 0.106325;
   public static final double FRONT_LEFT_MODULE_STEER_OFFSET = -Math.toRadians(64.764404296875);//297.7734375
   public static final double FRONT_RIGHT_MODULE_STEER_OFFSET = -Math.toRadians(261.749267578125);//23.291015625

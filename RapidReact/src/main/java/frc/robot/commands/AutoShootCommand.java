@@ -23,6 +23,7 @@ public class AutoShootCommand extends CommandBase {
   public void initialize() {
     feeder.setFeedMode(FeedMode.PRESHOOT);
     limelight.setLEDMode(limelight.LED_ON);
+    shooter.start();
   }
 
   @Override
@@ -31,7 +32,6 @@ public class AutoShootCommand extends CommandBase {
     shooter.setRange(distance);
     if (shooter.readyToShoot() && feeder.isIdle()){
       feeder.setFeedMode(FeedMode.CONTINUOUS);
-      shooter.start();
       finished = true;
     }
   }
