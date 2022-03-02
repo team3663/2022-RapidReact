@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.robot.drivers.Pigeon;
+import frc.robot.drivers.Pixy;
 import frc.robot.utils.SwerveDriveConfig;
 
 public class DrivetrainSubsystem extends SubsystemBase {
@@ -35,6 +36,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     private final SwerveDriveKinematics kinematics;
     private final SwerveDriveOdometry odometry;
     private final Pigeon pigeon;
+    private final Pixy pixy;
 
     private final SwerveModule frontLeftModule;
     private final SwerveModule frontRightModule;
@@ -50,10 +52,13 @@ public class DrivetrainSubsystem extends SubsystemBase {
     private NetworkTableEntry driveSignalXEntry;
     private NetworkTableEntry driveSignalYEntry;
     private NetworkTableEntry driveSignalRotationEntry;
+    private NetworkTableEntry cargoAreaEntry;
+    private NetworkTableEntry cargoXEntry;
 
-    public DrivetrainSubsystem(SwerveDriveConfig config, Pigeon pigeon) {
+    public DrivetrainSubsystem(SwerveDriveConfig config, Pigeon pigeon, Pixy pixy) {
 
         this.pigeon = pigeon;
+        this.pixy = pixy;
 
         // Physical constants for this drive base.
         trackWidth = config.trackWidth;
@@ -132,6 +137,14 @@ public class DrivetrainSubsystem extends SubsystemBase {
                 .withPosition(0, 2)
                 .withSize(1, 1)
                 .getEntry();
+        cargoAreaEntry = drivetrainRobotTab.add("Cargo Area", 0.0)
+                .withPosition(1, 0)
+                .withSize(1, 1)
+                .getEntry();
+        cargoXEntry = drivetrainRobotTab.add("Cargo X", 0.0)
+                .withPosition(1, 1)
+                .withSize(1, 1)
+                .getEntry();
         ShuffleboardLayout driveSignalContainer = drivetrainRobotTab
                 .getLayout("Drive Signal", BuiltInLayouts.kGrid)
                 .withPosition(0, 3)
@@ -161,9 +174,12 @@ public class DrivetrainSubsystem extends SubsystemBase {
         this.chassisSpeeds = chassisSpeeds;
     }
 
-    public void setModuleStates() {
+    public SwerveDriveKinematics getKinematics() {
+            return kinematics;
+    }
+
+    public void setModuleStates(SwerveModuleState[] states) {
         states = kinematics.toSwerveModuleStates(chassisSpeeds);
-        SwerveDriveKinematics.desaturateWheelSpeeds(states, maxVelocity);
 
         frontLeftModule.set(states[0].speedMetersPerSecond / maxVelocity * MAX_VOLTAGE,
                 states[0].angle.getRadians());
@@ -173,12 +189,15 @@ public class DrivetrainSubsystem extends SubsystemBase {
                 states[2].angle.getRadians());
         backRightModule.set(states[3].speedMetersPerSecond / maxVelocity * MAX_VOLTAGE,
                 states[3].angle.getRadians());
+        
+        odometry.updateWithTime(Timer.getFPGATimestamp(), getGyroscopeRotation(), states);
     }
 
     @Override
     public void periodic() {
-        setModuleStates();
-        odometry.updateWithTime(Timer.getFPGATimestamp(), getGyroscopeRotation(), states);
+        SwerveModuleState[] states = kinematics.toSwerveModuleStates(chassisSpeeds);
+        SwerveDriveKinematics.desaturateWheelSpeeds(states, maxVelocity);
+        setModuleStates(states);
 
         driveSignalYEntry.setDouble(chassisSpeeds.vyMetersPerSecond);
         driveSignalXEntry.setDouble(chassisSpeeds.vxMetersPerSecond);
