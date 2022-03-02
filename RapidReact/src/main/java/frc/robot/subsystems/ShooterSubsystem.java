@@ -18,6 +18,12 @@ import frc.robot.utils.Ranger;
 
 public class ShooterSubsystem extends SubsystemBase {
 
+  private enum MotorState {
+    STOPPED,
+    RUNNING,
+    STOPPING
+  }
+
   // Subsystem Constants
   private static final double MAX_RPM = 6000;
   private static final double shooterBeltRatio = 0.66;
@@ -60,7 +66,7 @@ public class ShooterSubsystem extends SubsystemBase {
   private SparkMaxPIDController hoodPidController;
   private DigitalInput hoodLimit;
 
-  private boolean running = false;
+  private MotorState motorState = MotorState.STOPPED;
   public double currentSpeed = 0;
   public double targetSpeed = 0;
 
@@ -133,6 +139,13 @@ public class ShooterSubsystem extends SubsystemBase {
       parkHood();
     }
 
+    // If we are in the process of stopping the shooter motor then slowly ramp the target
+    // speed down so the momentum of the flywheels don't damage the belts.
+    if (motorState == MotorState.STOPPING)
+    {
+      setSpeed( targetSpeed - 100);
+    }
+
     updateTelemetry();
   }
 
@@ -148,13 +161,12 @@ public class ShooterSubsystem extends SubsystemBase {
   // ---------------------------------------------------------------------------
 
   public void start() {
-    running = true;
+    motorState = MotorState.RUNNING;
     setSpeed(targetSpeed);
   }
 
   public void stop() {
-    running = false;
-    setSpeed(0);
+    motorState = MotorState.STOPPING;
   }
 
   public void setRange(double range) {
@@ -172,6 +184,7 @@ public class ShooterSubsystem extends SubsystemBase {
       targetSpeed = MAX_RPM;
     } else if (targetSpeed < 0) {
       targetSpeed = 0;
+      motorState = MotorState.STOPPED;
     }
 
     shooterPidController.setReference(targetSpeed, ControlType.kVelocity);
@@ -180,7 +193,7 @@ public class ShooterSubsystem extends SubsystemBase {
   public void increaseSpeed() {
     targetSpeed += speedIncrement;
 
-    if (running) {
+    if (motorState == MotorState.RUNNING) {
       setSpeed(targetSpeed);
     }
   }
@@ -188,7 +201,7 @@ public class ShooterSubsystem extends SubsystemBase {
   public void decreaseSpeed() {
     targetSpeed -= speedIncrement;
 
-    if (running) {
+    if (motorState == MotorState.RUNNING) {
       setSpeed(targetSpeed);
     }
   }
