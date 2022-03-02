@@ -298,6 +298,11 @@ public class ShooterSubsystem extends SubsystemBase {
         .withSize(1, 1)
         .getEntry();
 
+    readyToShootEntry = tab.add("Ready", false)
+        .withPosition(4, 2)
+        .withSize(1, 1)
+        .getEntry();
+
     targetAngleEntry = tab.add("Target Angle", 0)
         .withPosition(4, 2)
         .withSize(1, 1)
@@ -312,22 +317,18 @@ public class ShooterSubsystem extends SubsystemBase {
         .withPosition(6, 2)
         .withSize(1, 1)
         .getEntry();
-
-    readyToShootEntry = tab.add("Ready to Shoot", false)
-        .withPosition(7, 2)
-        .withSize(1, 1)
-        .getEntry();
   }
 
   private void updateTelemetry() {
     currentSpeedEntry.setNumber(currentSpeed);
     targetSpeedEntry.setNumber(targetSpeed);
     shooterEncoderEntry.setNumber(shooterEncoder.getPosition());
+    readyToShootEntry.forceSetBoolean(readyToShoot());
 
     currentAngleEntry.setNumber(currentAngle);
     targetAngleEntry.setNumber(targetAngle);
     hoodEncoderEntry.setNumber(hoodEncoder.getPosition());
-    hoodLimitSwitchEntry.setBoolean(hoodLimit.get());
-    readyToShootEntry.setBoolean(readyToShoot());
+    hoodLimitSwitchEntry.forceSetBoolean(hoodLimit.get());
+   
   }
 }
