@@ -70,6 +70,9 @@ public class ShooterSubsystem extends SubsystemBase {
 
   private double currentRange = 10.0;
 
+  private double hoodMargin = 0.02;
+  private double shooterMargin = 0.02;
+
   private NetworkTableEntry currentSpeedEntry;
   private NetworkTableEntry targetSpeedEntry;
   private NetworkTableEntry shooterEncoderEntry;
@@ -134,7 +137,7 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   public boolean readyToShoot(){
-    if(currentAngle == targetAngle && currentSpeed == targetSpeed){
+    if(speedIsReady() && hoodIsReady()){
       return true;
     }
     return false;
@@ -190,6 +193,13 @@ public class ShooterSubsystem extends SubsystemBase {
     }
   }
 
+  private boolean speedIsReady(){
+    if(currentSpeed >= targetSpeed - (shooterMargin * targetSpeed) && currentSpeed <= targetSpeed + (shooterMargin * targetSpeed)){
+      return true;
+    } 
+    return false;
+  }
+
   // ---------------------------------------------------------------------------
   // Hood Control methods
   // ---------------------------------------------------------------------------
@@ -239,6 +249,13 @@ public class ShooterSubsystem extends SubsystemBase {
     hoodMotor.set(0);
     hoodEncoder.setPosition(0);
     targetAngle = MAX_HOOD_ANGLE;
+  }
+
+  private boolean hoodIsReady(){
+    if(currentAngle >= targetAngle - (hoodMargin * targetAngle) && currentAngle <= targetAngle + (hoodMargin * targetAngle)){
+      return true;
+    } 
+    return false;
   }
 
   // ---------------------------------------------------------------------------

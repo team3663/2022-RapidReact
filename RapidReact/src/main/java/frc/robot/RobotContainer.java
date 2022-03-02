@@ -19,6 +19,8 @@ import frc.robot.utils.SwerveModuleConfig;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.subsystems.FeederSubsystem.FeedMode;
+
 import static frc.robot.Constants.*;
 
 /**
@@ -77,7 +79,7 @@ public class RobotContainer {
                 DRIVETRAIN_WHEELBASE_METERS, DRIVE_TRAIN_WHEEL_DIAMETER_METERS);
         drivetrain = new DrivetrainSubsystem(swerveConfig, pigeon);
 
-        limelight = new LimelightSubsystem(57, 0.5842, 2.6414);
+        limelight = new LimelightSubsystem(36, 0.5842, 2.6414);
     }
 
     /**
@@ -103,17 +105,20 @@ public class RobotContainer {
         //         whenPressed(new InstantCommand(() -> intake.retractArm(), intake));
         // new JoystickButton(driveController, Button.kX.value).
         //         whenPressed(new InstantCommand(() -> intake.extendBoom(), intake));
+        // new JoystickButton(driveController, Button.kY.value).
+        //         whenPressed(new InstantCommand(() -> intake.retractBoom(), intake));
         new JoystickButton(driveController, Button.kY.value).
-                whenHeld(new ShootCommand(shooter, feeder, limelight, (() -> driveController.getRightTriggerAxis() > 0.8)));
-
+                whenHeld(new ShootCommand(shooter, feeder, limelight, (() -> driveController.getAButton())));
+                // new JoystickButton(driveController, Button.kY.value).
+                // whenHeld(new ShootCommand(shooter, feeder, limelight, (() -> driveController.getRightTriggerAxis() > 0.8)));
 
         new JoystickButton(driveController, Button.kRightBumper.value).
                 whenHeld(new IntakeCommand(intake, feeder, (() -> driveController.getLeftBumper())));  
         
 
         // Button commands to help test the feeder subsystem.
-        // new JoystickButton(driveController, Button.kX.value)
-        //         .whenPressed(new InstantCommand(() -> feeder.setFeedMode(FeedMode.STOPPED), feeder));
+        new JoystickButton(driveController, Button.kX.value)
+                .whenPressed(new InstantCommand(() -> feeder.setFeedMode(FeedMode.PRESHOOT), feeder));
         // new JoystickButton(driveController, Button.kY.value)
         //         .whenPressed(new InstantCommand(() -> feeder.setFeedMode(FeedMode.CONTINUOUS), feeder));
 
@@ -121,12 +126,6 @@ public class RobotContainer {
         //         .whenPressed(new InstantCommand(() -> shooter.raiseHood(), shooter));
         // new JoystickButton(driveController, Button.kY.value)
         //         .whenPressed(new InstantCommand(() -> shooter.lowerHood(), shooter));
-
-        // Button commands to test shooter subsystem
-         new JoystickButton(driveController, Button.kStart.value)
-                 .whenPressed(new InstantCommand(() -> shooter.start(), shooter));
-         new JoystickButton(driveController, Button.kBack.value)
-                 .whenPressed(new InstantCommand(() -> shooter.stop(), shooter));
 
         new POVButton(driveController, 0).whenPressed(new InstantCommand(() -> shooter.setAngle(67.0), shooter));      
         new POVButton(driveController, 90).whenPressed(new InstantCommand(() -> shooter.increaseSpeed(), shooter));

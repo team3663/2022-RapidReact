@@ -112,22 +112,22 @@ public class IntakeSubsystem extends SubsystemBase {
   // Solenoid movement methods
   // ---------------------------------------------------------------------------
 
-  private void extendBoom() {
+  public void extendBoom() {
     boomIntakeSolenoid.set(Value.kForward);
     boomIsOut = true;
   }
 
-  private void retractBoom() {
+  public void retractBoom() {
     boomIntakeSolenoid.set(Value.kReverse);
     boomIsOut = false;
   }
 
-  private void extendArm() {
+  public void extendArm() {
     armIntakeSolenoid.set(Value.kForward);
     armIsOut = true;
   }
 
-  private void retractArm() {
+  public void retractArm() {
     armIntakeSolenoid.set(Value.kReverse);
     armIsOut = false;
   }
@@ -136,7 +136,7 @@ public class IntakeSubsystem extends SubsystemBase {
   // Intake motor control methods 
   // ---------------------------------------------------------------------------
 
-  private void spinBallIn() {
+  public void spinBallIn() {
     if(boomIsOut && armIsOut)
     intakeMotor.set(POWER);
   }

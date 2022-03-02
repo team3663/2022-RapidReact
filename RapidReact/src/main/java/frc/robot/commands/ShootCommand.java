@@ -35,22 +35,21 @@ public class ShootCommand extends CommandBase {
   public void initialize() {
     feeder.setFeedMode(FeedMode.PRESHOOT);
     limelight.setLEDMode(limelight.LED_ON);
+    // shooter.start();
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
-  public void execute() {
-  
+  public void execute() { 
      shooter.setRange(limelight.getDistance());
 
-     if(shooter.readyToShoot() && feeder.isIdle()){
-
-      if (trigger.getAsBoolean())
-       feeder.setFeedMode(FeedMode.CONTINUOUS);
-     }
-     else {
+    //  if(shooter.readyToShoot() && feeder.isIdle()){
+      if (trigger.getAsBoolean()){
+        feeder.setFeedMode(FeedMode.CONTINUOUS);
+      }else{
        feeder.setFeedMode(FeedMode.STOPPED);
      }
+    // }
   }
 
   // Called once the command ends or is interrupted.
@@ -58,6 +57,7 @@ public class ShootCommand extends CommandBase {
   public void end(boolean interrupted) {
     feeder.setFeedMode(FeedMode.STOPPED);
     limelight.setLEDMode(limelight.LED_OFF);
+    shooter.stop();
   }
 
   // Returns true when the command should end.

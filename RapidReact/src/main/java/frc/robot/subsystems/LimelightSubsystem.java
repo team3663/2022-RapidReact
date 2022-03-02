@@ -63,7 +63,7 @@ public class LimelightSubsystem extends SubsystemBase {
    */
   @Override
   public void periodic() {
-
+    setLEDMode(LED_ON);
     updateTelemetry();
   }
 
