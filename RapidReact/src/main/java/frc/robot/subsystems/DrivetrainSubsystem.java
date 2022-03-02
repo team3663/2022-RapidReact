@@ -85,6 +85,12 @@ public class DrivetrainSubsystem extends SubsystemBase {
         odometry = new SwerveDriveOdometry(kinematics, new Rotation2d(), new Pose2d());
 
         // Create our swerve module objects.
+        /*
+        Front Left to Front Right
+        Back Left to Front Left
+        Front Right to Back Right
+        Back Right to Back Left
+        */
         ShuffleboardTab drivetrainModuletab = Shuffleboard.getTab("Swerve Modules");
         frontLeftModule = Mk4SwerveModuleHelper.createFalcon500(
                 drivetrainModuletab.getLayout("Front Left Module", BuiltInLayouts.kList)
