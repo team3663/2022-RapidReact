@@ -1,21 +1,22 @@
-package frc.robot.drivers;
+package frc.robot.subsystems;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 /**
  * @see http://docs.limelightvision.io/en/latest/getting_started.html#basic-programming 
  */
-public class Limelight {
+public class LimelightSubsystem extends SubsystemBase {
 
   //led mode constants
-  public static final int LED_PIPELINE = 0; //use the LED Mode set in the current pipeline
-  public static final int LED_OFF = 1; //force off
-  public static final int LED_BLINK = 2; //force blink
-  public static final int LED_ON = 3; //force on
-  public static final int LED_DEFAULT_MODE = LED_OFF;
+  public  final int LED_PIPELINE = 0; //use the LED Mode set in the current pipeline
+  public  final int LED_OFF = 1; //force off
+  public  final int LED_BLINK = 2; //force blink
+  public  final int LED_ON = 3; //force on
+  public  final int LED_DEFAULT_MODE = LED_OFF;
 
   //camera mode constants
   public static final int CAMERA_VISION = 0; //Vision processor
@@ -29,9 +30,9 @@ public class Limelight {
   public static final int DEFAULT_PIPELINE = BLUE_PIPELINE;
 
   //Distance constants
-  public static final double CAMERA_ANGLE = 32.5;
-  public static final double CAMERA_HEIGHT = 21.25; //in inches
-  public static final double TARGET_HEIGHT = 89.75; //center of vision target //98.25; center of target//in inches
+  public static double camera_Angle; //
+  public static double camera_Height; //in Meters
+  public static double target_Height; //center of target //in Meters
 
   //vision network table
   private NetworkTable visionTable;
@@ -42,7 +43,11 @@ public class Limelight {
   private NetworkTableEntry ts; //Skew or rotation (-90 degrees to 0 degrees)
   private NetworkTableEntry camtran; //Results of a 3D position solution, 6 numbers: Translation (x,y,y) Rotation(pitch,yaw,roll)
   
-  public Limelight() {
+  public LimelightSubsystem(double cameraAngle, double cameraHeight, double targetHeight) {
+    camera_Angle = cameraAngle;
+    camera_Height = cameraHeight;
+    target_Height = targetHeight;
+
     visionTable = NetworkTableInstance.getDefault().getTable("limelight");
     tx = visionTable.getEntry("tx");
     ty = visionTable.getEntry("ty");
@@ -51,6 +56,15 @@ public class Limelight {
     ts = visionTable.getEntry("ts");
     camtran = visionTable.getEntry("camtran");
     setMode(CAMERA_DEFAULT_MODE, LED_DEFAULT_MODE, DEFAULT_PIPELINE);
+  }
+
+  /**
+   * Perform background processing for subsystem
+   */
+  @Override
+  public void periodic() {
+    setLEDMode(LED_ON);
+    updateTelemetry();
   }
 
   public void updateTelemetry() {
@@ -121,8 +135,8 @@ public class Limelight {
   public double getDistance() {
     double distance = 0;
     double angleOftarget = getYOffset();
-    distance = (TARGET_HEIGHT - CAMERA_HEIGHT) / Math.tan(Math.toRadians(CAMERA_ANGLE + angleOftarget));
-    return distance / 12; //change distance to feet
+    distance = (target_Height - camera_Height) / Math.tan(Math.toRadians(camera_Angle + angleOftarget));
+    return distance; 
   }
 
   /**  
