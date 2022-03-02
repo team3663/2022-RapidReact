@@ -4,6 +4,8 @@
 
 package frc.robot.commands;
 
+import java.util.function.BooleanSupplier;
+
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.FeederSubsystem;
 import frc.robot.subsystems.LimelightSubsystem;
@@ -13,40 +15,49 @@ import frc.robot.subsystems.FeederSubsystem.FeedMode;
 public class ShootCommand extends CommandBase {
   //put feeder in preshoot mode check isIdle
   /** Creates a new ShootCommand. */
-  private ShooterSubsystem shooterSubsystem;
-  private FeederSubsystem feederSubsystem;
+  private ShooterSubsystem shooter;
+  private FeederSubsystem feeder;
   private LimelightSubsystem limelight;
+  private BooleanSupplier trigger;
 
-  public ShootCommand(ShooterSubsystem shooterSubsystem, FeederSubsystem feederSubsystem, LimelightSubsystem limelight) {
-    this.shooterSubsystem = shooterSubsystem;
-    this.feederSubsystem = feederSubsystem;
+
+  public ShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, LimelightSubsystem limelight, BooleanSupplier trigger) {
+    this.shooter = shooter;
+    this.feeder = feeder;
     this.limelight = limelight;
+    this.trigger = trigger;
     
-    addRequirements(shooterSubsystem, feederSubsystem);
+    addRequirements(shooter, feeder,limelight);
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    feederSubsystem.setFeedMode(FeedMode.PRESHOOT);
+    feeder.setFeedMode(FeedMode.PRESHOOT);
     limelight.setLEDMode(limelight.LED_ON);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    limelight.updateTelemetry();
-    System.out.println(limelight.getDistance());
-    // shooterSubsystem.setRange(limelight.getDistance());
-    // if(shooterSubsystem.readyToShoot() && feederSubsystem.isIdle()){
-    //   feederSubsystem.setFeedMode(FeedMode.CONTINUOUS);
-    // }
+  
+     shooter.setRange(limelight.getDistance());
+
+     if(shooter.readyToShoot() && feeder.isIdle()){
+
+      if (trigger.getAsBoolean())
+       feeder.setFeedMode(FeedMode.CONTINUOUS);
+     }
+     else {
+       feeder.setFeedMode(FeedMode.STOPPED);
+     }
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    // feederSubsystem.setFeedMode(FeedMode.STOPPED);
+    feeder.setFeedMode(FeedMode.STOPPED);
+    limelight.setLEDMode(limelight.LED_OFF);
   }
 
   // Returns true when the command should end.
