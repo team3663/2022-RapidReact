@@ -68,7 +68,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
         wheelDiameter = config.wheelDiameter;
 
         // Maximum module velocity in meters/second
-        maxVelocity = 6380.0 / 60.0 * SdsModuleConfigurations.MK4_L4.getDriveReduction() * wheelDiameter
+        maxVelocity = 6380.0 / 60.0 * SdsModuleConfigurations.MK4_L2.getDriveReduction() * wheelDiameter
                 * Math.PI;
 
         // Maximum angular velocity in radians/second.
@@ -96,7 +96,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
                 drivetrainModuletab.getLayout("Front Left Module", BuiltInLayouts.kList)
                         .withSize(2, 4)
                         .withPosition(0, 0),
-                Mk4SwerveModuleHelper.GearRatio.L4,
+                Mk4SwerveModuleHelper.GearRatio.L2,
                 config.frontLeft.driveMotorCanId,
                 config.frontLeft.steerMotorCanId,
                 config.frontLeft.encoderCanId,
@@ -106,7 +106,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
                 drivetrainModuletab.getLayout("Front Right Module", BuiltInLayouts.kList)
                         .withSize(2, 4)
                         .withPosition(2, 0),
-                Mk4SwerveModuleHelper.GearRatio.L4,
+                Mk4SwerveModuleHelper.GearRatio.L2,
                 config.frontRight.driveMotorCanId,
                 config.frontRight.steerMotorCanId,
                 config.frontRight.encoderCanId,
@@ -116,7 +116,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
                 drivetrainModuletab.getLayout("Back Left Module", BuiltInLayouts.kList)
                         .withSize(2, 4)
                         .withPosition(4, 0),
-                Mk4SwerveModuleHelper.GearRatio.L4,
+                Mk4SwerveModuleHelper.GearRatio.L2,
                 config.backLeft.driveMotorCanId,
                 config.backLeft.steerMotorCanId,
                 config.backLeft.encoderCanId,
@@ -126,7 +126,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
                 drivetrainModuletab.getLayout("Back Right Module", BuiltInLayouts.kList)
                         .withSize(2, 4)
                         .withPosition(6, 0),
-                Mk4SwerveModuleHelper.GearRatio.L4,
+                Mk4SwerveModuleHelper.GearRatio.L2,
                 config.backRight.driveMotorCanId,
                 config.backRight.steerMotorCanId,
                 config.backRight.encoderCanId,
