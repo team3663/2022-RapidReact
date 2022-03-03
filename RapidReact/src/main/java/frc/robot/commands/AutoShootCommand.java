@@ -1,22 +1,24 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.drivers.Limelight;
 import frc.robot.subsystems.FeederSubsystem;
+import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.FeederSubsystem.FeedMode;
 
 public class AutoShootCommand extends CommandBase {
   private ShooterSubsystem shooter;
   private FeederSubsystem feeder;
-  private Limelight limelight;
+  private LimelightSubsystem limelight;
 
-  private boolean finished = false;
-  
-  public AutoShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, Limelight limelight) {
+  private boolean finished;
+
+  public AutoShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, LimelightSubsystem limelight) {
     this.shooter = shooter;
+    this.feeder = feeder;
     this.limelight = limelight;
-    addRequirements(shooter);
+    
+    addRequirements(shooter, feeder,limelight);
   }
 
   @Override
@@ -27,20 +29,20 @@ public class AutoShootCommand extends CommandBase {
   }
 
   @Override
-  public void execute() {
-    double distance = limelight.getDistance();
-    shooter.setRange(distance);
-    if (shooter.readyToShoot() && feeder.isIdle()){
-      feeder.setFeedMode(FeedMode.CONTINUOUS);
+  public void execute() { 
+    shooter.setRange(limelight.getDistance());
+    
+    if (shooter.readyToShoot()) {
+      feeder.setFeedMode(FeedMode.SHOOT_ONE);
       finished = true;
     }
   }
 
   @Override
   public void end(boolean interrupted) {
-    shooter.stop();
     feeder.setFeedMode(FeedMode.STOPPED);
     limelight.setLEDMode(limelight.LED_OFF);
+    shooter.stop();
   }
 
   @Override
@@ -48,5 +50,3 @@ public class AutoShootCommand extends CommandBase {
     return finished;
   }
 }
-
-

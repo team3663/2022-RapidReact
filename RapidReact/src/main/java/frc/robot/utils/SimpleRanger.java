@@ -2,20 +2,21 @@ package frc.robot.utils;
 
 public class SimpleRanger implements Ranger {
 
+    // TO DO retune
     private final int DISTANCE_0 = 0;
     private final int DISTANCE_1 = 5;
     private final int DISTANCE_2 = 10;
     private final int DISTANCE_3 = 15;
 
-    private final int ANGLE_0 = 76;
-    private final int ANGLE_1 = 71;
+    private final int ANGLE_0 = 77;
+    private final int ANGLE_1 = 74;
     private final int ANGLE_2 = 67;
     private final int ANGLE_3 = 67;
 
-    private final int SPEED_0 = 2900;
-    private final int SPEED_1 = 3100;
-    private final int SPEED_2 = 3700;
-    private final int SPEED_3 = 4400;
+    private final int SPEED_0 = 2400;
+    private final int SPEED_1 = 2700;
+    private final int SPEED_2 = 2900;
+    private final int SPEED_3 = 3600;
 
 
     private final int DISTANCE_COLUMN_INDEX = 0;

@@ -65,6 +65,7 @@ public class RobotContainer {
     // Commands
     private TeleOpDriveCommand teleOpDrive;
     private AutoShootCommand shoot;
+    private AutoDriveCommand driveBack;
     private SwerveControllerCommand followTrajectory;
     private AutoFollowCargoCommand followCargo;
 
@@ -133,10 +134,9 @@ public class RobotContainer {
                 whenHeld(new IntakeCommand(intake, feeder, (() -> driveController.getLeftBumper())));  
         
         // Temporary test commands to be removed before competition
-
-        new JoystickButton(driveController, Button.kStart.value)
-               .whenPressed(new AutoDriveCommand(drivetrain, new Translation2d(2, 0), new Rotation2d()));
-               
+        new JoystickButton(driveController, Button.kA.value)
+               .whenPressed(getAutoDriveCommand());
+        
         //new POVButton(driveController, 0).whenPressed(new InstantCommand(() -> shooter.setAngle(67.0), shooter));      
     }
 
@@ -148,59 +148,39 @@ public class RobotContainer {
      */
     public Command getAutonomousCommand() {
             return null;
+            /*
+            return new SequentialCommandGroup(getAutoShootCommand(),
+                                                getAutoDriveCommand(),
+                                                getFollowTrajectoryCommand(), // TODO need an intake command
+                                                getAutoShootCommand());
+        */
     }
 
     public Command getFollowTrajectoryCommand() {
-        TrajectoryConfig config = new TrajectoryConfig(1.5, 1);
-    config.setReversed(true);
-    
-    Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
-        new Pose2d(0, 0, new Rotation2d(0)),                        // Start at the origin facing the +X direction       
-        List.of(new Translation2d(1, 0.3)), // Pass through these two interior waypoints, making an 's' curve path
-        new Pose2d(2, 0, new Rotation2d(0)),                        // End 3 meters straight ahead of where we started, facing forward
-        config);
-
-    double totalTimeSeconds = trajectory.getTotalTimeSeconds();
-    System.out.println("-----------------------------> totalTimeSeconds: " + totalTimeSeconds);
-
-    double kpX = 0.00001;  //.01 for both X and Y
-    double kpY = 0.00001;
-    double kiX = 0.0;
-    double kiY = 0.0;
-    double kdX = 0.0;
-    double kdY = 0.0;
-    PIDController xController = new PIDController(kpX, kiX, kdX); 
-    PIDController yController = new PIDController(kpY, kiY, kdY); 
-
-
-    double kPhysicalMaxAngularSpeedRadiansPerSecond = 2 * 2 * Math.PI;
-    double kMaxAngularSpeedRadiansPerSecond = kPhysicalMaxAngularSpeedRadiansPerSecond / 10;
-    double kMaxAngularAccelerationRadiansPerSecondSquared = Math.PI / 4;
-
-    TrapezoidProfile.Constraints thetaControllerConstraints = new TrapezoidProfile.Constraints(
-        kMaxAngularSpeedRadiansPerSecond,
-        kMaxAngularAccelerationRadiansPerSecondSquared);
-
-    double kpTheta = 0.0000000000001;   // .04
-    double kiTheta = 0.0;
-    double kdTheta = 0.0;
-    ProfiledPIDController thetaController = new ProfiledPIDController(kpTheta, kiTheta, kdTheta, thetaControllerConstraints); 
-
-    followTrajectory = new SwerveControllerCommand(
-      trajectory,
-      drivetrain::getPose,
-      drivetrain.getKinematics(),
-      xController,
-      yController,
-      thetaController,
-      drivetrain::setModuleStates,
-      drivetrain);
-
-      return followTrajectory;
+        Path path = new Path(PATH.backOutOfTarmac);
+        followTrajectory = new SwerveControllerCommand(path.getTrajectory(),
+                                                        drivetrain::getPose,
+                                                        drivetrain.getKinematics(),
+                                                        path.getPidController(),
+                                                        path.getPidController(),
+                                                        path.getAnglePidController(),
+                                                        drivetrain::setModuleStates,
+                                                        drivetrain);
+        return followTrajectory;
     }
 
     public Command getFollowCargoCommand() {
         followCargo = new AutoFollowCargoCommand(drivetrain, pixy);
         return followCargo;
+    }
+
+    public Command getAutoDriveCommand() {
+        driveBack = new AutoDriveCommand(drivetrain, new Translation2d(-2, 0), Rotation2d.fromDegrees(90));
+        return driveBack;
+    }
+
+    public Command getAutoShootCommand() {
+            shoot = new AutoShootCommand(shooter, feeder, limelight);
+            return shoot;
     }
 }
