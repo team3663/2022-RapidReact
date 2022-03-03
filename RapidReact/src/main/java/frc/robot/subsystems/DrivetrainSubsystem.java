@@ -61,7 +61,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
         wheelDiameter = config.wheelDiameter;
 
         // Maximum module velocity in meters/second
-        maxVelocity = 6380.0 / 60.0 * SdsModuleConfigurations.MK4_L4.getDriveReduction() * wheelDiameter
+        maxVelocity = 6380.0 / 60.0 * SdsModuleConfigurations.MK4_L2.getDriveReduction() * wheelDiameter
                 * Math.PI;
 
         // Maximum angular velocity in radians/second.

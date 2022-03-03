@@ -36,13 +36,13 @@ public class ShooterSubsystem extends SubsystemBase {
   private static final double angleIncrement = 1;
 
   // Shooter PID coefficients constants
-  private static final double kShooterP = 0.0013;
-  private static final double kShooterI = 0;
-  private static final double kShooterD = 0;
-  private static final double kShooterIz = 0;
-  private static final double kShooterFF = 0.000015;
-  private static final double kShooterMaxOutput = 1;
-  private static final double kShooterMinOutput = 0;
+  private static final double kShooterP = 0.001530;
+  private static final double kShooterI = 0.000000;
+  private static final double kShooterD = 0.000003;
+  private static final double kShooterIz = 0.000000;
+  private static final double kShooterFF = 0.000272;
+  private static final double kShooterMaxOutput = 1.000000;
+  private static final double kShooterMinOutput = 0.000000;
 
   // Hood PID coefficients
   private static final double kHoodP = 0.1;
