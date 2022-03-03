@@ -243,13 +243,13 @@ public class ShooterSubsystem extends SubsystemBase {
   public void dumpPIDCoefficients() {
 
     System.out.println("--------------------------------------------------------");
-    System.out.printf("private static final double kShooterP = %f;", currentP);
-    System.out.printf("private static final double kShooterI = %f;", currentI);
-    System.out.printf("private static final double kShooterD = %f;", currentD);
-    System.out.printf("private static final double kShooterIz = %f;", currentIz);
-    System.out.printf("private static final double kShooterFF = %f;", currentFF);
-    System.out.printf("private static final double kShooterMaxOutput = %f;", currentMaxOutput);
-    System.out.printf("private static final double kShooterMinOutput = %f;", currentMinOutput);
+    System.out.printf("private static final double kShooterP = %f;\n", currentP);
+    System.out.printf("private static final double kShooterI = %f;\n", currentI);
+    System.out.printf("private static final double kShooterD = %f;\n", currentD);
+    System.out.printf("private static final double kShooterIz = %f;\n", currentIz);
+    System.out.printf("private static final double kShooterFF = %f;\n", currentFF);
+    System.out.printf("private static final double kShooterMaxOutput = %f;\n", currentMaxOutput);
+    System.out.printf("private static final double kShooterMinOutput = %f;\n", currentMinOutput);
     System.out.println("--------------------------------------------------------");
   }
 
