@@ -20,7 +20,9 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.robot.drivers.Pigeon;
+import frc.robot.drivers.Pixy;
 import frc.robot.utils.SwerveDriveConfig;
+import io.github.pseudoresonance.pixy2api.Pixy2CCC.Block;
 
 public class DrivetrainSubsystem extends SubsystemBase {
 
@@ -35,6 +37,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     private final SwerveDriveKinematics kinematics;
     private final SwerveDriveOdometry odometry;
     private final Pigeon pigeon;
+    private final Pixy pixy;
 
     private final SwerveModule frontLeftModule;
     private final SwerveModule frontRightModule;
@@ -50,10 +53,13 @@ public class DrivetrainSubsystem extends SubsystemBase {
     private NetworkTableEntry driveSignalXEntry;
     private NetworkTableEntry driveSignalYEntry;
     private NetworkTableEntry driveSignalRotationEntry;
+    private NetworkTableEntry cargoAreaEntry;
+    private NetworkTableEntry cargoXEntry;
 
-    public DrivetrainSubsystem(SwerveDriveConfig config, Pigeon pigeon) {
+    public DrivetrainSubsystem(SwerveDriveConfig config, Pigeon pigeon, Pixy pixy) {
 
         this.pigeon = pigeon;
+        this.pixy = pixy;
 
         // Physical constants for this drive base.
         trackWidth = config.trackWidth;
@@ -89,7 +95,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
                 drivetrainModuletab.getLayout("Front Left Module", BuiltInLayouts.kList)
                         .withSize(2, 4)
                         .withPosition(0, 0),
-                Mk4SwerveModuleHelper.GearRatio.L4,
+                Mk4SwerveModuleHelper.GearRatio.L2,
                 config.frontLeft.driveMotorCanId,
                 config.frontLeft.steerMotorCanId,
                 config.frontLeft.encoderCanId,
@@ -99,7 +105,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
                 drivetrainModuletab.getLayout("Front Right Module", BuiltInLayouts.kList)
                         .withSize(2, 4)
                         .withPosition(2, 0),
-                Mk4SwerveModuleHelper.GearRatio.L4,
+                Mk4SwerveModuleHelper.GearRatio.L2,
                 config.frontRight.driveMotorCanId,
                 config.frontRight.steerMotorCanId,
                 config.frontRight.encoderCanId,
@@ -109,7 +115,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
                 drivetrainModuletab.getLayout("Back Left Module", BuiltInLayouts.kList)
                         .withSize(2, 4)
                         .withPosition(4, 0),
-                Mk4SwerveModuleHelper.GearRatio.L4,
+                Mk4SwerveModuleHelper.GearRatio.L2,
                 config.backLeft.driveMotorCanId,
                 config.backLeft.steerMotorCanId,
                 config.backLeft.encoderCanId,
@@ -119,7 +125,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
                 drivetrainModuletab.getLayout("Back Right Module", BuiltInLayouts.kList)
                         .withSize(2, 4)
                         .withPosition(6, 0),
-                Mk4SwerveModuleHelper.GearRatio.L4,
+                Mk4SwerveModuleHelper.GearRatio.L2,
                 config.backRight.driveMotorCanId,
                 config.backRight.steerMotorCanId,
                 config.backRight.encoderCanId,
@@ -192,6 +198,10 @@ public class DrivetrainSubsystem extends SubsystemBase {
         poseXEntry.setDouble(getPose().getTranslation().getX());
         poseYEntry.setDouble(getPose().getTranslation().getY());
         poseAbsoluteAngleEntry.setDouble(getPose().getRotation().getDegrees());
+
+        Block cargo = pixy.getLargestBlock();
+        cargoAreaEntry.setDouble(pixy.getArea(cargo));
+        cargoXEntry.setDouble(pixy.getX(cargo));
 
         // pose angle entry (for trajectory following tuning)
     }
