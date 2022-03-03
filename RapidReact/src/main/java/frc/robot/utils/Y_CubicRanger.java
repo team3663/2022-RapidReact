@@ -8,7 +8,6 @@ import edu.wpi.first.math.numbers.N4;
 
 public class Y_CubicRanger implements Ranger {
 
-    // TODO collect data
     public final int DISTANCE_0 = 0;
     public final int DISTANCE_1 = 0;
     public final int DISTANCE_2 = 0;
