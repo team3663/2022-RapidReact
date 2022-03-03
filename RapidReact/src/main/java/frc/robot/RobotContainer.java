@@ -1,6 +1,7 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.XboxController.Axis;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -103,6 +104,8 @@ public class RobotContainer {
         // Schedule the Shoot command to fire a cargo       
         new JoystickButton(driveController, Button.kY.value).
                 whenHeld(new ShootCommand(shooter, feeder, limelight, (() -> driveController.getRightTriggerAxis() > 0.8)));
+        // new JoystickButton(driveController, Axis.kLeftTrigger.value).
+        //         whenHeld(new ShootCommand(shooter, feeder, limelight, (() -> driveController.getRightTriggerAxis() > 0.8)));
 
         // Schedule the Intake command to pick-up cargo        
         new JoystickButton(driveController, Button.kRightBumper.value).
