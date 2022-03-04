@@ -12,18 +12,28 @@ public class ShootCommand extends CommandBase {
 
     private ShooterSubsystem shooter;
     private FeederSubsystem feeder;
-    private LimelightSubsystem limelight;
+    private LimelightSubsystem limelight = null;
     private BooleanSupplier trigger;
+    private double currentRange;
     private boolean stagingCargo;
 
-    public ShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, LimelightSubsystem limelight,
-            BooleanSupplier trigger) {
+    // Fixed range version, take the range to target as a parameter
+    public ShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, BooleanSupplier trigger, double range) {
         this.shooter = shooter;
         this.feeder = feeder;
-        this.limelight = limelight;
         this.trigger = trigger;
+        this.currentRange = range;
 
-        addRequirements(shooter, feeder, limelight);
+        addRequirements(shooter, feeder);
+    }
+
+    // Variable range version, takes a limelight object that is used to determine
+    // the range
+    public ShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, BooleanSupplier trigger,
+            LimelightSubsystem limelight) {
+        this(shooter, feeder, trigger, 0);
+
+        this.limelight = limelight;
     }
 
     // Called when the command is initially scheduled.
@@ -32,13 +42,24 @@ public class ShootCommand extends CommandBase {
         feeder.setFeedMode(FeedMode.PRESHOOT);
         stagingCargo = true;
 
-        limelight.setLEDMode(limelight.LED_ON);
+        if (limelight != null) {
+            limelight.setLEDMode(limelight.LED_ON);
+        }
+
+        // Initialze the shooter range, if we have a limelight it will get updated each
+        // time through periodic.
+        shooter.setRange(currentRange);
     }
 
     // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute() {
-        shooter.setRange(limelight.getDistance());
+
+        // If we have a limelight the use it to update the current range to target
+        if (limelight != null) {
+            currentRange = limelight.getDistance();
+            shooter.setRange(currentRange);
+        }
 
         // We bail out here if we are staging cargo and the feeder has not stopped yet.
         if (stagingCargo) {
@@ -58,8 +79,12 @@ public class ShootCommand extends CommandBase {
     @Override
     public void end(boolean interrupted) {
         feeder.setFeedMode(FeedMode.STOPPED);
-        limelight.setLEDMode(limelight.LED_OFF);
         shooter.stop();
+
+        if (limelight != null) {
+            limelight.setLEDMode(limelight.LED_OFF);
+        }
+
     }
 
     // Returns true when the command should end.

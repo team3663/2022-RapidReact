@@ -137,7 +137,7 @@ public class RobotContainer {
 
         // Schedule the Shoot command to fire a cargo
         new JoystickButton(driveController, Button.kY.value).whenHeld(
-                new ShootCommand(shooter, feeder, limelight, (() -> driveController.getRightTriggerAxis() > 0.8)));
+                new ShootCommand(shooter, feeder, () -> driveController.getRightTriggerAxis() > 0.8, limelight));
 
         // Schedule the Intake command to pick-up cargo
         new JoystickButton(driveController, Button.kRightBumper.value)
