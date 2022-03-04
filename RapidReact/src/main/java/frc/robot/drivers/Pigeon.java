@@ -51,7 +51,7 @@ public class Pigeon implements Gyro, Accelerometer {
     // reset gyro
     @Override
     public void reset() {
-        pigeon.setFusedHeading(0);
+        pigeon.setFusedHeading(180);
     }
 
     // gyro rate in degree/s
