@@ -70,6 +70,7 @@ public class FeederSubsystem extends SubsystemBase {
         feedPID.setD(KD);
 
         feedEncoder = feedMotor.getEncoder();
+        feedEncoder.setPosition(0.0);
         feedEncoder.setVelocityConversionFactor(FEEDER_GEAR_RATIO_MULTIPLIER); // set feeder gear ratio
 
         // Sensors for Feeder
@@ -263,13 +264,16 @@ public class FeederSubsystem extends SubsystemBase {
      * exit end of the feeder.
      */
     private class PreshootMode extends FeedModeBase {
+
+        double targetPosition;
+
         private PreshootMode() {
             super(FeedMode.PRESHOOT);
         }
 
         @Override
         protected void init(FeederSubsystem feeder) {
-            feeder.feedEncoder.setPosition(0.0);
+            targetPosition = feedEncoder.getPosition() + REV_PER_FULL_FEED;
             feeder.feedPID.setReference(FEED_RPM_INTAKE, ControlType.kVelocity);
         }
 
@@ -284,7 +288,7 @@ public class FeederSubsystem extends SubsystemBase {
 
             // If the exit sensor has not seen a ball yet but the belt has moved the full
             // length of the feeder then there are no balls, bail out.
-            if (feeder.feedEncoder.getPosition() > REV_PER_FULL_FEED) {
+            if (feeder.feedEncoder.getPosition() >= targetPosition) {
                 return true;
             }
 
