@@ -62,10 +62,6 @@ public class AutoDriveCommand extends CommandBase {
     System.out.println();
   }
 
-  private double cap(double value) {
-    return Math.max(-1, Math.min(value, 1));
-  }
-
   @Override
   public void end(boolean interrupted) {
     drivetrainSubsystem.drive(new ChassisSpeeds(0, 0, 0));

@@ -27,7 +27,7 @@ public class ShootCommand extends CommandBase {
     this.limelight = limelight;
     this.trigger = trigger;
     
-    addRequirements(shooter, feeder,limelight);
+    addRequirements(shooter, feeder, limelight);
   }
 
   // Called when the command is initially scheduled.

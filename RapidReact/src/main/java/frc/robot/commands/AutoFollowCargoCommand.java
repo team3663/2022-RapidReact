@@ -8,17 +8,21 @@ import frc.robot.subsystems.DrivetrainSubsystem;
 import io.github.pseudoresonance.pixy2api.Pixy2CCC.Block;
 
 public class AutoFollowCargoCommand extends CommandBase {
-  private DrivetrainSubsystem drivetrainSubsystem;
+  private DrivetrainSubsystem drivetrain;
   private Pixy pixy;
   private PIDController translationXPidController = new PIDController(0.001, 0, 0);
   private PIDController rotationPidController = new PIDController(0.025, 0, 0); // TODO tune pid
   
   private double lastXOffset = 0;
+  private double currentXOffset = 0;
 
-  public AutoFollowCargoCommand(DrivetrainSubsystem drivetrainSubsystem, Pixy pixy) {
+  private double rotationSpeed = drivetrain.maxAngularVelocity;
+  private double translationXSpeed = drivetrain.maxVelocity;
 
-    this.drivetrainSubsystem = drivetrainSubsystem;
-    addRequirements(drivetrainSubsystem);
+  public AutoFollowCargoCommand(DrivetrainSubsystem drivetrain, Pixy pixy) {
+
+    this.drivetrain = drivetrain;
+    addRequirements(drivetrain);
 
     this.pixy = pixy;
 
@@ -30,8 +34,8 @@ public class AutoFollowCargoCommand extends CommandBase {
   public void initialize() {
 
     System.out.println("start following cargo");
-    drivetrainSubsystem.resetPosition();
-    drivetrainSubsystem.resetGyroscope();
+    drivetrain.resetPosition();
+    drivetrain.resetGyroscope();
     pixy.turnOnLights();
   }
 
@@ -43,32 +47,33 @@ public class AutoFollowCargoCommand extends CommandBase {
     // if no ball is detected, rotate towards the edge from which the ball disappears
     if (cargo == null) {
       if (lastXOffset < 155){
-        drivetrainSubsystem.drive(new ChassisSpeeds(0, 0, 1));
+        drivetrain.drive(new ChassisSpeeds(0, 0, 1)); // TODO this speed need to be changed
       }
       else {
-        drivetrainSubsystem.drive(new ChassisSpeeds(0, 0, -1));
+        drivetrain.drive(new ChassisSpeeds(0, 0, -1));
       }
     }
     // rotate to the largest ball seen by the pixy camera
     else {
-      double cargoXOffset = cargo.getX();
-      lastXOffset = cargoXOffset;
+      currentXOffset = cargo.getX();
+      lastXOffset = currentXOffset;
 
-      double rotationSpeed = rotationPidController.calculate(cargoXOffset);
-      double translationXSpeed = translationXPidController.calculate(cargoArea);
+      rotationSpeed = rotationPidController.calculate(currentXOffset);
+      translationXSpeed = translationXPidController.calculate(cargoArea);
 
-      drivetrainSubsystem.drive(new ChassisSpeeds(translationXSpeed, 0, rotationSpeed));
+      drivetrain.drive(new ChassisSpeeds(translationXSpeed, 0, rotationSpeed));
     }
   }
 
   @Override
   public void end(boolean interrupted) {
-    drivetrainSubsystem.drive(new ChassisSpeeds(0, 0, 0));
+    drivetrain.drive(new ChassisSpeeds(0, 0, 0));
     pixy.turnOffLights();
   }
 
   @Override
   public boolean isFinished() {
-    return false;
+    return (Math.abs(rotationSpeed) < 0.01 && Math.abs(translationXSpeed) < 0.01) ||
+          (Math.abs(currentXOffset - 155) < 3);
   }
 }

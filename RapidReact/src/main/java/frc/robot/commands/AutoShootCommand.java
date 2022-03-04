@@ -11,14 +11,12 @@ public class AutoShootCommand extends CommandBase {
   private FeederSubsystem feeder;
   private LimelightSubsystem limelight;
 
-  private boolean finished;
-
   public AutoShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, LimelightSubsystem limelight) {
     this.shooter = shooter;
     this.feeder = feeder;
     this.limelight = limelight;
     
-    addRequirements(shooter, feeder,limelight);
+    addRequirements(shooter, feeder, limelight);
   }
 
   @Override
@@ -34,19 +32,17 @@ public class AutoShootCommand extends CommandBase {
     
     if (shooter.readyToShoot()) {
       feeder.setFeedMode(FeedMode.SHOOT_ONE);
-      finished = true;
     }
   }
 
   @Override
   public void end(boolean interrupted) {
-    feeder.setFeedMode(FeedMode.STOPPED);
     limelight.setLEDMode(limelight.LED_OFF);
     shooter.stop();
   }
 
   @Override
   public boolean isFinished() {
-    return finished;
+    return (feeder.isIdle());
   }
 }
