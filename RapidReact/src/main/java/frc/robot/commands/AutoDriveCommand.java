@@ -18,10 +18,8 @@ public class AutoDriveCommand extends CommandBase {
   private Pose2d currentPose;
   private double currentAngle;
   private double currentX;
-  private double currentY;
 
   private double translationXSpeed;
-  private double translationYSpeed;
   private double rotationSpeed;
 
   private double targetX;
@@ -50,11 +48,9 @@ public class AutoDriveCommand extends CommandBase {
   public void execute() {
     currentPose = drivetrainSubsystem.getPose();
     currentX = currentPose.getX();
-    currentY = currentPose.getY();
     currentAngle = currentPose.getRotation().getRadians();
 
     translationXSpeed = translationXController.calculate(currentX);
-    translationYSpeed = translationYController.calculate(currentY);
     rotationSpeed = rotationController.calculate(currentAngle);
 
     drivetrainSubsystem.drive(ChassisSpeeds.fromFieldRelativeSpeeds(translationXSpeed, 0, rotationSpeed, drivetrainSubsystem.getGyroscopeRotation()));

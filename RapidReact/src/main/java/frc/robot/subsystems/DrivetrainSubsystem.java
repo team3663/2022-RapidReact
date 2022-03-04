@@ -44,7 +44,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
     private final SwerveModule backLeftModule;
     private final SwerveModule backRightModule;
 
-    private SwerveModuleState[] states;
     private Pose2d robotPosition;
     private ChassisSpeeds chassisSpeeds = new ChassisSpeeds(0.0, 0.0, 0.0);
 
@@ -213,9 +212,11 @@ public class DrivetrainSubsystem extends SubsystemBase {
         poseXEntry.setDouble(getPose().getTranslation().getX());
         poseYEntry.setDouble(getPose().getTranslation().getY());
         poseAbsoluteAngleEntry.setDouble(getPose().getRotation().getDegrees());
-        
-        Block cargo = pixy.getLargestBlock();
-        cargoAreaEntry.setDouble(pixy.getArea(cargo));
-        cargoXEntry.setDouble(pixy.getX(cargo));
+
+ //       Block cargo = pixy.getLargestBlock();
+ //       cargoAreaEntry.setDouble(pixy.getArea(cargo));
+ //       cargoXEntry.setDouble(pixy.getX(cargo));
+
+        // pose angle entry (for trajectory following tuning)
     }
 }

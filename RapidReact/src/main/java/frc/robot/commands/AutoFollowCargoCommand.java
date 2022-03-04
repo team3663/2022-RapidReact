@@ -47,7 +47,7 @@ public class AutoFollowCargoCommand extends CommandBase {
     // if no ball is detected, rotate towards the edge from which the ball disappears
     if (cargo == null) {
       if (lastXOffset < 155){
-        drivetrain.drive(new ChassisSpeeds(0, 0, 1)); // TODO this speed need to be changed
+        drivetrain.drive(new ChassisSpeeds(0, 0, 1));
       }
       else {
         drivetrain.drive(new ChassisSpeeds(0, 0, -1));
@@ -55,11 +55,11 @@ public class AutoFollowCargoCommand extends CommandBase {
     }
     // rotate to the largest ball seen by the pixy camera
     else {
-      currentXOffset = cargo.getX();
-      lastXOffset = currentXOffset;
+      double cargoXOffset = cargo.getX();
+      lastXOffset = cargoXOffset;
 
-      rotationSpeed = rotationPidController.calculate(currentXOffset);
-      translationXSpeed = translationXPidController.calculate(cargoArea);
+      double rotationSpeed = rotationPidController.calculate(cargoXOffset);
+      double translationXSpeed = translationXPidController.calculate(cargoArea);
 
       drivetrain.drive(new ChassisSpeeds(translationXSpeed, 0, rotationSpeed));
     }

@@ -38,11 +38,15 @@ public class FeederSubsystem extends SubsystemBase {
     // The number of revolutions of the feed motor required to cycle a ball all the
     // way from the feeders entry to the exit.
     public final int REV_PER_FULL_FEED = 1500;
+    public final int EXIT_ADVANCE_REV = 15;
 
     // Subsystems internal data
     private CANSparkMax feedMotor;
     private RelativeEncoder feedEncoder;
     private SparkMaxPIDController feedPID;
+
+    boolean exitSensorTripped = false;
+    double advanceTargetPos = 0;
 
     private DigitalInput entrySensor;
     private DigitalInput exitSensor;
@@ -109,6 +113,13 @@ public class FeederSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
 
+        // We need to clear our exit sensor tripped flag once we no longer see a cargo
+        // breaking the beam.
+        if (exitSensor.get())
+        {
+            exitSensorTripped = false;
+        }
+
         // Execute the current mode, if it completes then put system in Stopped mode.
         if (currentMode.run(this)) {
             setFeedMode(FeedMode.STOPPED);
@@ -148,16 +159,32 @@ public class FeederSubsystem extends SubsystemBase {
      * @return True if a ball is present at the entry sensor, false otherwise.
      */
     private boolean ballInEntry() {
+        
         return !entrySensor.get();
     }
 
     /**
-     * Tell caller if there is a ball at the exit end of the feeder subsystem.
+     * Tell caller if there is a at the exit end of the feeder.  This is true
+     * if the exit sensor has been tripped AND the 
      * 
      * @return True if a ball is present at the exit sensor, false otherwise.
      */
     private boolean ballInExit() {
-        return !exitSensor.get();
+        boolean result = false;
+        double currentPos = feedEncoder.getPosition();
+
+        if (exitSensorTripped) {
+            if (currentPos >= advanceTargetPos) {
+                result = true;
+            }
+        } else {
+            if (!exitSensor.get()) {
+                exitSensorTripped = true;
+                advanceTargetPos = currentPos + EXIT_ADVANCE_REV;
+            }
+        }
+
+        return result;
     }
 
     /************************************************************************************************

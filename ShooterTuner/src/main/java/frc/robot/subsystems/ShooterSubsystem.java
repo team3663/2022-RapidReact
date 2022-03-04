@@ -15,7 +15,13 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 public class ShooterSubsystem extends SubsystemBase {
 
-  // Shooter related constants
+  private enum MotorState {
+    STOPPED,
+    RUNNING,
+    STOPPING
+  }
+
+  // Subsystem Constants
   private static final double MAX_RPM = 6000;
   private static final double shooterBeltRatio = 0.66;
   private static final double speedIncrement = 100;
@@ -30,13 +36,13 @@ public class ShooterSubsystem extends SubsystemBase {
   private static final double angleIncrement = 1;
 
   // Shooter PID coefficients constants
-  private static final double kShooterP = 0.0013;
-  private static final double kShooterI = 0;
-  private static final double kShooterD = 0;
-  private static final double kShooterIz = 0;
-  private static final double kShooterFF = 0.000015;
-  private static final double kShooterMaxOutput = 1;
-  private static final double kShooterMinOutput = 0;
+  private static final double kShooterP = 0.000153;
+  private static final double kShooterI = 0.000000;
+  private static final double kShooterD = 0.000003;
+  private static final double kShooterIz = 0.000000;
+  private static final double kShooterFF = 0.000265;
+  private static final double kShooterMaxOutput = 1.000000;
+  private static final double kShooterMinOutput = 0.000000;
 
   // Hood PID coefficients
   private static final double kHoodP = 0.1;
@@ -66,7 +72,7 @@ public class ShooterSubsystem extends SubsystemBase {
   private SparkMaxPIDController hoodPidController;
   private DigitalInput hoodLimit;
 
-  private boolean running = false;
+  private MotorState motorState = MotorState.STOPPED;
   public double currentSpeed = 0;
   public double targetSpeed = 0;
 
@@ -150,6 +156,13 @@ public class ShooterSubsystem extends SubsystemBase {
       parkHood();
     }
 
+    // If we are in the process of stopping the shooter motor then slowly ramp the target
+    // speed down so the momentum of the flywheels don't damage the belts.
+    if (motorState == MotorState.STOPPING)
+    {
+      setSpeed( targetSpeed - 20);
+    }
+
     updateTelemetry();
   }
 
@@ -158,15 +171,12 @@ public class ShooterSubsystem extends SubsystemBase {
   // ---------------------------------------------------------------------------
 
   public void start() {
-    System.out.println("Starting shooter");
-    running = true;
+    motorState = MotorState.RUNNING;
     setSpeed(targetSpeed);
   }
 
   public void stop() {
-    System.out.println("Stopping shooter");
-    running = false;
-    setSpeed(0);
+    motorState = MotorState.STOPPING;
   }
 
   public void setSpeed(double targetSpeed) {
@@ -176,6 +186,7 @@ public class ShooterSubsystem extends SubsystemBase {
       targetSpeed = MAX_RPM;
     } else if (targetSpeed < 0) {
       targetSpeed = 0;
+      motorState = MotorState.STOPPED;
     }
 
     shooterPidController.setReference(targetSpeed, ControlType.kVelocity);
@@ -185,7 +196,7 @@ public class ShooterSubsystem extends SubsystemBase {
     System.out.println("Increase Shooter speed");
     targetSpeed += speedIncrement;
 
-    if (running) {
+    if (motorState == MotorState.RUNNING) {
       setSpeed(targetSpeed);
     }
   }
@@ -194,7 +205,7 @@ public class ShooterSubsystem extends SubsystemBase {
     System.out.println("Decrease Shooter speed");
     targetSpeed -= speedIncrement;
 
-    if (running) {
+    if (motorState == MotorState.RUNNING) {
       setSpeed(targetSpeed);
     }
   }
@@ -232,13 +243,13 @@ public class ShooterSubsystem extends SubsystemBase {
   public void dumpPIDCoefficients() {
 
     System.out.println("--------------------------------------------------------");
-    System.out.printf("private static final double kShooterP = %f;", currentP);
-    System.out.printf("private static final double kShooterI = %f;", currentI);
-    System.out.printf("private static final double kShooterD = %f;", currentD);
-    System.out.printf("private static final double kShooterIz = %f;", currentIz);
-    System.out.printf("private static final double kShooterFF = %f;", currentFF);
-    System.out.printf("private static final double kShooterMaxOutput = %f;", currentMaxOutput);
-    System.out.printf("private static final double kShooterMinOutput = %f;", currentMinOutput);
+    System.out.printf("private static final double kShooterP = %f;\n", currentP);
+    System.out.printf("private static final double kShooterI = %f;\n", currentI);
+    System.out.printf("private static final double kShooterD = %f;\n", currentD);
+    System.out.printf("private static final double kShooterIz = %f;\n", currentIz);
+    System.out.printf("private static final double kShooterFF = %f;\n", currentFF);
+    System.out.printf("private static final double kShooterMaxOutput = %f;\n", currentMaxOutput);
+    System.out.printf("private static final double kShooterMinOutput = %f;\n", currentMinOutput);
     System.out.println("--------------------------------------------------------");
   }
 
@@ -419,8 +430,8 @@ public class ShooterSubsystem extends SubsystemBase {
     currentAngleEntry.setNumber(currentAngle);
     targetAngleEntry.setNumber(targetAngle);
     hoodEncoderEntry.setNumber(hoodEncoder.getPosition());
-    hoodLimitSwitchEntry.setBoolean(hoodLimit.get());
-
+    hoodLimitSwitchEntry.forceSetBoolean(hoodLimit.get());
+   
     // Update the contant values in the network table even though they never change.
     kPEntry.setDouble(kShooterP);
     kIEntry.setDouble(kShooterI);
@@ -429,7 +440,7 @@ public class ShooterSubsystem extends SubsystemBase {
     kFFEntry.setDouble(kShooterFF);
     kMaxOutputEntry.setDouble(kShooterMaxOutput);
     kMinOutputEntry.setDouble(kShooterMinOutput);
-  }
+    }
 
   private void updateCurrentValues() {
     curPEntry.setDouble(currentP);
