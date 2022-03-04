@@ -12,6 +12,9 @@ import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Button;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
@@ -40,7 +43,10 @@ import frc.robot.subsystems.ShooterSubsystem;
 
 import static frc.robot.Constants.*;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * This class is where the bulk of the robot should be declared.
@@ -69,13 +75,16 @@ public class RobotContainer {
     private SwerveControllerCommand followTrajectory;
     private AutoFollowCargoCommand followCargo;
 
+    // Autonomous command creation
+    private final HashMap<String, Supplier<Command>> commandCreators = new HashMap<String, Supplier<Command>>();
+    private SendableChooser<Supplier<Command>> chooser = new SendableChooser<Supplier<Command>>();
+
     public RobotContainer() {
 
         createSubsystems(); // Create our subsystems.
         createCommands(); // Create our commands
         configureButtonBindings(); // Setup our button bindings
-
-        drivetrain.setDefaultCommand(teleOpDrive);
+        setupCommandChooser();
     }
 
     /**
@@ -109,11 +118,19 @@ public class RobotContainer {
      * Create all of our robot's command objects here.
      */
     void createCommands() {
+        
+        // Register a creator for our autonomous commands
+        registerAutoCommand("Do Nothing", this::createNullCommand);
+        registerAutoCommand("Do Something", this::createSomeCommand);
+
         teleOpDrive = new TeleOpDriveCommand(
                 drivetrain,
                 () -> -ControllerUtils.modifyAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
                 () -> -ControllerUtils.modifyAxis(driveController.getLeftX()) * drivetrain.maxVelocity,
-                () -> -ControllerUtils.modifyAxis(driveController.getRightX()) * drivetrain.maxAngularVelocity);
+                () -> -ControllerUtils.modifyAxis(driveController.getRightX())
+                        * drivetrain.maxAngularVelocity);
+
+        drivetrain.setDefaultCommand(teleOpDrive);
     }
 
     /**
@@ -183,4 +200,38 @@ public class RobotContainer {
             shoot = new AutoShootCommand(shooter, feeder, limelight);
             return shoot;
     }
+
+    private void registerAutoCommand(String name, Supplier<Command> creator) {
+        commandCreators.put(name, creator);
+      }
+    
+      /**
+       * Setup our autonomous command chooser in the Shuffleboard
+       */
+      private void setupCommandChooser() {
+        List<String> keys = new ArrayList<String>(commandCreators.keySet());
+        keys.sort((a,b) -> a.compareTo(b));
+        
+        for (String key : keys) {
+            chooser.addOption(key, commandCreators.get(key));
+        }
+    
+        Shuffleboard.getTab("Main")
+            .add("Auto Command", chooser)
+            .withPosition(0, 1)
+            .withSize(2, 1)
+            .withWidget(BuiltInWidgets.kComboBoxChooser);
+      }
+    
+      //---------------------------------------------------------------------------
+      // Autonomous command creators
+      //---------------------------------------------------------------------------
+    
+      private Command createNullCommand() {
+        return null;
+      }
+    
+      private Command createSomeCommand() {
+        return null;
+      }
 }
