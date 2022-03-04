@@ -114,7 +114,7 @@ public class RobotContainer {
         registerAutoCommand("Shoot Only", this::createShootOnlyCommand);
         registerAutoCommand("Taxi Only", this::createTaxiOnlyCommand);
         registerAutoCommand("One Ball", this::createOneBallCommand);
-        registerAutoCommand("Two Ball", this::createTwoBallCommand);
+        // registerAutoCommand("Two Ball", this::createTwoBallCommand);
 
         // create tele drive command
         drive = new DriveCommand(
@@ -204,6 +204,7 @@ public class RobotContainer {
         return new SequentialCommandGroup(createShootOnlyCommand(), createTaxiOnlyCommand());
     }
 
+    @SuppressWarnings("unused")
     private Command createTwoBallCommand() {
         // don't use this because pixy hardware is not working
         return new SequentialCommandGroup(
