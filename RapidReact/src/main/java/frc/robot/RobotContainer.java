@@ -56,7 +56,6 @@ public class RobotContainer {
     private ShooterSubsystem shooter;
     private IntakeSubsystem intake;
     private DrivetrainSubsystem drivetrain;
-    private DriverVisionSubsystem driver;
     private LimelightSubsystem limelight;
 
     // Commands
@@ -99,7 +98,9 @@ public class RobotContainer {
                 DRIVETRAIN_WHEELBASE_METERS, DRIVE_TRAIN_WHEEL_DIAMETER_METERS);
         drivetrain = new DrivetrainSubsystem(swerveConfig, pigeon); // pixy
 
-        driver = new DriverVisionSubsystem(feeder);
+        // We don't ever call the DriverVision subsystem, we just create it and let it do its thing.
+        new DriverVisionSubsystem();
+
         limelight = new LimelightSubsystem(36, 0.5842, 2.6414);
     }
 
@@ -178,7 +179,7 @@ public class RobotContainer {
 
         Shuffleboard.getTab("Main")
                 .add("Auto Command", chooser)
-                .withPosition(0, 1)
+                .withPosition(5, 0)
                 .withSize(2, 1)
                 .withWidget(BuiltInWidgets.kComboBoxChooser);
     }

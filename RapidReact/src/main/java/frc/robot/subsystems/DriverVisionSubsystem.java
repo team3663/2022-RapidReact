@@ -15,18 +15,11 @@ public class DriverVisionSubsystem extends SubsystemBase {
   String cameraName;
   VideoSink server;
 
-  FeederSubsystem feeder;
-  boolean readyToShoot;
-
-  public DriverVisionSubsystem(FeederSubsystem feeder) {
-    camera();
-
-    this.feeder = feeder;
-    shoot();
-    
+  public DriverVisionSubsystem() {
+    setupCameraStream();  
   }
 
-  public void camera() {
+  public void setupCameraStream() {
     camera = CameraServer.startAutomaticCapture("cameraA", 0);
     cameraName = camera.getName();
 
@@ -38,15 +31,6 @@ public class DriverVisionSubsystem extends SubsystemBase {
                 .withWidget(BuiltInWidgets.kCameraStream)
                 .withSize(5, 5)
                 .withPosition(0, 0);
-  }
-
-  public void shoot() {
-    readyToShoot = feeder.ballInExit();
-
-    Shuffleboard.getTab("Driver")
-                .add("Read to Shoot", readyToShoot)
-                .withSize(1, 1)
-                .withPosition(6, 0);
   }
 
   @Override
