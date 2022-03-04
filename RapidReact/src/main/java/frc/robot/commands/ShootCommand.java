@@ -27,7 +27,7 @@ public class ShootCommand extends CommandBase {
     this.limelight = limelight;
     this.trigger = trigger;
     
-    addRequirements(shooter, feeder,limelight);
+    addRequirements(shooter, feeder, limelight);
   }
 
   // Called when the command is initially scheduled.
@@ -43,13 +43,11 @@ public class ShootCommand extends CommandBase {
   public void execute() { 
      shooter.setRange(limelight.getDistance());
 
-    //  if(shooter.readyToShoot() && feeder.isIdle()){
       if (trigger.getAsBoolean()){
         feeder.setFeedMode(FeedMode.CONTINUOUS);
       }else{
        feeder.setFeedMode(FeedMode.STOPPED);
      }
-    // }
   }
 
   // Called once the command ends or is interrupted.
