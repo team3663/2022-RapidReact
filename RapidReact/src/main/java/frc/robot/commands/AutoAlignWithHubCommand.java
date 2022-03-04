@@ -16,13 +16,16 @@ public class AutoAlignWithHubCommand extends CommandBase {
   private DrivetrainSubsystem drivetrain;
   private LimelightSubsystem limelight;
 
-  private PIDController rotationPidController = new PIDController(1.2, 0, 0); // TODO tune pid
+  private PIDController rotationPidController = new PIDController(0.05, 0, 0);
 
   private double currentOffset;
   private double speed;
 
-  private double translationX;
-  private double translationY;
+  private DoubleSupplier translationXSupplier;
+  private DoubleSupplier translationYSupplier;
+  private DoubleSupplier translationAutoSupplier = () -> 0;
+
+  private boolean tele = false;
 
   // during tele
   public AutoAlignWithHubCommand(LimelightSubsystem limelight, DrivetrainSubsystem drivetrain,
@@ -31,12 +34,14 @@ public class AutoAlignWithHubCommand extends CommandBase {
     this.limelight = limelight;
     this.drivetrain = drivetrain;
 
-    translationX = translationXSupplier.getAsDouble();
-    translationY = translationYSupplier.getAsDouble();
+    this.translationXSupplier = translationXSupplier;
+    this.translationYSupplier = translationYSupplier;
 
-    rotationPidController.setSetpoint(0); // TODO double check if this is zero
+    rotationPidController.setSetpoint(0);
 
-    addRequirements(drivetrain, limelight);
+    tele = true;
+
+    addRequirements(drivetrain);
   }
 
   // during auto
@@ -44,29 +49,37 @@ public class AutoAlignWithHubCommand extends CommandBase {
     this.limelight = limelight;
     this.drivetrain = drivetrain;
 
-    rotationPidController.setSetpoint(0); // TODO double check if this is zero
+    translationXSupplier = translationAutoSupplier;
+    translationYSupplier = translationAutoSupplier;
+
+    rotationPidController.setSetpoint(0);
 
     addRequirements(drivetrain, limelight);
   }
 
   @Override
-  public void initialize() {}
+  public void initialize() {
+  }
 
   @Override
   public void execute() {
+    System.out.println("--------------------------------aligning");
     currentOffset = limelight.getXOffset();
     speed = rotationPidController.calculate(currentOffset);
 
-    drivetrain.drive(new ChassisSpeeds(translationX, translationY, speed));
+    drivetrain.drive(ChassisSpeeds.fromFieldRelativeSpeeds(translationXSupplier.getAsDouble(),
+                                                            translationYSupplier.getAsDouble(),
+                                                            speed, drivetrain.getGyroscopeRotation()));
   }
 
   @Override
-  public void end(boolean interrupted) {
-    drivetrain.drive(new ChassisSpeeds(0, 0, 0));
-  }
+  public void end(boolean interrupted) {}
 
   @Override
   public boolean isFinished() {
-    return (Math.abs(speed) < 0.01) || (Math.abs(currentOffset) < 0.01); // TODO fix value
+    // if (tele) {
+      return false;
+    // }
+    // return (Math.abs(speed) < 0.01) || (Math.abs(currentOffset) < 0.01); // TODO fix value
   }
 }

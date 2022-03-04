@@ -49,7 +49,7 @@ public class RobotContainer {
     private final XboxController operatorController = new XboxController(Constants.OPERATOR_CONTROLLER_PORT);
 
     Pigeon pigeon = new Pigeon(DRIVETRAIN_PIGEON_ID);
-    private final Pixy pixy = new Pixy(Pixy.TEAM_RED);
+    // private final Pixy pixy = new Pixy(Pixy.TEAM_RED);
     private final Ranger ranger = new SimpleRanger();
 
     // Subsystems
@@ -103,7 +103,7 @@ public class RobotContainer {
                 BACK_RIGHT_MODULE_STEER_ENCODER, BACK_RIGHT_MODULE_STEER_OFFSET);
         SwerveDriveConfig swerveConfig = new SwerveDriveConfig(fl, fr, bl, br, DRIVETRAIN_TRACKWIDTH_METERS,
                 DRIVETRAIN_WHEELBASE_METERS, DRIVE_TRAIN_WHEEL_DIAMETER_METERS);
-        drivetrain = new DrivetrainSubsystem(swerveConfig, pigeon, pixy);
+        drivetrain = new DrivetrainSubsystem(swerveConfig, pigeon); // pixy
 
         limelight = new LimelightSubsystem(36, 0.5842, 2.6414);
     }
@@ -130,12 +130,14 @@ public class RobotContainer {
         drivetrain.setDefaultCommand(drive);
 
         // create auto commands
-        driveBack = new AutoDriveCommand(drivetrain, new Translation2d(-3, 0), Rotation2d.fromDegrees(0));
-        driveBackAndRotate = new AutoDriveCommand(drivetrain, new Translation2d(-3, 0), Rotation2d.fromDegrees(-90));
-        followCargo = new AutoFollowCargoCommand(drivetrain, pixy);
+        driveBack = new AutoDriveCommand(drivetrain, new Translation2d(3, 0), Rotation2d.fromDegrees(0));
+        driveBackAndRotate = new AutoDriveCommand(drivetrain, new Translation2d(3, 0), Rotation2d.fromDegrees(90));
+        // followCargo = new AutoFollowCargoCommand(drivetrain, pixy);
         intakeCargo = new AutoIntakeCommand(intake, feeder);
         shootCargo = new AutoShootCommand(shooter, feeder, limelight);
-        alignWithHub = new AutoAlignWithHubCommand(limelight, drivetrain);
+        alignWithHub = new AutoAlignWithHubCommand(limelight, drivetrain,
+        () -> -ControllerUtils.modifyAxis(driveController.getLeftX()) * drivetrain.maxVelocity,
+        () -> -ControllerUtils.modifyAxis(driveController.getLeftY()) * drivetrain.maxVelocity);
     }
 
     /**
@@ -156,7 +158,7 @@ public class RobotContainer {
                 .whenHeld(new IntakeCommand(intake, feeder, (() -> driveController.getLeftBumper())));
 
         // Temporary test commands to be removed before competition
-        new JoystickButton(driveController, Button.kA.value).whenHeld(shootCargo);
+        new JoystickButton(driveController, Button.kA.value).whenHeld(alignWithHub);
 
         // new POVButton(driveController, 0).whenPressed(new InstantCommand(() ->
         // shooter.setAngle(67.0), shooter));

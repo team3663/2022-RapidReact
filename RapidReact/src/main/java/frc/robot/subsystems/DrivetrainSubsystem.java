@@ -37,7 +37,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     private final SwerveDriveKinematics kinematics;
     private final SwerveDriveOdometry odometry;
     private final Pigeon pigeon;
-    private final Pixy pixy;
+    // private final Pixy pixy;
 
     private final SwerveModule frontLeftModule;
     private final SwerveModule frontRightModule;
@@ -56,10 +56,10 @@ public class DrivetrainSubsystem extends SubsystemBase {
     private NetworkTableEntry cargoAreaEntry;
     private NetworkTableEntry cargoXEntry;
 
-    public DrivetrainSubsystem(SwerveDriveConfig config, Pigeon pigeon, Pixy pixy) {
+    public DrivetrainSubsystem(SwerveDriveConfig config, Pigeon pigeon) { //Pixy pixy
 
         this.pigeon = pigeon;
-        this.pixy = pixy;
+        // this.pixy = pixy;
 
         // Physical constants for this drive base.
         trackWidth = config.trackWidth;
