@@ -146,9 +146,6 @@ public class RobotContainer {
 
         // Temporary test commands to be removed before competition
         new JoystickButton(driveController, Button.kA.value).whenHeld(new AutoAlignWithHubCommand(limelight, drivetrain, () -> 0, () -> 0));
-
-        // new POVButton(driveController, 0).whenPressed(new InstantCommand(() ->
-        // shooter.setAngle(67.0), shooter));
     }
 
     /**
@@ -162,6 +159,11 @@ public class RobotContainer {
         return creator.get();
     }
 
+    /**
+     * Register an autonomous command so it appears in the chooser in Shuffleboard
+     * @param name Name of command as it appears in the chooser
+     * @param creator Reference to method that creates the command
+     */
     private void registerAutoCommand(String name, Supplier<Command> creator) {
         commandCreators.put(name, creator);
     }
