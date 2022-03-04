@@ -68,14 +68,14 @@ public class ShooterSubsystem extends SubsystemBase {
     private DigitalInput hoodLimit;
 
     private MotorState motorState = MotorState.STOPPED;
-    public double currentSpeed = 0;
-    public double targetSpeed = 0;
-    public double speedError;
-    public double speedErrorPercent;
+    private double currentSpeed = 0;
+    private double targetSpeed = 0;
+    private double speedError;
+    private double speedErrorPercent;
 
-    private boolean parkingHood = false;
-    public double currentAngle = 0;
-    public double targetAngle = 0;
+    private boolean parkingHood = true;
+    private double currentAngle = 0;
+    private double targetAngle = 0;
 
     private double currentRange = 10.0;
 
@@ -128,7 +128,6 @@ public class ShooterSubsystem extends SubsystemBase {
         hoodPidController.setFF(kHoodFF);
         hoodPidController.setOutputRange(kHoodMinOutput, kHoodMaxOutput);
 
-        parkHood();
         initTelemetry();
     }
 
@@ -140,12 +139,10 @@ public class ShooterSubsystem extends SubsystemBase {
 
         currentAngle = encoderPositionToAngle(hoodEncoder.getPosition());
 
-        if (parkingHood) {
-            parkHood();
-        }
+        parkHood();
 
-        // If we are in the process of stopping the shooter motor then slowly ramp the
-        // target speed down so the momentum of the flywheels don't damage the belts.
+        // If we are in the process of stopping the shooter motors then slowly ramp the
+        // target speed down so the momentum of the flywheels doesn't damage the drive belts.
         if (motorState == MotorState.STOPPING) {
             setSpeed(targetSpeed - 20);
         }
@@ -247,16 +244,24 @@ public class ShooterSubsystem extends SubsystemBase {
 
     /**
      * Lower the hood until it trips the limit switch and then reset the encoder to
-     * establish our zero position.
+     * establish our zero position.  Called by periodic.
      */
     private void parkHood() {
 
+        // If we are not in the process of parking the hood then just bail out now.
+        // parkingHood is initialized to true so we will always fall through this
+        // check on the first call.
+        if (!parkingHood) {
+            return;
+        }
+
+        // if the hood is not at the limit then set power to start lowering it and return.
         if (!hoodLimit.get()) {
-            parkingHood = true;
             hoodMotor.set(-0.05);
             return;
         }
 
+        // Hood has reached limit, clear parking flag, stop motor and zero encoder.
         parkingHood = false;
         hoodMotor.set(0);
         hoodEncoder.setPosition(0);
