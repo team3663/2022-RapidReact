@@ -30,7 +30,7 @@ public class AutoShootCommand extends CommandBase {
   public void execute() { 
     shooter.setRange(limelight.getDistance());
     
-    if (shooter.readyToShoot()) {
+    if (shooter.readyToShoot()) { // TODO change this to timer & continuous
       feeder.setFeedMode(FeedMode.SHOOT_ONE);
     }
   }

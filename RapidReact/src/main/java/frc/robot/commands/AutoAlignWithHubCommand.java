@@ -4,6 +4,8 @@
 
 package frc.robot.commands;
 
+import java.util.function.DoubleSupplier;
+
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.CommandBase;
@@ -19,6 +21,25 @@ public class AutoAlignWithHubCommand extends CommandBase {
   private double currentOffset;
   private double speed;
 
+  private double translationX;
+  private double translationY;
+
+  // during tele
+  public AutoAlignWithHubCommand(LimelightSubsystem limelight, DrivetrainSubsystem drivetrain,
+                                  DoubleSupplier translationXSupplier,
+                                  DoubleSupplier translationYSupplier) {
+    this.limelight = limelight;
+    this.drivetrain = drivetrain;
+
+    translationX = translationXSupplier.getAsDouble();
+    translationY = translationYSupplier.getAsDouble();
+
+    rotationPidController.setSetpoint(0); // TODO double check if this is zero
+
+    addRequirements(drivetrain, limelight);
+  }
+
+  // during auto
   public AutoAlignWithHubCommand(LimelightSubsystem limelight, DrivetrainSubsystem drivetrain) {
     this.limelight = limelight;
     this.drivetrain = drivetrain;
@@ -36,7 +57,7 @@ public class AutoAlignWithHubCommand extends CommandBase {
     currentOffset = limelight.getXOffset();
     speed = rotationPidController.calculate(currentOffset);
 
-    drivetrain.drive(new ChassisSpeeds(0, 0, speed));
+    drivetrain.drive(new ChassisSpeeds(translationX, translationY, speed));
   }
 
   @Override
