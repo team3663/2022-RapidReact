@@ -199,9 +199,9 @@ public class DrivetrainSubsystem extends SubsystemBase {
         poseYEntry.setDouble(getPose().getTranslation().getY());
         poseAbsoluteAngleEntry.setDouble(getPose().getRotation().getDegrees());
 
-        Block cargo = pixy.getLargestBlock();
-        cargoAreaEntry.setDouble(pixy.getArea(cargo));
-        cargoXEntry.setDouble(pixy.getX(cargo));
+ //       Block cargo = pixy.getLargestBlock();
+ //       cargoAreaEntry.setDouble(pixy.getArea(cargo));
+ //       cargoXEntry.setDouble(pixy.getX(cargo));
 
         // pose angle entry (for trajectory following tuning)
     }
