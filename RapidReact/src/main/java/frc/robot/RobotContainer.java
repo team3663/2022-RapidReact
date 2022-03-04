@@ -84,7 +84,8 @@ public class RobotContainer {
      * Create all of our robot's subsystem objects here.
      */
     void createSubsystems() {
-        //intake = new IntakeSubsystem(INTAKE_MOTOR_CAN_ID, INTAKE_RETRACT_SOLENOID_CHAN, INTAKE_EXTEND_SOLENOID_CHAN);
+        // intake = new IntakeSubsystem(INTAKE_MOTOR_CAN_ID,
+        // INTAKE_RETRACT_SOLENOID_CHAN, INTAKE_EXTEND_SOLENOID_CHAN);
         feeder = new FeederSubsystem(FEEDER_MOTOR_CAN_ID, FEEDER_ENTRY_SENSOR_DIO, FEEDER_EXIT_SENSOR_DIO);
         shooter = new ShooterSubsystem(SHOOTER_MOTOR_1_CAN_ID, SHOOTER_MOTOR_2_CAN_ID, HOOD_MOTOR_CAN_ID,
                 HOOD_LIMITSWITCH_DIO, ranger);
@@ -111,7 +112,7 @@ public class RobotContainer {
      * Create all of our robot's command objects here.
      */
     void createCommands() {
-        
+
         // Register a creator for our autonomous commands
         registerAutoCommand("Do Nothing", this::createNullCommand);
         registerAutoCommand("One Ball", this::createOneBallCommand);
@@ -146,18 +147,19 @@ public class RobotContainer {
         new JoystickButton(driveController, Button.kStart.value)
                 .whenPressed(new InstantCommand(() -> drivetrain.resetGyroscope()));
 
-        // Schedule the Shoot command to fire a cargo       
-        new JoystickButton(driveController, Button.kY.value).
-                whenHeld(new ShootCommand(shooter, feeder, limelight, (() -> driveController.getRightTriggerAxis() > 0.8)));
+        // Schedule the Shoot command to fire a cargo
+        new JoystickButton(driveController, Button.kY.value).whenHeld(
+                new ShootCommand(shooter, feeder, limelight, (() -> driveController.getRightTriggerAxis() > 0.8)));
 
-        // Schedule the Intake command to pick-up cargo        
-        new JoystickButton(driveController, Button.kRightBumper.value).
-                whenHeld(new IntakeCommand(intake, feeder, (() -> driveController.getLeftBumper())));  
-        
+        // Schedule the Intake command to pick-up cargo
+        new JoystickButton(driveController, Button.kRightBumper.value)
+                .whenHeld(new IntakeCommand(intake, feeder, (() -> driveController.getLeftBumper())));
+
         // Temporary test commands to be removed before competition
-        new JoystickButton(driveController, Button.kA.value).whenHeld(shootCargo);  
-        
-        //new POVButton(driveController, 0).whenPressed(new InstantCommand(() -> shooter.setAngle(67.0), shooter));      
+        new JoystickButton(driveController, Button.kA.value).whenHeld(shootCargo);
+
+        // new POVButton(driveController, 0).whenPressed(new InstantCommand(() ->
+        // shooter.setAngle(67.0), shooter));
     }
 
     /**
@@ -167,78 +169,73 @@ public class RobotContainer {
      * @return the command to run in autonomous
      */
     public Command getAutonomousCommand() {
-            return null;
-            /*
-            return new SequentialCommandGroup(getAutoShootCommand(),
-                                                getAutoDriveCommand(),
-                                                getFollowTrajectoryCommand(),
-                                                getAutoShootCommand());
-        */
+        Supplier<Command> creator = chooser.getSelected();
+        return creator.get();
     }
 
     private void registerAutoCommand(String name, Supplier<Command> creator) {
         commandCreators.put(name, creator);
-      }
-    
-      /**
-       * Setup our autonomous command chooser in the Shuffleboard
-       */
-      private void setupCommandChooser() {
+    }
+
+    /**
+     * Setup our autonomous command chooser in the Shuffleboard
+     */
+    private void setupCommandChooser() {
         List<String> keys = new ArrayList<String>(commandCreators.keySet());
-        keys.sort((a,b) -> a.compareTo(b));
-        
+        keys.sort((a, b) -> a.compareTo(b));
+
         for (String key : keys) {
             chooser.addOption(key, commandCreators.get(key));
         }
-    
-        Shuffleboard.getTab("Main")
-            .add("Auto Command", chooser)
-            .withPosition(0, 1)
-            .withSize(2, 1)
-            .withWidget(BuiltInWidgets.kComboBoxChooser);
-      }
-    
-      //---------------------------------------------------------------------------
-      // Autonomous command creators
-      //---------------------------------------------------------------------------
-    
-private Command createNullCommand() {
-        return null;
-      }
-      
-private Command createDriveBackCommand() {
-        return driveBack;
-      }
 
-private Command createOneBallCommand() {
+        Shuffleboard.getTab("Main")
+                .add("Auto Command", chooser)
+                .withPosition(0, 1)
+                .withSize(2, 1)
+                .withWidget(BuiltInWidgets.kComboBoxChooser);
+    }
+
+    // ---------------------------------------------------------------------------
+    // Autonomous command creators
+    // ---------------------------------------------------------------------------
+
+    private Command createNullCommand() {
+        return null;
+    }
+
+    private Command createDriveBackCommand() {
+        return driveBack;
+    }
+
+    private Command createOneBallCommand() {
         return shootCargo;
     }
 
-private Command createOneBallAndDriveBackCommand() {
+    private Command createOneBallAndDriveBackCommand() {
         return new SequentialCommandGroup(shootCargo, driveBack);
-        
-}
 
-private Command createTwoBallCommand() {
-        // don't use this because pixy hardware is not working
-        return new SequentialCommandGroup(alignWithHub, shootCargo,
-                                        driveBackAndRotate, followCargo,
-                                        intakeCargo,
-                                        alignWithHub, shootCargo);
     }
 
- /*
-      private Command createTrajectoryCommand() {
-        Path path = new Path(PATH.backOutOfTarmac);
-        followTrajectory = new SwerveControllerCommand(path.getTrajectory(),
-                                                        drivetrain::getPose,
-                                                        drivetrain.getKinematics(),
-                                                        path.getPidController(),
-                                                        path.getPidController(),
-                                                        path.getAnglePidController(),
-                                                        drivetrain::setModuleStates,
-                                                        drivetrain);
-        return followTrajectory;
-      }
-      */
+    private Command createTwoBallCommand() {
+        // don't use this because pixy hardware is not working
+        return new SequentialCommandGroup(alignWithHub, shootCargo,
+                driveBackAndRotate, followCargo,
+                intakeCargo,
+                alignWithHub, shootCargo);
+    }
+
+    /*
+     * private Command createTrajectoryCommand() {
+     * Path path = new Path(PATH.backOutOfTarmac);
+     * followTrajectory = new SwerveControllerCommand(path.getTrajectory(),
+     * drivetrain::getPose,
+     * drivetrain.getKinematics(),
+     * path.getPidController(),
+     * path.getPidController(),
+     * path.getAnglePidController(),
+     * drivetrain::setModuleStates,
+     * drivetrain);
+     * return followTrajectory;
+     * }
+     */
 }
