@@ -36,11 +36,11 @@ public class ShooterSubsystem extends SubsystemBase {
   private static final double angleIncrement = 1;
 
   // Shooter PID coefficients constants
-  private static final double kShooterP = 0.001530;
+  private static final double kShooterP = 0.000153;
   private static final double kShooterI = 0.000000;
   private static final double kShooterD = 0.000003;
   private static final double kShooterIz = 0.000000;
-  private static final double kShooterFF = 0.000272;
+  private static final double kShooterFF = 0.000265;
   private static final double kShooterMaxOutput = 1.000000;
   private static final double kShooterMinOutput = 0.000000;
 
@@ -243,13 +243,13 @@ public class ShooterSubsystem extends SubsystemBase {
   public void dumpPIDCoefficients() {
 
     System.out.println("--------------------------------------------------------");
-    System.out.printf("private static final double kShooterP = %f;", currentP);
-    System.out.printf("private static final double kShooterI = %f;", currentI);
-    System.out.printf("private static final double kShooterD = %f;", currentD);
-    System.out.printf("private static final double kShooterIz = %f;", currentIz);
-    System.out.printf("private static final double kShooterFF = %f;", currentFF);
-    System.out.printf("private static final double kShooterMaxOutput = %f;", currentMaxOutput);
-    System.out.printf("private static final double kShooterMinOutput = %f;", currentMinOutput);
+    System.out.printf("private static final double kShooterP = %f;\n", currentP);
+    System.out.printf("private static final double kShooterI = %f;\n", currentI);
+    System.out.printf("private static final double kShooterD = %f;\n", currentD);
+    System.out.printf("private static final double kShooterIz = %f;\n", currentIz);
+    System.out.printf("private static final double kShooterFF = %f;\n", currentFF);
+    System.out.printf("private static final double kShooterMaxOutput = %f;\n", currentMaxOutput);
+    System.out.printf("private static final double kShooterMinOutput = %f;\n", currentMinOutput);
     System.out.println("--------------------------------------------------------");
   }
 
