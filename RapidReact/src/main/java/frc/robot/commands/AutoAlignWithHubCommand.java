@@ -23,9 +23,6 @@ public class AutoAlignWithHubCommand extends CommandBase {
 
   private DoubleSupplier translationXSupplier;
   private DoubleSupplier translationYSupplier;
-  private DoubleSupplier translationAutoSupplier = () -> 0;
-
-  private boolean tele = false;
 
   // during tele
   public AutoAlignWithHubCommand(LimelightSubsystem limelight, DrivetrainSubsystem drivetrain,
@@ -39,22 +36,7 @@ public class AutoAlignWithHubCommand extends CommandBase {
 
     rotationPidController.setSetpoint(0);
 
-    tele = true;
-
     addRequirements(drivetrain);
-  }
-
-  // during auto
-  public AutoAlignWithHubCommand(LimelightSubsystem limelight, DrivetrainSubsystem drivetrain) {
-    this.limelight = limelight;
-    this.drivetrain = drivetrain;
-
-    translationXSupplier = translationAutoSupplier;
-    translationYSupplier = translationAutoSupplier;
-
-    rotationPidController.setSetpoint(0);
-
-    addRequirements(drivetrain, limelight);
   }
 
   @Override
@@ -77,9 +59,8 @@ public class AutoAlignWithHubCommand extends CommandBase {
 
   @Override
   public boolean isFinished() {
-    // if (tele) {
       return false;
-    // }
+
     // return (Math.abs(speed) < 0.01) || (Math.abs(currentOffset) < 0.01); // TODO fix value
   }
 }

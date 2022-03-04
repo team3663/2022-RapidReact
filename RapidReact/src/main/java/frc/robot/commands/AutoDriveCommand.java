@@ -16,11 +16,11 @@ public class AutoDriveCommand extends CommandBase {
   private PIDController rotationController = new PIDController(0, 0, 0); // 1.2
 
   private Pose2d currentPose;
-  private double currentAngle;
+  //private double currentAngle;
   private double currentX;
 
   private double translationXSpeed;
-  private double rotationSpeed;
+  //private double rotationSpeed;
 
   private double targetX;
 
@@ -48,14 +48,12 @@ public class AutoDriveCommand extends CommandBase {
   public void execute() {
     currentPose = drivetrainSubsystem.getPose();
     currentX = currentPose.getX();
-    currentAngle = currentPose.getRotation().getRadians();
+    //currentAngle = currentPose.getRotation().getRadians();
 
     translationXSpeed = translationXController.calculate(currentX);
-    rotationSpeed = rotationController.calculate(currentAngle);
+    //rotationSpeed = rotationController.calculate(currentAngle);
 
     drivetrainSubsystem.drive(ChassisSpeeds.fromFieldRelativeSpeeds(translationXSpeed, 0, 0, drivetrainSubsystem.getGyroscopeRotation()));
-
-    System.out.println();
   }
 
   @Override

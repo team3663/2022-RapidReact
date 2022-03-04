@@ -13,14 +13,12 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.commands.AutoAlignWithHubCommand;
 import frc.robot.commands.AutoDriveCommand;
-import frc.robot.commands.AutoFollowCargoCommand;
 import frc.robot.commands.AutoIntakeCommand;
 import frc.robot.commands.AutoShootCommand;
 import frc.robot.commands.DriveCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.ShootCommand;
 import frc.robot.drivers.Pigeon;
-import frc.robot.drivers.Pixy;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.FeederSubsystem;
 import frc.robot.utils.ControllerUtils;
@@ -61,12 +59,6 @@ public class RobotContainer {
 
     // Commands
     private DriveCommand drive;
-    private AutoDriveCommand driveBack;
-    private AutoDriveCommand driveBackAndRotate;
-    private AutoFollowCargoCommand followCargo;
-    private AutoShootCommand shootCargo;
-    private AutoIntakeCommand intakeCargo;
-    private AutoAlignWithHubCommand alignWithHub;
 
     // Autonomous command creation
     private final HashMap<String, Supplier<Command>> commandCreators = new HashMap<String, Supplier<Command>>();
@@ -113,11 +105,11 @@ public class RobotContainer {
      */
     void createCommands() {
 
-        // Register a creator for our autonomous commands
+        // Register a creators for our autonomous commands
         registerAutoCommand("Do Nothing", this::createNullCommand);
+        registerAutoCommand("Shoot Only", this::createShootOnlyCommand);
+        registerAutoCommand("Taxi Only", this::createTaxiOnlyCommand);
         registerAutoCommand("One Ball", this::createOneBallCommand);
-        registerAutoCommand("Drive Back", this::createDriveBackCommand);
-        registerAutoCommand("One Ball and Drive Back", this::createOneBallAndDriveBackCommand);
         registerAutoCommand("Two Ball", this::createTwoBallCommand);
 
         // create tele drive command
@@ -128,16 +120,6 @@ public class RobotContainer {
                 () -> -ControllerUtils.modifyAxis(driveController.getRightX())
                         * drivetrain.maxAngularVelocity);
         drivetrain.setDefaultCommand(drive);
-
-        // create auto commands
-        driveBack = new AutoDriveCommand(drivetrain, new Translation2d(3, 0), Rotation2d.fromDegrees(0));
-        driveBackAndRotate = new AutoDriveCommand(drivetrain, new Translation2d(3, 0), Rotation2d.fromDegrees(90));
-        // followCargo = new AutoFollowCargoCommand(drivetrain, pixy);
-        intakeCargo = new AutoIntakeCommand(intake, feeder);
-        shootCargo = new AutoShootCommand(shooter, feeder, limelight);
-        alignWithHub = new AutoAlignWithHubCommand(limelight, drivetrain,
-        () -> -ControllerUtils.modifyAxis(driveController.getLeftX()) * drivetrain.maxVelocity,
-        () -> -ControllerUtils.modifyAxis(driveController.getLeftY()) * drivetrain.maxVelocity);
     }
 
     /**
@@ -157,8 +139,9 @@ public class RobotContainer {
         new JoystickButton(driveController, Button.kRightBumper.value)
                 .whenHeld(new IntakeCommand(intake, feeder, (() -> driveController.getLeftBumper())));
 
+
         // Temporary test commands to be removed before competition
-        new JoystickButton(driveController, Button.kA.value).whenHeld(alignWithHub);
+        new JoystickButton(driveController, Button.kA.value).whenHeld(new AutoAlignWithHubCommand(limelight, drivetrain, () -> 0, () -> 0));
 
         // new POVButton(driveController, 0).whenPressed(new InstantCommand(() ->
         // shooter.setAngle(67.0), shooter));
@@ -205,25 +188,28 @@ public class RobotContainer {
         return null;
     }
 
-    private Command createDriveBackCommand() {
-        return driveBack;
+    private Command createTaxiOnlyCommand() {
+        return new AutoDriveCommand(drivetrain, new Translation2d(3, 0), Rotation2d.fromDegrees(0));
+    }
+
+    private Command createShootOnlyCommand() {
+        return new AutoShootCommand(shooter, feeder, limelight);
     }
 
     private Command createOneBallCommand() {
-        return shootCargo;
-    }
-
-    private Command createOneBallAndDriveBackCommand() {
-        return new SequentialCommandGroup(shootCargo, driveBack);
-
+        return new SequentialCommandGroup(createShootOnlyCommand(), createTaxiOnlyCommand());
     }
 
     private Command createTwoBallCommand() {
         // don't use this because pixy hardware is not working
-        return new SequentialCommandGroup(alignWithHub, shootCargo,
-                driveBackAndRotate, followCargo,
-                intakeCargo,
-                alignWithHub, shootCargo);
+        return new SequentialCommandGroup(
+                new AutoAlignWithHubCommand(limelight, drivetrain, () -> 0, () -> 0),
+                createShootOnlyCommand(),
+                new AutoDriveCommand(drivetrain, new Translation2d(3, 0), Rotation2d.fromDegrees(90)),
+                // new AutoFollowCargoCommand(drivetrain, pixy),
+                new AutoIntakeCommand(intake, feeder),
+                new AutoAlignWithHubCommand(limelight, drivetrain, () -> 0, () -> 0),
+                createShootOnlyCommand());
     }
 
     /*
