@@ -1,7 +1,3 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.commands;
 
 import java.util.function.BooleanSupplier;
@@ -13,54 +9,62 @@ import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.FeederSubsystem.FeedMode;
 
 public class ShootCommand extends CommandBase {
-  //put feeder in preshoot mode check isIdle
-  /** Creates a new ShootCommand. */
-  private ShooterSubsystem shooter;
-  private FeederSubsystem feeder;
-  private LimelightSubsystem limelight;
-  private BooleanSupplier trigger;
 
+    private ShooterSubsystem shooter;
+    private FeederSubsystem feeder;
+    private LimelightSubsystem limelight;
+    private BooleanSupplier trigger;
+    private boolean stagingCargo;
 
-  public ShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, LimelightSubsystem limelight, BooleanSupplier trigger) {
-    this.shooter = shooter;
-    this.feeder = feeder;
-    this.limelight = limelight;
-    this.trigger = trigger;
-    
-    addRequirements(shooter, feeder, limelight);
-  }
+    public ShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, LimelightSubsystem limelight,
+            BooleanSupplier trigger) {
+        this.shooter = shooter;
+        this.feeder = feeder;
+        this.limelight = limelight;
+        this.trigger = trigger;
 
-  // Called when the command is initially scheduled.
-  @Override
-  public void initialize() {
-    feeder.setFeedMode(FeedMode.PRESHOOT);
-    limelight.setLEDMode(limelight.LED_ON);
-    // shooter.start();
-  }
+        addRequirements(shooter, feeder, limelight);
+    }
 
-  // Called every time the scheduler runs while the command is scheduled.
-  @Override
-  public void execute() { 
-     shooter.setRange(limelight.getDistance());
+    // Called when the command is initially scheduled.
+    @Override
+    public void initialize() {
+        feeder.setFeedMode(FeedMode.PRESHOOT);
+        stagingCargo = true;
 
-      if (trigger.getAsBoolean()){
-        feeder.setFeedMode(FeedMode.CONTINUOUS);
-      }else{
-       feeder.setFeedMode(FeedMode.STOPPED);
-     }
-  }
+        limelight.setLEDMode(limelight.LED_ON);
+    }
 
-  // Called once the command ends or is interrupted.
-  @Override
-  public void end(boolean interrupted) {
-    feeder.setFeedMode(FeedMode.STOPPED);
-    limelight.setLEDMode(limelight.LED_OFF);
-    shooter.stop();
-  }
+    // Called every time the scheduler runs while the command is scheduled.
+    @Override
+    public void execute() {
+        shooter.setRange(limelight.getDistance());
 
-  // Returns true when the command should end.
-  @Override
-  public boolean isFinished() {
-    return false;
-  }
+        // We bail out here if we are staging cargo and the feeder has not stopped yet.
+        if (stagingCargo) {
+            if (feeder.isIdle()) {
+                stagingCargo = false;
+            } else {
+                return;
+            }
+        }
+
+        // We only get here if cargo staging has completed.
+        // Use the state of the trigger to decided whether to run or stop the feeder.
+        feeder.setFeedMode(trigger.getAsBoolean() ? FeedMode.CONTINUOUS : FeedMode.STOPPED);
+    }
+
+    // Called once the command ends or is interrupted.
+    @Override
+    public void end(boolean interrupted) {
+        feeder.setFeedMode(FeedMode.STOPPED);
+        limelight.setLEDMode(limelight.LED_OFF);
+        shooter.stop();
+    }
+
+    // Returns true when the command should end.
+    @Override
+    public boolean isFinished() {
+        return false;
+    }
 }
