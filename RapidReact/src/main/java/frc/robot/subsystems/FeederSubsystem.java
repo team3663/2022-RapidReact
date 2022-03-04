@@ -10,7 +10,6 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -40,8 +39,6 @@ public class FeederSubsystem extends SubsystemBase {
     // way from the feeders entry to the exit.
     public final int REV_PER_FULL_FEED = 1500;
 
-    public final double OUT_TAKE_OFFSET = 0.75;
-
     // Subsystems internal data
     private CANSparkMax feedMotor;
     private RelativeEncoder feedEncoder;
@@ -57,8 +54,6 @@ public class FeederSubsystem extends SubsystemBase {
     private NetworkTableEntry feederRPMEntry;
     private NetworkTableEntry entrySensorEntry;
     private NetworkTableEntry exitSensorEntry;
-    
-    private Timer outTakeTimer;
 
     public FeederSubsystem(int feedMotorCanId, int entrySensorDio, int exitSensorDio) {
 
@@ -162,7 +157,6 @@ public class FeederSubsystem extends SubsystemBase {
      * @return True if a ball is present at the exit sensor, false otherwise.
      */
     private boolean ballInExit() {
-
         return !exitSensor.get();
     }
 
@@ -242,9 +236,6 @@ public class FeederSubsystem extends SubsystemBase {
      * exit end of the feeder.
      */
     private class PreshootMode extends FeedModeBase {
-        private double revsAfterSwitch;  
-        private boolean hitBallExit;
-
         private PreshootMode() {
             super(FeedMode.PRESHOOT);
         }
@@ -253,9 +244,6 @@ public class FeederSubsystem extends SubsystemBase {
         protected void init(FeederSubsystem feeder) {
             feeder.feedEncoder.setPosition(0.0);
             feeder.feedPID.setReference(FEED_RPM_INTAKE, ControlType.kVelocity);
-
-            revsAfterSwitch = 2;
-            hitBallExit = false;
         }
 
         @Override
@@ -264,19 +252,8 @@ public class FeederSubsystem extends SubsystemBase {
             // If we see a ball at the exit sensor then we have moved them to the top of the
             // feeder and ready to shoot.
             if (feeder.ballInExit()) {
-                feeder.feedEncoder.setPosition(0.0);
-                hitBallExit = true;
                 return true;
             }
-
-            if(hitBallExit){
-                System.out.println("--------------Moving up");
-                if(feeder.feedEncoder.getPosition() > revsAfterSwitch){
-                    return true;
-                }
-            }
-
-            
 
             // If the exit sensor has not seen a ball yet but the belt has moved the full
             // length of the feeder then there are no balls, bail out.
