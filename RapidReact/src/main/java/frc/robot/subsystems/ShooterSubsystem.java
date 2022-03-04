@@ -15,6 +15,7 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import frc.robot.utils.FiringSolution;
 import frc.robot.utils.Ranger;
+import frc.robot.utils.SimpleRanger;
 
 public class ShooterSubsystem extends SubsystemBase {
 
@@ -37,14 +38,14 @@ public class ShooterSubsystem extends SubsystemBase {
       / (MAX_HOOD_ANGLE - MIN_HOOD_ANGLE);
   private static final double angleIncrement = 1;
 
-  // Shooter PID coefficients
-  private static final double kShooterP = 0.001530;
-  private static final double kShooterI = 0;
+  // Shooter PID coefficients constants
+  private static final double kShooterP = 0.000153;
+  private static final double kShooterI = 0.000000;
   private static final double kShooterD = 0.000003;
-  private static final double kShooterIz = 0;
-  private static final double kShooterFF = 0.00272;
-  private static final double kShooterMaxOutput = 1;
-  private static final double kShooterMinOutput = 0;
+  private static final double kShooterIz = 0.000000;
+  private static final double kShooterFF = 0.000265;
+  private static final double kShooterMaxOutput = 1.000000;
+  private static final double kShooterMinOutput = 0.000000;
 
   // Hood PID coefficients
   private static final double kHoodP = 0.1;
@@ -87,10 +88,11 @@ public class ShooterSubsystem extends SubsystemBase {
   private NetworkTableEntry hoodEncoderEntry;
   private NetworkTableEntry hoodLimitSwitchEntry;
   private NetworkTableEntry readyToShootEntry;
+  private NetworkTableEntry currentRangeEntry;
 
   /** Creates a new instance of the Shooter subsystem. */
   public ShooterSubsystem(int shooterMotor1CANID, int shooterMotor2CANID, int hoodMotorCANID, int hoodLimitDio,
-      Ranger ranger) {
+      SimpleRanger ranger) {
 
     this.ranger = ranger;
 
@@ -317,6 +319,11 @@ public class ShooterSubsystem extends SubsystemBase {
         .withPosition(6, 2)
         .withSize(1, 1)
         .getEntry();
+
+    currentRangeEntry = tab.add("Current Range", 0)
+        .withPosition(7, 2)
+        .withSize(1, 1)
+        .getEntry();
   }
 
   private void updateTelemetry() {
@@ -327,6 +334,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
     currentAngleEntry.setNumber(currentAngle);
     targetAngleEntry.setNumber(targetAngle);
+    currentRangeEntry.setNumber(currentRange);
     hoodEncoderEntry.setNumber(hoodEncoder.getPosition());
     hoodLimitSwitchEntry.forceSetBoolean(hoodLimit.get());
    
