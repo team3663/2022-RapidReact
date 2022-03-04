@@ -136,6 +136,8 @@ public class RobotContainer {
         // Temporary test commands to be removed before competition
         new JoystickButton(driveController, Button.kA.value)
                .whenPressed(getAutoDriveCommand());
+        new JoystickButton(driveController, Button.kB.value)
+               .whenPressed(getFollowCargoCommand());
         
         //new POVButton(driveController, 0).whenPressed(new InstantCommand(() -> shooter.setAngle(67.0), shooter));      
     }
@@ -175,7 +177,7 @@ public class RobotContainer {
     }
 
     public Command getAutoDriveCommand() {
-        driveBack = new AutoDriveCommand(drivetrain, new Translation2d(-2, 0), Rotation2d.fromDegrees(90));
+        driveBack = new AutoDriveCommand(drivetrain, new Translation2d(-3, 0), Rotation2d.fromDegrees(-90));
         return driveBack;
     }
 
