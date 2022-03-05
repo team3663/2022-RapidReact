@@ -183,7 +183,7 @@ public class RobotContainer {
             chooser.addOption(key, commandCreators.get(key));
         }
 
-        Shuffleboard.getTab("Main")
+        Shuffleboard.getTab("Driver")
                 .add("Auto Command", chooser)
                 .withPosition(5, 0)
                 .withSize(2, 1)
