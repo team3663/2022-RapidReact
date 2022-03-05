@@ -149,7 +149,9 @@ public class RobotContainer {
 
 
         // Temporary test commands to be removed before competition
-        new JoystickButton(driveController, Button.kB.value).whenHeld(new AutoAlignWithHubCommand(limelight, drivetrain, () -> 0, () -> 0));
+        new JoystickButton(driveController, Button.kB.value).whenHeld(new AutoAlignWithHubCommand(limelight, drivetrain, 
+                () -> -ControllerUtils.modifyAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
+                () -> -ControllerUtils.modifyAxis(driveController.getLeftX()) * drivetrain.maxVelocity));
     }
 
     /**
