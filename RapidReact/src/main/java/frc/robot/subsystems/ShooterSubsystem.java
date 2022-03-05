@@ -131,9 +131,7 @@ public class ShooterSubsystem extends SubsystemBase {
         hoodPidController.setFF(kHoodFF);
         hoodPidController.setOutputRange(kHoodMinOutput, kHoodMaxOutput);
 
-        for ( int n = 0; n < rangeBufferSize; n++) {
-            rangeBuffer[n] = 0.0;
-        }
+        flushRangeBuffer();
 
         initTelemetry();
     }
@@ -188,6 +186,12 @@ public class ShooterSubsystem extends SubsystemBase {
         FiringSolution solution = ranger.getFiringSolution(currentRange);
         setSpeed(solution.speed);
         setAngle(solution.angle);
+    }
+
+    public void flushRangeBuffer() {
+        for ( int n = 0; n < rangeBufferSize; n++) {
+            rangeBuffer[n] = 0.0;
+        }
     }
 
     public void setSpeed(double targetSpeed) {

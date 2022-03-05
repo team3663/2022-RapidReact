@@ -49,6 +49,7 @@ public class ShootCommand extends CommandBase {
 
         // Initialze the shooter range, if we have a limelight it will get updated each
         // time through periodic.
+        shooter.flushRangeBuffer();
         shooter.setRange(initialRange);
     }
 
