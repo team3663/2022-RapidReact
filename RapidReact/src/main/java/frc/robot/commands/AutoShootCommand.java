@@ -62,6 +62,9 @@ public class AutoShootCommand extends CommandBase {
             shooter.setRange(currentRange);
         }
 
+        shooter.setAngle(70);
+        shooter.setSpeed(2600);
+
         // We bail out here if we are staging cargo and the feeder has not stopped yet.
         if (stagingCargo) {
             if (feeder.isIdle()) {
@@ -93,6 +96,6 @@ public class AutoShootCommand extends CommandBase {
     // Returns true when the command should end.
     @Override
     public boolean isFinished() {
-        return timer.hasElapsed(10.0);
+        return timer.hasElapsed(6.0);
     }
 }
