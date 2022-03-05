@@ -117,6 +117,7 @@ public class RobotContainer {
         registerAutoCommand("Shoot Only", this::createShootOnlyCommand);
         registerAutoCommand("Taxi Only", this::createTaxiOnlyCommand);
         registerAutoCommand("One Ball", this::createOneBallCommand);
+        registerAutoCommand("One Ball Lob", this::createOneBallLobCommand);
         // registerAutoCommand("Two Ball", this::createTwoBallCommand);
 
         // create tele drive command
@@ -200,7 +201,7 @@ public class RobotContainer {
     }
 
     private Command createTaxiOnlyCommand() {
-        return new AutoDriveCommand(drivetrain, new Translation2d(3, 0), Rotation2d.fromDegrees(0));
+        return new AutoDriveCommand(drivetrain, new Translation2d(2, 0), Rotation2d.fromDegrees(0));
     }
 
     private Command createShootOnlyCommand() {
@@ -209,6 +210,13 @@ public class RobotContainer {
 
     private Command createOneBallCommand() {
         return new SequentialCommandGroup(createShootOnlyCommand(), createTaxiOnlyCommand());
+    }
+
+    private Command createOneBallLobCommand() {
+        Command wait = new WaitShooterAvailableCommand(shooter);
+        Command lobShot = new AutoShootCommand(shooter, feeder, 0);
+        Command taxi = new AutoDriveCommand(drivetrain, new Translation2d(2, 0), Rotation2d.fromDegrees(0));
+        return new SequentialCommandGroup(wait, lobShot, taxi);
     }
 
     @SuppressWarnings("unused")
