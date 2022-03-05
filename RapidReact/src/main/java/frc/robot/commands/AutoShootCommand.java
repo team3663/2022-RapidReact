@@ -14,15 +14,22 @@ public class AutoShootCommand extends CommandBase {
     private LimelightSubsystem limelight = null;
     private double currentRange;
     private boolean stagingCargo;
-
     private Timer timer = new Timer();
 
     // Fixed range version, take the range to target as a parameter
-    public AutoShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, LimelightSubsystem limelight) {
+    public AutoShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, double range) {
         this.shooter = shooter;
         this.feeder = feeder;
 
         addRequirements(shooter, feeder);
+    }
+
+    // Variable range version, takes a limelight object that is used to determine
+    // the range
+    public AutoShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, LimelightSubsystem limelight) {
+        this(shooter, feeder, 0);
+
+        this.limelight = limelight;
     }
 
     // Called when the command is initially scheduled.
@@ -44,9 +51,11 @@ public class AutoShootCommand extends CommandBase {
     // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute() {
-        // If we have a limelight the use it to update the current range to target
-        currentRange = limelight.getDistance();
-        shooter.setRange(currentRange);
+        // If we have a limelight then use it to update the current range to target
+        if (limelight != null) {
+            currentRange = limelight.getDistance();
+            shooter.setRange(currentRange);
+        }
 
         // We bail out here if we are staging cargo and the feeder has not stopped yet.
         if (stagingCargo) {
@@ -58,8 +67,9 @@ public class AutoShootCommand extends CommandBase {
         }
 
         // We only get here if cargo staging has completed.
-        // Use the state of the trigger to decided whether to run or stop the feeder.
-        feeder.setFeedMode(FeedMode.CONTINUOUS);
+        if (timer.hasElapsed(3.0)) {
+            feeder.setFeedMode(FeedMode.CONTINUOUS);
+        }
       
     }
 
@@ -78,6 +88,6 @@ public class AutoShootCommand extends CommandBase {
     // Returns true when the command should end.
     @Override
     public boolean isFinished() {
-        return timer.hasElapsed(6.0);
+        return timer.hasElapsed(10.0);
     }
 }
