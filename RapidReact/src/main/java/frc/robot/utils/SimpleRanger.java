@@ -3,8 +3,8 @@ package frc.robot.utils;
 public class SimpleRanger implements Ranger {
 
     private final double DISTANCE_0 = 0;
-    private final double DISTANCE_1 = 1.2226;
-    private final double DISTANCE_2 = 2.90392;
+    private final double DISTANCE_1 = 1.535;
+    private final double DISTANCE_2 = 2.652;
     private final double DISTANCE_3 = 3.6;
 
     private final double ANGLE_0 = 77;
