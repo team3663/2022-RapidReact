@@ -150,6 +150,12 @@ public class ShooterSubsystem extends SubsystemBase {
         updateTelemetry();
     }
 
+    // The shooter is not avaialble for use until after it finishes parking the hood
+    // this method lets you find you find out if that has completed.
+    public boolean available() {
+        return !parkingHood;
+    }
+
     public boolean ready() {
         return atTargetSpeed();
     }
