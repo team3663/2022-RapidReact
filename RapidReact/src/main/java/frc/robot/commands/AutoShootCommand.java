@@ -8,47 +8,76 @@ import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.FeederSubsystem.FeedMode;
 
 public class AutoShootCommand extends CommandBase {
-  private ShooterSubsystem shooter;
-  private FeederSubsystem feeder;
-  private LimelightSubsystem limelight;
 
-  private Timer timer = new Timer();
+    private ShooterSubsystem shooter;
+    private FeederSubsystem feeder;
+    private LimelightSubsystem limelight = null;
+    private double currentRange;
+    private boolean stagingCargo;
 
-  public AutoShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, LimelightSubsystem limelight) {
-    this.shooter = shooter;
-    this.feeder = feeder;
-    this.limelight = limelight;
-    
-    addRequirements(shooter, feeder, limelight);
-  }
+    private Timer timer = new Timer();
 
-  @Override
-  public void initialize() {
-    // feeder.setFeedMode(FeedMode.PRESHOOT);
-    limelight.setLEDMode(limelight.LED_ON);
-    shooter.start();
-    timer.start();
-  }
+    // Fixed range version, take the range to target as a parameter
+    public AutoShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, LimelightSubsystem limelight) {
+        this.shooter = shooter;
+        this.feeder = feeder;
 
-  @Override
-  public void execute() { 
-    shooter.setRange(limelight.getDistance());
-  
-    if (timer.hasElapsed(1.5)) {
-    // if (shooter.readyToShoot()) {
-      feeder.setFeedMode(FeedMode.CONTINUOUS);
+        addRequirements(shooter, feeder);
     }
-  }
 
-  @Override
-  public void end(boolean interrupted) {
-    feeder.setFeedMode(FeedMode.STOPPED);
-    limelight.setLEDMode(limelight.LED_OFF);
-    shooter.stop();
-  }
+    // Called when the command is initially scheduled.
+    @Override
+    public void initialize() {
+        feeder.setFeedMode(FeedMode.PRESHOOT);
+        stagingCargo = true;
 
-  @Override
-  public boolean isFinished() {
-    return timer.hasElapsed(6.0);
-  }
+        if (limelight != null) {
+            limelight.setLEDMode(limelight.LED_ON);
+        }
+
+        // Initialze the shooter range, if we have a limelight it will get updated each
+        // time through periodic.
+        shooter.setRange(currentRange);
+        timer.start();
+    }
+
+    // Called every time the scheduler runs while the command is scheduled.
+    @Override
+    public void execute() {
+        // If we have a limelight the use it to update the current range to target
+        currentRange = limelight.getDistance();
+        shooter.setRange(currentRange);
+
+        // We bail out here if we are staging cargo and the feeder has not stopped yet.
+        if (stagingCargo) {
+            if (feeder.isIdle()) {
+                stagingCargo = false;
+            } else {
+                return;
+            }
+        }
+
+        // We only get here if cargo staging has completed.
+        // Use the state of the trigger to decided whether to run or stop the feeder.
+        feeder.setFeedMode(FeedMode.CONTINUOUS);
+      
+    }
+
+    // Called once the command ends or is interrupted.
+    @Override
+    public void end(boolean interrupted) {
+        feeder.setFeedMode(FeedMode.STOPPED);
+        shooter.stop();
+
+        if (limelight != null) {
+            limelight.setLEDMode(limelight.LED_OFF);
+        }
+
+    }
+
+    // Returns true when the command should end.
+    @Override
+    public boolean isFinished() {
+        return timer.hasElapsed(6.0);
+    }
 }
