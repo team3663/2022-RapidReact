@@ -17,10 +17,6 @@ public class ShootCommand extends CommandBase {
     private double currentRange;
     private boolean stagingCargo;
 
-    private double angle;
-    private double speed;
-    private boolean test = false;
-
     // Fixed range version, take the range to target as a parameter
     public ShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, BooleanSupplier trigger, double range) {
         this.shooter = shooter;
