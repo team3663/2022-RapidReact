@@ -11,7 +11,7 @@ public class AutoFollowCargoCommand extends CommandBase {
   private DrivetrainSubsystem drivetrain;
   private Pixy pixy;
   private PIDController translationXPidController = new PIDController(0.001, 0, 0);
-  private PIDController rotationPidController = new PIDController(0.025, 0, 0); // TODO tune pid
+  private PIDController rotationPidController = new PIDController(0.025, 0, 0);
   
   private double lastXOffset = 0;
   private double currentXOffset = 0;
