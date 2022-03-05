@@ -45,6 +45,11 @@ public class AutoShootCommand extends CommandBase {
         // Initialze the shooter range, if we have a limelight it will get updated each
         // time through periodic.
         shooter.setRange(currentRange);
+
+        // in case hood is not behaving as it should be
+        // shooter.setAngle();
+        // shooter.setSpeed();
+        
         timer.start();
     }
 

@@ -117,7 +117,7 @@ public class RobotContainer {
         registerAutoCommand("Shoot Only", this::createShootOnlyCommand);
         registerAutoCommand("Taxi Only", this::createTaxiOnlyCommand);
         registerAutoCommand("One Ball", this::createOneBallCommand);
-        registerAutoCommand("One Ball Lob", this::createOneBallLobCommand);
+        registerAutoCommand("Test Only Lob", this::createOneBallLobCommand);
         // registerAutoCommand("Two Ball", this::createTwoBallCommand);
 
         // create tele drive command
@@ -212,10 +212,11 @@ public class RobotContainer {
         return new SequentialCommandGroup(createShootOnlyCommand(), createTaxiOnlyCommand());
     }
 
+    // only if normal one ball does not work
     private Command createOneBallLobCommand() {
         Command wait = new WaitShooterAvailableCommand(shooter);
         Command lobShot = new AutoShootCommand(shooter, feeder, 0);
-        Command taxi = new AutoDriveCommand(drivetrain, new Translation2d(2, 0), Rotation2d.fromDegrees(0));
+        Command taxi = new AutoDriveCommand(drivetrain, new Translation2d(3.25, 0), Rotation2d.fromDegrees(0));
         return new SequentialCommandGroup(wait, lobShot, taxi);
     }
 
