@@ -136,8 +136,12 @@ public class RobotContainer {
                 .whenPressed(new InstantCommand(() -> drivetrain.resetGyroscope()));
 
         // Schedule the Shoot command to fire a cargo
+        // new JoystickButton(driveController, Button.kY.value).whenHeld(
+        //         new ShootCommand(shooter, feeder, () -> driveController.getRightTriggerAxis() > 0.8, limelight));
         new JoystickButton(driveController, Button.kY.value).whenHeld(
-                new ShootCommand(shooter, feeder, () -> driveController.getRightTriggerAxis() > 0.8, limelight));
+                new ShootCommand(shooter, feeder, () -> driveController.getRightTriggerAxis() > 0.8, limelight, 67, 2900, true));
+        new JoystickButton(driveController, Button.kA.value).whenHeld(
+                new ShootCommand(shooter, feeder, () -> driveController.getRightTriggerAxis() > 0.8, 0));
 
         // Schedule the Intake command to pick-up cargo
         new JoystickButton(driveController, Button.kRightBumper.value)
@@ -145,7 +149,7 @@ public class RobotContainer {
 
 
         // Temporary test commands to be removed before competition
-        new JoystickButton(driveController, Button.kA.value).whenHeld(new AutoAlignWithHubCommand(limelight, drivetrain, () -> 0, () -> 0));
+        new JoystickButton(driveController, Button.kB.value).whenHeld(new AutoAlignWithHubCommand(limelight, drivetrain, () -> 0, () -> 0));
     }
 
     /**

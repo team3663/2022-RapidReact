@@ -16,7 +16,8 @@ public class AutoAlignWithHubCommand extends CommandBase {
   private DrivetrainSubsystem drivetrain;
   private LimelightSubsystem limelight;
 
-  private PIDController rotationPidController = new PIDController(0.05, 0, 0);
+  // private PIDController rotationPidController = new PIDController(0.05, 0, 0); // original
+  private PIDController rotationPidController = new PIDController(0.06, 0, 0);
 
   private double currentOffset;
   private double speed;
