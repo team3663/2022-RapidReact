@@ -77,7 +77,10 @@ public class ShooterSubsystem extends SubsystemBase {
     private double currentAngle = 0;
     private double targetAngle = 0;
 
-    private double currentRange = 10.0;
+    private double currentRange = 0.0;
+    private int rangeBufferSize = 10;
+    private int rangeBufferIndex = 0;
+    private double rangeBuffer[] = new double[rangeBufferSize];
 
     private NetworkTableEntry currentSpeedEntry;
     private NetworkTableEntry targetSpeedEntry;
@@ -128,6 +131,10 @@ public class ShooterSubsystem extends SubsystemBase {
         hoodPidController.setFF(kHoodFF);
         hoodPidController.setOutputRange(kHoodMinOutput, kHoodMaxOutput);
 
+        for ( int n = 0; n < rangeBufferSize; n++) {
+            rangeBuffer[n] = 0.0;
+        }
+
         initTelemetry();
     }
 
@@ -168,7 +175,15 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     public void setRange(double range) {
-        currentRange = range;
+        
+        // limelight is noisy so we calculate a rolling average of recent values.
+        rangeBuffer[rangeBufferIndex++] = range;
+        rangeBufferIndex %= rangeBufferSize;
+        double total = 0.0;
+        for ( int n = 0; n < rangeBufferSize; n++)
+            total += rangeBuffer[n];
+
+        currentRange = total / rangeBufferSize;
 
         FiringSolution solution = ranger.getFiringSolution(currentRange);
         setSpeed(solution.speed);
