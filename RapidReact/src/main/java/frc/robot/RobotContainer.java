@@ -20,6 +20,7 @@ import frc.robot.commands.AutoShootCommand;
 import frc.robot.commands.DriveCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.ShootCommand;
+import frc.robot.commands.WaitShooterAvailableCommand;
 import frc.robot.drivers.Pigeon;
 import frc.robot.subsystems.DriverVisionSubsystem;
 import frc.robot.subsystems.DrivetrainSubsystem;
@@ -203,7 +204,7 @@ public class RobotContainer {
     }
 
     private Command createShootOnlyCommand() {
-        return new AutoShootCommand(shooter, feeder, limelight);
+        return new SequentialCommandGroup(new WaitShooterAvailableCommand(shooter), new AutoShootCommand(shooter, feeder, 1.5));
     }
 
     private Command createOneBallCommand() {
@@ -222,19 +223,4 @@ public class RobotContainer {
                 new AutoAlignWithHubCommand(limelight, drivetrain, () -> 0, () -> 0),
                 createShootOnlyCommand());
     }
-
-    /*
-     * private Command createTrajectoryCommand() {
-     * Path path = new Path(PATH.backOutOfTarmac);
-     * followTrajectory = new SwerveControllerCommand(path.getTrajectory(),
-     * drivetrain::getPose,
-     * drivetrain.getKinematics(),
-     * path.getPidController(),
-     * path.getPidController(),
-     * path.getAnglePidController(),
-     * drivetrain::setModuleStates,
-     * drivetrain);
-     * return followTrajectory;
-     * }
-     */
 }
