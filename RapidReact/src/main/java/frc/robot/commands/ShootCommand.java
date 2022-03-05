@@ -15,7 +15,6 @@ public class ShootCommand extends CommandBase {
     private LimelightSubsystem limelight = null;
     private BooleanSupplier trigger;
     private double currentRange;
-    private double initialRange = 0;
     private boolean stagingCargo;
 
     // Fixed range version, take the range to target as a parameter
@@ -23,7 +22,7 @@ public class ShootCommand extends CommandBase {
         this.shooter = shooter;
         this.feeder = feeder;
         this.trigger = trigger;
-        this.initialRange = range;
+        this.currentRange = range;
 
         addRequirements(shooter, feeder);
     }
@@ -49,14 +48,13 @@ public class ShootCommand extends CommandBase {
 
         // Initialze the shooter range, if we have a limelight it will get updated each
         // time through periodic.
-        shooter.flushRangeBuffer();
-        shooter.setRange(initialRange);
+        shooter.setRange(currentRange);
     }
 
     // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute() {
-        // If we have a limelight the use it to update the current range to target
+        // If we have a limelight then use it to update the current range to target
         if (limelight != null) {
             currentRange = limelight.getDistance();
             shooter.setRange(currentRange);
