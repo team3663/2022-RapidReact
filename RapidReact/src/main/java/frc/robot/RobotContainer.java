@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.commands.AutoAlignWithHubCommand;
 import frc.robot.commands.AutoDriveCommand;
@@ -138,8 +139,10 @@ public class RobotContainer {
         // Schedule the Shoot command to fire a cargo
         // new JoystickButton(driveController, Button.kY.value).whenHeld(
         //         new ShootCommand(shooter, feeder, () -> driveController.getRightTriggerAxis() > 0.8, limelight));
-        new JoystickButton(driveController, Button.kY.value).whenHeld(
+
+        new Trigger(() -> driveController.getLeftTriggerAxis() > 0.8).whileActiveOnce(
                 new ShootCommand(shooter, feeder, () -> driveController.getRightTriggerAxis() > 0.8, limelight, 67, 2900, true));
+
         new JoystickButton(driveController, Button.kA.value).whenHeld(
                 new ShootCommand(shooter, feeder, () -> driveController.getRightTriggerAxis() > 0.8, 0));
 
