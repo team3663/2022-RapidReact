@@ -40,20 +40,6 @@ public class ShootCommand extends CommandBase {
         this.limelight = limelight;
     }
 
-    // for testing
-    public ShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, BooleanSupplier trigger,
-            LimelightSubsystem limelight, double angle, double speed, boolean test) {
-        this(shooter, feeder, trigger, 0);
-
-        this.limelight = limelight;
-
-        test = true;
-        this.angle = angle;
-        this.speed = speed;
-
-    }
-
-
     // Called when the command is initially scheduled.
     @Override
     public void initialize() {
@@ -72,8 +58,6 @@ public class ShootCommand extends CommandBase {
     // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute() {
-
-      if (!test) {
         // If we have a limelight the use it to update the current range to target
         if (limelight != null) {
             currentRange = limelight.getDistance();
@@ -92,15 +76,7 @@ public class ShootCommand extends CommandBase {
         // We only get here if cargo staging has completed.
         // Use the state of the trigger to decided whether to run or stop the feeder.
         feeder.setFeedMode(trigger.getAsBoolean() ? FeedMode.CONTINUOUS : FeedMode.STOPPED);
-      }
-    else {
-      shooter.setAngle(angle);
-      shooter.setSpeed(speed);
-
-      feeder.setFeedMode(trigger.getAsBoolean() ? FeedMode.CONTINUOUS : FeedMode.STOPPED);
-
-      System.out.println(limelight.getDistance());
-    }
+      
     }
 
     // Called once the command ends or is interrupted.

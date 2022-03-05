@@ -68,7 +68,7 @@ public class IntakeSubsystem extends SubsystemBase {
     switch (currentState) {
       case EXTENDING:
         extendArm();
-        if(!boomIsOut && Timer.getFPGATimestamp() - startTime > DELAYTIME) extendBoom();
+        if(!boomIsOut) extendBoom();
         if(boomIsOut && Timer.getFPGATimestamp() - startTime > 2 * DELAYTIME) {
           spinBallIn();
           currentState = IntakeState.EXTENDED;
@@ -78,8 +78,8 @@ public class IntakeSubsystem extends SubsystemBase {
         break;
       case RETRACTING:
         stopMotor();
-        if(boomIsOut && Timer.getFPGATimestamp() - startTime > DELAYTIME)retractBoom();
-        if(!boomIsOut && Timer.getFPGATimestamp() - startTime > 3 * DELAYTIME){
+        if(boomIsOut)retractBoom();
+        if(!boomIsOut && Timer.getFPGATimestamp() - startTime > DELAYTIME){
           retractArm();
           currentState = IntakeState.RETRACTED;
         }
