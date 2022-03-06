@@ -368,7 +368,7 @@ public class FeederSubsystem extends SubsystemBase {
     }
 
     /************************************************************************************************
-     * Implements Continuous mode, advanced the feeder forever.
+     * Implements ReverseContinuous mode, reverse the feeder forever.
      */
     private class ReverseContinuousMode extends FeedModeBase {
 

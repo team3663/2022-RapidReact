@@ -34,6 +34,7 @@ public class AutoIntakeCommand extends CommandBase {
   @Override
   public void end(boolean interrupted) {
     intake.retract();
+    feeder.setFeedMode(FeedMode.STOPPED);
   }
 
   @Override
