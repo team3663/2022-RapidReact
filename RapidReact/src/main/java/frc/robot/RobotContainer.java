@@ -33,6 +33,7 @@ import frc.robot.utils.SwerveModuleConfig;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.subsystems.FeederSubsystem.FeedMode;
 
 import static frc.robot.Constants.*;
 
@@ -147,6 +148,12 @@ public class RobotContainer {
 
         new JoystickButton(driveController, Button.kA.value).whenHeld(
                 new ShootCommand(shooter, feeder, () -> driveController.getRightTriggerAxis() > 0.8, 0));
+
+        new JoystickButton(driveController, Button.kB.value).whenPressed(
+            new InstantCommand(() -> feeder.setFeedMode(FeedMode.PRESHOOT)));
+        
+        new JoystickButton(driveController, Button.kB.value).whenReleased(
+            new InstantCommand(() -> feeder.setFeedMode(FeedMode.STOPPED)));
 
         // Schedule the Intake command to pick-up cargo
         new JoystickButton(driveController, Button.kRightBumper.value)
