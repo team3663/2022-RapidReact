@@ -149,10 +149,10 @@ public class RobotContainer {
         new JoystickButton(driveController, Button.kA.value).whenHeld(
                 new ShootCommand(shooter, feeder, () -> driveController.getRightTriggerAxis() > 0.8, 0));
 
-        new JoystickButton(driveController, Button.kB.value).whenPressed(
+        new JoystickButton(operatorController, Button.kB.value).whenPressed(
             new InstantCommand(() -> feeder.setFeedMode(FeedMode.PRESHOOT)));
         
-        new JoystickButton(driveController, Button.kB.value).whenReleased(
+        new JoystickButton(operatorController, Button.kB.value).whenReleased(
             new InstantCommand(() -> feeder.setFeedMode(FeedMode.STOPPED)));
 
         // Schedule the Intake command to pick-up cargo
