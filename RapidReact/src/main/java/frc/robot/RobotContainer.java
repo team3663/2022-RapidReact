@@ -125,7 +125,7 @@ public class RobotContainer {
                 () -> -ControllerUtils.modifyAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
                 () -> -ControllerUtils.modifyAxis(driveController.getLeftX()) * drivetrain.maxVelocity,
                 () -> -ControllerUtils.modifyAxis(driveController.getRightX())
-                        * drivetrain.maxAngularVelocity);
+                        * drivetrain.maxAngularVelocity * 0.9);
         drivetrain.setDefaultCommand(drive);
     }
 
