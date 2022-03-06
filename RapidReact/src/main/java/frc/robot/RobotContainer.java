@@ -124,8 +124,7 @@ public class RobotContainer {
                 drivetrain,
                 () -> -ControllerUtils.modifyAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
                 () -> -ControllerUtils.modifyAxis(driveController.getLeftX()) * drivetrain.maxVelocity,
-                () -> -ControllerUtils.modifyAxis(driveController.getRightX())
-                        * drivetrain.maxAngularVelocity * 0.9);
+                () -> -ControllerUtils.modifyAxis(driveController.getRightX()) * drivetrain.maxAngularVelocity * 0.9);
         drivetrain.setDefaultCommand(drive);
     }
 
@@ -147,6 +146,12 @@ public class RobotContainer {
 
         new JoystickButton(driveController, Button.kA.value).whenHeld(
                 new ShootCommand(shooter, feeder, () -> driveController.getRightTriggerAxis() > 0.8, 0));
+
+        new JoystickButton(operatorController, Button.kA.value).whenPressed(
+                    new InstantCommand(() -> feeder.setFeedMode(FeedMode.REVERSE_CONTINUOUS)));
+                
+        new JoystickButton(operatorController, Button.kA.value).whenReleased(
+                    new InstantCommand(() -> feeder.setFeedMode(FeedMode.STOPPED)));
 
         new JoystickButton(operatorController, Button.kB.value).whenPressed(
             new InstantCommand(() -> feeder.setFeedMode(FeedMode.PRESHOOT)));
