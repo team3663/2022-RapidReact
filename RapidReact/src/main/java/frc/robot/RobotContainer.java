@@ -48,7 +48,6 @@ import java.util.function.Supplier;
 public class RobotContainer {
 
     private final XboxController driveController = new XboxController(Constants.DRIVE_CONTROLLER_PORT);
-    @SuppressWarnings("unused")
     private final XboxController operatorController = new XboxController(Constants.OPERATOR_CONTROLLER_PORT);
 
     Pigeon pigeon = new Pigeon(DRIVETRAIN_PIGEON_ID);
@@ -223,7 +222,7 @@ public class RobotContainer {
     }
 
     private Command createShootOnlyCommand() {
-        return new SequentialCommandGroup(new WaitShooterAvailableCommand(shooter), new AutoShootCommand(shooter, feeder, 4));
+        return new SequentialCommandGroup(new WaitShooterAvailableCommand(shooter), new AutoShootCommand(shooter, feeder, 2.0));
     }
 
     private Command createOneBallCommand() {
