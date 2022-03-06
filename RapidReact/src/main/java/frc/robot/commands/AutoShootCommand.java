@@ -20,6 +20,7 @@ public class AutoShootCommand extends CommandBase {
     public AutoShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, double range) {
         this.shooter = shooter;
         this.feeder = feeder;
+        this.currentRange = range;
 
         addRequirements(shooter, feeder);
     }
@@ -45,10 +46,6 @@ public class AutoShootCommand extends CommandBase {
         // Initialze the shooter range, if we have a limelight it will get updated each
         // time through periodic.
         shooter.setRange(currentRange);
-
-        // in case hood is not behaving as it should be
-        // shooter.setAngle();
-        // shooter.setSpeed();
         
         timer.start();
     }
@@ -62,6 +59,7 @@ public class AutoShootCommand extends CommandBase {
             shooter.setRange(currentRange);
         }
 
+        // TODO: Temporary work around for bug in fixed range mode.
         shooter.setAngle(70);
         shooter.setSpeed(2600);
 
