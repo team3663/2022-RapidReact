@@ -139,14 +139,23 @@ public class IntakeSubsystem extends SubsystemBase {
   public void spinBallIn() {
     if(boomIsOut && armIsOut)
     intakeMotor.set(POWER);
+  } 
+
+  public void operatorBallIn() {
+    intakeMotor.set(POWER);
   }
+
 
   public void spinBallOut() {
     if(boomIsOut && armIsOut)
       intakeMotor.set(-POWER);
   }
 
-  private void stopMotor() {
+  public void operatorBallOut() {
+    intakeMotor.set(-POWER);
+  }
+
+  public void stopMotor() {
     intakeMotor.set(0);
   }
 

@@ -154,7 +154,19 @@ public class RobotContainer {
         
         new JoystickButton(operatorController, Button.kB.value).whenReleased(
             new InstantCommand(() -> feeder.setFeedMode(FeedMode.STOPPED)));
+        
+        new JoystickButton(operatorController, Button.kRightBumper.value).whenPressed(
+            new InstantCommand(() -> intake.operatorBallIn()));
+        
+        new JoystickButton(operatorController, Button.kRightBumper.value).whenReleased(
+            new InstantCommand(() -> intake.stopMotor()));
+        
+        new JoystickButton(operatorController, Button.kLeftBumper.value).whenPressed(
+            new InstantCommand(() -> intake.operatorBallOut()));
 
+        new JoystickButton(operatorController, Button.kLeftBumper.value).whenReleased(
+            new InstantCommand(() -> intake.stopMotor()));
+        
         // Schedule the Intake command to pick-up cargo
         new JoystickButton(driveController, Button.kRightBumper.value)
                 .whenHeld(new IntakeCommand(intake, feeder, (() -> driveController.getLeftBumper())));
