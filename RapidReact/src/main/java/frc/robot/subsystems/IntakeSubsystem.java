@@ -79,7 +79,7 @@ public class IntakeSubsystem extends SubsystemBase {
       case RETRACTING:
         stopMotor();
         if(boomIsOut)retractBoom();
-        if(!boomIsOut && Timer.getFPGATimestamp() - startTime > DELAYTIME){
+        if(!boomIsOut && Timer.getFPGATimestamp() - startTime > DELAYTIME /2){
           retractArm();
           currentState = IntakeState.RETRACTED;
         }
