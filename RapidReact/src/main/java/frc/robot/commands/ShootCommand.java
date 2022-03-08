@@ -54,10 +54,9 @@ public class ShootCommand extends CommandBase {
     // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute() {
-
-        // If we have a limelight the use it to update the current range to target
+        // If we have a limelight then use it to update the current range to target
         if (limelight != null) {
-            currentRange = limelight.getDistance();
+            currentRange = limelight.getAverageDistance();
             shooter.setRange(currentRange);
         }
 
@@ -73,6 +72,7 @@ public class ShootCommand extends CommandBase {
         // We only get here if cargo staging has completed.
         // Use the state of the trigger to decided whether to run or stop the feeder.
         feeder.setFeedMode(trigger.getAsBoolean() ? FeedMode.CONTINUOUS : FeedMode.STOPPED);
+      
     }
 
     // Called once the command ends or is interrupted.

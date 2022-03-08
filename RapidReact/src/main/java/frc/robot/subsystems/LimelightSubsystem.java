@@ -34,6 +34,11 @@ public class LimelightSubsystem extends SubsystemBase {
   public static double camera_Height; //in Meters
   public static double target_Height; //center of target //in Meters
 
+  // Buffer used to calculate rolling distance average.
+  private int distanceBufferSize = 10;
+  private int distanceBufferIndex = 0;
+  private double distanceBuffer[] = new double[distanceBufferSize];
+
   //vision network table
   private NetworkTable visionTable;
   private NetworkTableEntry tx; //Horizontal Offset From Crosshair To Target (-27 degrees to 27 degrees)
@@ -63,8 +68,14 @@ public class LimelightSubsystem extends SubsystemBase {
    */
   @Override
   public void periodic() {
-    setLEDMode(LED_ON);
     updateTelemetry();
+
+    // If camera can see a valid target then add the current distance reading to the buffer
+    // used to generate the rolling average.
+    if (getValidTarget()) {
+      distanceBuffer[distanceBufferIndex++] = getDistance();
+      distanceBufferIndex %= distanceBufferSize;
+    }
   }
 
   public void updateTelemetry() {
@@ -137,6 +148,19 @@ public class LimelightSubsystem extends SubsystemBase {
     double angleOftarget = getYOffset();
     distance = (target_Height - camera_Height) / Math.tan(Math.toRadians(camera_Angle + angleOftarget));
     return distance; 
+  }
+
+  public double getAverageDistance()
+  {
+    double result = 0;
+
+    for ( int n = 0; n < distanceBufferSize; n++) {
+      result += distanceBuffer[n];
+    }
+
+    result /= distanceBufferSize;
+
+    return result;
   }
 
   /**  

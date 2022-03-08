@@ -16,7 +16,8 @@ public class AutoAlignWithHubCommand extends CommandBase {
   private DrivetrainSubsystem drivetrain;
   private LimelightSubsystem limelight;
 
-  private PIDController rotationPidController = new PIDController(0.05, 0, 0);
+  // private PIDController rotationPidController = new PIDController(0.05, 0, 0); // original
+  private PIDController rotationPidController = new PIDController(0.12, 0, 0);
 
   private double currentOffset;
   private double speed;
@@ -45,7 +46,6 @@ public class AutoAlignWithHubCommand extends CommandBase {
 
   @Override
   public void execute() {
-    System.out.println("--------------------------------aligning");
     currentOffset = limelight.getXOffset();
     speed = rotationPidController.calculate(currentOffset);
 

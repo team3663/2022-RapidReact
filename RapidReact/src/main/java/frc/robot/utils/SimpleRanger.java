@@ -2,16 +2,19 @@ package frc.robot.utils;
 
 public class SimpleRanger implements Ranger {
 
-    private final double DISTANCE_0 = 0;
-    private final double DISTANCE_1 = 1.45836;
-    private final double DISTANCE_2 = 2.90392;
-    private final double DISTANCE_3 = 4.43896;
+    private final double DISTANCE_LOB = 0;
+    private final double DISTANCE_0 = 0.1;
+    private final double DISTANCE_1 = 1.535;
+    private final double DISTANCE_2 = 2.652;
+    private final double DISTANCE_3 = 3.6;
 
+    private final double ANGLE_LOB = 77;
     private final double ANGLE_0 = 77;
     private final double ANGLE_1 = 74;
     private final double ANGLE_2 = 67;
     private final double ANGLE_3 = 67;
 
+    private final double SPEED_LOB = 2320;
     private final double SPEED_0 = 2400;
     private final double SPEED_1 = 2700;
     private final double SPEED_2 = 2900;
@@ -22,6 +25,7 @@ public class SimpleRanger implements Ranger {
     private final int SPEED_COLUMN_INDEX = 2;
 
     public double[][] KNOWN_DATA = new double[][] {
+        {DISTANCE_LOB, ANGLE_LOB, SPEED_LOB},
         {DISTANCE_0, ANGLE_0, SPEED_0},
         {DISTANCE_1, ANGLE_1, SPEED_1},
         {DISTANCE_2, ANGLE_2, SPEED_2},
@@ -37,6 +41,9 @@ public class SimpleRanger implements Ranger {
     public FiringSolution getFiringSolution(double range) {
 
         // beyond endpoints
+        if (range == DISTANCE_LOB) {
+            return new FiringSolution((int) Math.round(SPEED_LOB), ANGLE_LOB);
+        }
         if (range <= DISTANCE_0) {
             return new FiringSolution((int) Math.round(SPEED_0), ANGLE_0);
         }

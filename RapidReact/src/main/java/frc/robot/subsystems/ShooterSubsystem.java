@@ -77,7 +77,7 @@ public class ShooterSubsystem extends SubsystemBase {
     private double currentAngle = 0;
     private double targetAngle = 0;
 
-    private double currentRange = 10.0;
+    private double currentRange = 0.0;
 
     private NetworkTableEntry currentSpeedEntry;
     private NetworkTableEntry targetSpeedEntry;
@@ -148,6 +148,12 @@ public class ShooterSubsystem extends SubsystemBase {
         }
 
         updateTelemetry();
+    }
+
+    // The shooter is not avaialble for use until after it finishes parking the hood
+    // this method lets you find you find out if that has completed.
+    public boolean available() {
+        return !parkingHood;
     }
 
     public boolean ready() {

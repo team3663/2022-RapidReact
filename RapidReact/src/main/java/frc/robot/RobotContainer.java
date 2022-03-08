@@ -9,7 +9,9 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.commands.AutoAlignWithHubCommand;
 import frc.robot.commands.AutoDriveCommand;
@@ -18,6 +20,7 @@ import frc.robot.commands.AutoShootCommand;
 import frc.robot.commands.DriveCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.ShootCommand;
+import frc.robot.commands.WaitShooterAvailableCommand;
 import frc.robot.drivers.Pigeon;
 import frc.robot.subsystems.DriverVisionSubsystem;
 import frc.robot.subsystems.DrivetrainSubsystem;
@@ -30,6 +33,7 @@ import frc.robot.utils.SwerveModuleConfig;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.subsystems.FeederSubsystem.FeedMode;
 
 import static frc.robot.Constants.*;
 
@@ -44,7 +48,6 @@ import java.util.function.Supplier;
 public class RobotContainer {
 
     private final XboxController driveController = new XboxController(Constants.DRIVE_CONTROLLER_PORT);
-    @SuppressWarnings("unused")
     private final XboxController operatorController = new XboxController(Constants.OPERATOR_CONTROLLER_PORT);
 
     Pigeon pigeon = new Pigeon(DRIVETRAIN_PIGEON_ID);
@@ -121,8 +124,7 @@ public class RobotContainer {
                 drivetrain,
                 () -> -ControllerUtils.modifyAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
                 () -> -ControllerUtils.modifyAxis(driveController.getLeftX()) * drivetrain.maxVelocity,
-                () -> -ControllerUtils.modifyAxis(driveController.getRightX())
-                        * drivetrain.maxAngularVelocity);
+                () -> -ControllerUtils.modifyAxis(driveController.getRightX()) * drivetrain.maxAngularVelocity * 0.9);
         drivetrain.setDefaultCommand(drive);
     }
 
@@ -136,16 +138,42 @@ public class RobotContainer {
                 .whenPressed(new InstantCommand(() -> drivetrain.resetGyroscope()));
 
         // Schedule the Shoot command to fire a cargo
-        new JoystickButton(driveController, Button.kY.value).whenHeld(
-                new ShootCommand(shooter, feeder, () -> driveController.getRightTriggerAxis() > 0.8, limelight));
+        new Trigger(() -> driveController.getLeftTriggerAxis() > 0.8).whileActiveOnce(
+                new ParallelCommandGroup(new ShootCommand(shooter, feeder, () -> driveController.getRightTriggerAxis() > 0.8, limelight),
+                new AutoAlignWithHubCommand(limelight, drivetrain, 
+                () -> -ControllerUtils.modifyAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
+                () -> -ControllerUtils.modifyAxis(driveController.getLeftX()) * drivetrain.maxVelocity)));
 
+        new JoystickButton(driveController, Button.kA.value).whenHeld(
+                new ShootCommand(shooter, feeder, () -> driveController.getRightTriggerAxis() > 0.8, 0));
+
+        new JoystickButton(operatorController, Button.kA.value).whenPressed(
+                    new InstantCommand(() -> feeder.setFeedMode(FeedMode.REVERSE_CONTINUOUS)));
+                
+        new JoystickButton(operatorController, Button.kA.value).whenReleased(
+                    new InstantCommand(() -> feeder.setFeedMode(FeedMode.STOPPED)));
+
+        new JoystickButton(operatorController, Button.kB.value).whenPressed(
+            new InstantCommand(() -> feeder.setFeedMode(FeedMode.PRESHOOT)));
+        
+        new JoystickButton(operatorController, Button.kB.value).whenReleased(
+            new InstantCommand(() -> feeder.setFeedMode(FeedMode.STOPPED)));
+        
+        new JoystickButton(operatorController, Button.kRightBumper.value).whenPressed(
+            new InstantCommand(() -> intake.operatorBallIn()));
+        
+        new JoystickButton(operatorController, Button.kRightBumper.value).whenReleased(
+            new InstantCommand(() -> intake.stopMotor()));
+        
+        new JoystickButton(operatorController, Button.kLeftBumper.value).whenPressed(
+            new InstantCommand(() -> intake.operatorBallOut()));
+
+        new JoystickButton(operatorController, Button.kLeftBumper.value).whenReleased(
+            new InstantCommand(() -> intake.stopMotor()));
+        
         // Schedule the Intake command to pick-up cargo
         new JoystickButton(driveController, Button.kRightBumper.value)
                 .whenHeld(new IntakeCommand(intake, feeder, (() -> driveController.getLeftBumper())));
-
-
-        // Temporary test commands to be removed before competition
-        new JoystickButton(driveController, Button.kA.value).whenHeld(new AutoAlignWithHubCommand(limelight, drivetrain, () -> 0, () -> 0));
     }
 
     /**
@@ -179,7 +207,7 @@ public class RobotContainer {
             chooser.addOption(key, commandCreators.get(key));
         }
 
-        Shuffleboard.getTab("Main")
+        Shuffleboard.getTab("Driver")
                 .add("Auto Command", chooser)
                 .withPosition(5, 0)
                 .withSize(2, 1)
@@ -195,11 +223,11 @@ public class RobotContainer {
     }
 
     private Command createTaxiOnlyCommand() {
-        return new AutoDriveCommand(drivetrain, new Translation2d(3, 0), Rotation2d.fromDegrees(0));
+        return new AutoDriveCommand(drivetrain, new Translation2d(2, 0), Rotation2d.fromDegrees(0));
     }
 
     private Command createShootOnlyCommand() {
-        return new AutoShootCommand(shooter, feeder, limelight);
+        return new SequentialCommandGroup(new WaitShooterAvailableCommand(shooter), new AutoShootCommand(shooter, feeder, 2.0));
     }
 
     private Command createOneBallCommand() {
@@ -218,19 +246,4 @@ public class RobotContainer {
                 new AutoAlignWithHubCommand(limelight, drivetrain, () -> 0, () -> 0),
                 createShootOnlyCommand());
     }
-
-    /*
-     * private Command createTrajectoryCommand() {
-     * Path path = new Path(PATH.backOutOfTarmac);
-     * followTrajectory = new SwerveControllerCommand(path.getTrajectory(),
-     * drivetrain::getPose,
-     * drivetrain.getKinematics(),
-     * path.getPidController(),
-     * path.getPidController(),
-     * path.getAnglePidController(),
-     * drivetrain::setModuleStates,
-     * drivetrain);
-     * return followTrajectory;
-     * }
-     */
 }
