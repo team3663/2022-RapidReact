@@ -21,7 +21,8 @@ public class FeederSubsystem extends SubsystemBase {
         INTAKE,
         PRESHOOT,
         SHOOT_ONE,
-        CONTINUOUS
+        CONTINUOUS,
+        REVERSE_CONTINUOUS
     }
 
     private final double FEEDER_GEAR_RATIO_MULTIPLIER = 1;
@@ -32,17 +33,23 @@ public class FeederSubsystem extends SubsystemBase {
     private final double KD = 0.0009;
 
     private final int FEED_RPM_STOPPED = 0;
-    private final int FEED_RPM_SHOOT = 100; // how fast the feeder should be running when we are shooting
-    private final int FEED_RPM_INTAKE = 100; // how fast the feeder should be running when indexing the balls
+    private final int FEED_RPM_SHOOT = 2500; // how fast the feeder should be running when we are shooting
+    private final int FEED_RPM_PRESHOOT = 2000; // how fast the feeder should be running when we are prepping shoot
+    private final int FEED_RPM_INTAKE = 1000; // how fast the feeder should be running when indexing the balls
+    private final int FEED_RPM_REVERSE_CONTINUOUS = -2500;
 
     // The number of revolutions of the feed motor required to cycle a ball all the
     // way from the feeders entry to the exit.
     public final int REV_PER_FULL_FEED = 1500;
+    public final int EXIT_ADVANCE_REV = 15;
 
     // Subsystems internal data
     private CANSparkMax feedMotor;
     private RelativeEncoder feedEncoder;
     private SparkMaxPIDController feedPID;
+
+    boolean exitSensorTripped = false;
+    double advanceTargetPos = 0;
 
     private DigitalInput entrySensor;
     private DigitalInput exitSensor;
@@ -66,6 +73,7 @@ public class FeederSubsystem extends SubsystemBase {
         feedPID.setD(KD);
 
         feedEncoder = feedMotor.getEncoder();
+        feedEncoder.setPosition(0.0);
         feedEncoder.setVelocityConversionFactor(FEEDER_GEAR_RATIO_MULTIPLIER); // set feeder gear ratio
 
         // Sensors for Feeder
@@ -78,6 +86,7 @@ public class FeederSubsystem extends SubsystemBase {
         modes.put(FeedMode.PRESHOOT, new PreshootMode());
         modes.put(FeedMode.SHOOT_ONE, new ShootOneMode());
         modes.put(FeedMode.CONTINUOUS, new ContinuousMode());
+        modes.put(FeedMode.REVERSE_CONTINUOUS, new ReverseContinuousMode());
 
         currentMode = modes.get(FeedMode.STOPPED);
 
@@ -92,12 +101,12 @@ public class FeederSubsystem extends SubsystemBase {
                 .withSize(1, 1)
                 .getEntry();
 
-        entrySensorEntry = tab.add("Entry Sensor", 0)
+        entrySensorEntry = tab.add("Entry Sensor", false)
                 .withPosition(1, 1)
                 .withSize(1, 1)
                 .getEntry();
 
-        exitSensorEntry = tab.add("Exit Sensor", 0)
+        exitSensorEntry = tab.add("Exit Sensor", false)
                 .withPosition(2, 1)
                 .withSize(1, 1)
                 .getEntry();
@@ -109,6 +118,13 @@ public class FeederSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
 
+        // We need to clear our exit sensor tripped flag once we no longer see a cargo
+        // breaking the beam.
+        if (exitSensor.get())
+        {
+            exitSensorTripped = false;
+        }
+
         // Execute the current mode, if it completes then put system in Stopped mode.
         if (currentMode.run(this)) {
             setFeedMode(FeedMode.STOPPED);
@@ -119,8 +135,8 @@ public class FeederSubsystem extends SubsystemBase {
 
     private void updateTelemetry() {
         feederRPMEntry.setNumber(feedMotor.getEncoder().getVelocity());
-        entrySensorEntry.setBoolean(entrySensor.get());
-        exitSensorEntry.setBoolean(exitSensor.get());
+        entrySensorEntry.forceSetBoolean(entrySensor.get());
+        exitSensorEntry.forceSetBoolean(exitSensor.get());
     }
 
     /**
@@ -148,16 +164,32 @@ public class FeederSubsystem extends SubsystemBase {
      * @return True if a ball is present at the entry sensor, false otherwise.
      */
     private boolean ballInEntry() {
+        
         return !entrySensor.get();
     }
 
     /**
-     * Tell caller if there is a ball at the exit end of the feeder subsystem.
+     * Tell caller if there is a at the exit end of the feeder.  This is true
+     * if the exit sensor has been tripped AND the 
      * 
      * @return True if a ball is present at the exit sensor, false otherwise.
      */
     private boolean ballInExit() {
-        return !exitSensor.get();
+        boolean result = false;
+        double currentPos = feedEncoder.getPosition();
+
+        if (exitSensorTripped) {
+            if (currentPos >= advanceTargetPos) {
+                result = true;
+            }
+        } else {
+            if (!exitSensor.get()) {
+                exitSensorTripped = true;
+                advanceTargetPos = currentPos + EXIT_ADVANCE_REV;
+            }
+        }
+
+        return result;
     }
 
     /************************************************************************************************
@@ -236,14 +268,17 @@ public class FeederSubsystem extends SubsystemBase {
      * exit end of the feeder.
      */
     private class PreshootMode extends FeedModeBase {
+
+        double targetPosition;
+
         private PreshootMode() {
             super(FeedMode.PRESHOOT);
         }
 
         @Override
         protected void init(FeederSubsystem feeder) {
-            feeder.feedEncoder.setPosition(0.0);
-            feeder.feedPID.setReference(FEED_RPM_INTAKE, ControlType.kVelocity);
+            targetPosition = feedEncoder.getPosition() + REV_PER_FULL_FEED;
+            feeder.feedPID.setReference(FEED_RPM_PRESHOOT, ControlType.kVelocity);
         }
 
         @Override
@@ -257,7 +292,7 @@ public class FeederSubsystem extends SubsystemBase {
 
             // If the exit sensor has not seen a ball yet but the belt has moved the full
             // length of the feeder then there are no balls, bail out.
-            if (feeder.feedEncoder.getPosition() > REV_PER_FULL_FEED) {
+            if (feeder.feedEncoder.getPosition() >= targetPosition) {
                 return true;
             }
 
@@ -324,6 +359,26 @@ public class FeederSubsystem extends SubsystemBase {
         @Override
         protected void init(FeederSubsystem feeder) {
             feeder.feedPID.setReference(FEED_RPM_SHOOT, ControlType.kVelocity);
+        }
+
+        @Override
+        protected void end(FeederSubsystem feeder) {
+            feeder.feedPID.setReference(FEED_RPM_STOPPED, ControlType.kVelocity);
+        }
+    }
+
+    /************************************************************************************************
+     * Implements ReverseContinuous mode, reverse the feeder forever.
+     */
+    private class ReverseContinuousMode extends FeedModeBase {
+
+        private ReverseContinuousMode() {
+            super(FeedMode.REVERSE_CONTINUOUS);
+        }
+
+        @Override
+        protected void init(FeederSubsystem feeder) {
+            feeder.feedPID.setReference(FEED_RPM_REVERSE_CONTINUOUS, ControlType.kVelocity);
         }
 
         @Override
