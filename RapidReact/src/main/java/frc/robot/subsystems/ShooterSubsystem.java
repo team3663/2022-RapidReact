@@ -20,12 +20,17 @@ public class ShooterSubsystem extends SubsystemBase {
 
     private enum MotorState {
         STOPPED,
-        RUNNING,
+        IDLE, // running at a constant rpm
+        SHOOTING, // rpm changed by command
         STOPPING
     }
 
     // Subsystem Constants
+    private static final int MAX_CURRENT = 13; // somewhat affected, but can get to 3200 rpm when set to 3500 rpm
+    private double highestCurrent = 0;
+
     private static final double MAX_RPM = 6000;
+    private static final double IDLE_RPM = 2500;
     private static final double shooterBeltRatio = 0.66;
     private static final double speedIncrement = 100;
     private static final double speedMarginPercent = 0.02;
@@ -90,6 +95,7 @@ public class ShooterSubsystem extends SubsystemBase {
     private NetworkTableEntry hoodLimitSwitchEntry;
     private NetworkTableEntry readyToShootEntry;
     private NetworkTableEntry currentRangeEntry;
+    private NetworkTableEntry highestCurrentEntry;
 
     /** Creates a new instance of the Shooter subsystem. */
     public ShooterSubsystem(int shooterMotor1CANID, int shooterMotor2CANID, int hoodMotorCANID, int hoodLimitDio,
@@ -100,12 +106,14 @@ public class ShooterSubsystem extends SubsystemBase {
         shooterMotor1 = new CANSparkMax(shooterMotor1CANID, MotorType.kBrushless);
         shooterMotor1.setInverted(true);
         shooterMotor1.setIdleMode(IdleMode.kCoast);
+        shooterMotor1.setSmartCurrentLimit(MAX_CURRENT);
         shooterEncoder = shooterMotor1.getEncoder();
         shooterEncoder.setVelocityConversionFactor(shooterBeltRatio);
 
         shooterMotor2 = new CANSparkMax(shooterMotor2CANID, MotorType.kBrushless);
         shooterMotor2.setIdleMode(IdleMode.kCoast);
         shooterMotor2.follow(shooterMotor1, true);
+        shooterMotor2.setSmartCurrentLimit(MAX_CURRENT);
 
         hoodMotor = new CANSparkMax(hoodMotorCANID, MotorType.kBrushless);
         hoodMotor.setIdleMode(IdleMode.kBrake);
@@ -164,9 +172,14 @@ public class ShooterSubsystem extends SubsystemBase {
     // Shooter control methods
     // ---------------------------------------------------------------------------
 
-    public void start() {
-        motorState = MotorState.RUNNING;
-        setSpeed(targetSpeed);
+    public void idle() {
+        motorState = MotorState.IDLE;
+        setSpeed(IDLE_RPM);
+    }
+
+    public void shoot() {
+      motorState = MotorState.SHOOTING;
+      setSpeed(targetSpeed);
     }
 
     public void stop() {
@@ -197,7 +210,7 @@ public class ShooterSubsystem extends SubsystemBase {
     public void increaseSpeed() {
         targetSpeed += speedIncrement;
 
-        if (motorState == MotorState.RUNNING) {
+        if (motorState == MotorState.SHOOTING) {
             setSpeed(targetSpeed);
         }
     }
@@ -205,7 +218,7 @@ public class ShooterSubsystem extends SubsystemBase {
     public void decreaseSpeed() {
         targetSpeed -= speedIncrement;
 
-        if (motorState == MotorState.RUNNING) {
+        if (motorState == MotorState.SHOOTING) {
             setSpeed(targetSpeed);
         }
     }
@@ -337,6 +350,12 @@ public class ShooterSubsystem extends SubsystemBase {
                 .withPosition(3, 3)
                 .withSize(1, 1)
                 .getEntry();
+
+        // current data
+        highestCurrentEntry = tab.add("Highest Current", 0)
+                .withPosition(7, 0)
+                .withSize(1, 1)
+                .getEntry();
     }
 
     private void updateTelemetry() {
@@ -352,5 +371,15 @@ public class ShooterSubsystem extends SubsystemBase {
         targetAngleEntry.setNumber(targetAngle);
         hoodEncoderEntry.setNumber(hoodEncoder.getPosition());
         hoodLimitSwitchEntry.forceSetBoolean(hoodLimit.get());
+
+        highestCurrentEntry.setNumber(getHighestCurrent());
+    }
+
+    private double getHighestCurrent() {
+      double current = shooterMotor1.getOutputCurrent();
+      if (current > highestCurrent) {
+        highestCurrent = current;
+      }
+      return highestCurrent;
     }
 }

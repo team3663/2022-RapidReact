@@ -119,6 +119,8 @@ public class RobotContainer {
         registerAutoCommand("One Ball", this::createOneBallCommand);
         // registerAutoCommand("Two Ball", this::createTwoBallCommand);
 
+        // TODO create instant command to set shooter to idle?
+        
         // create tele drive command
         drive = new DriveCommand(
                 drivetrain,
@@ -238,9 +240,8 @@ public class RobotContainer {
     private Command createTwoBallCommand() {
         // don't use this because pixy hardware is not working
         return new SequentialCommandGroup(
-                new AutoAlignWithHubCommand(limelight, drivetrain, () -> 0, () -> 0),
-                createShootOnlyCommand(),
-                new AutoDriveCommand(drivetrain, new Translation2d(3, 0), Rotation2d.fromDegrees(90)),
+                new InstantCommand(() -> shooter.idle()),
+                new AutoDriveCommand(drivetrain, new Translation2d(3, 0), Rotation2d.fromDegrees(0)),
                 // new AutoFollowCargoCommand(drivetrain, pixy),
                 new AutoIntakeCommand(intake, feeder),
                 new AutoAlignWithHubCommand(limelight, drivetrain, () -> 0, () -> 0),
