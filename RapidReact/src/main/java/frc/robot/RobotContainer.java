@@ -119,8 +119,6 @@ public class RobotContainer {
         registerAutoCommand("Taxi Only", this::createTaxiOnlyCommand);
         registerAutoCommand("One Ball", this::createOneBallCommand);
         // registerAutoCommand("Two Ball", this::createTwoBallCommand);
-
-        // TODO create instant command to set shooter to idle?
         
         // create tele drive command
         drive = new DefaultDriveCommand(
@@ -232,7 +230,10 @@ public class RobotContainer {
     }
 
     private Command createShootOnlyCommand() {
-        return new SequentialCommandGroup(new WaitShooterAvailableCommand(shooter), new AutoShootCommand(shooter, feeder, 2.0));
+        return new SequentialCommandGroup(
+            new InstantCommand(() -> shooter.idle()),
+            new WaitShooterAvailableCommand(shooter),
+            new AutoShootCommand(shooter, feeder, 2.0));
     }
 
     private Command createOneBallCommand() {
