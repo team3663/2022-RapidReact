@@ -1,7 +1,5 @@
 package frc.robot.utils;
 
-import edu.wpi.first.wpilibj.SpeedController;
-
 public class SimpleRanger implements Ranger {
 
     private final double DISTANCE_LOB = 0;
@@ -80,6 +78,11 @@ public class SimpleRanger implements Ranger {
         angle = linearInterpolation(range, distanceHigherBoundIndex, InterpolationMode.ANGLE);
 
         return new FiringSolution(speed, angle);
+    }
+
+    public FiringSolution getFiringSolution(String name)
+    {
+        return null;
     }
     
     private double linearInterpolation(double range, int distanceHigherBoundIndex, InterpolationMode mode) {
