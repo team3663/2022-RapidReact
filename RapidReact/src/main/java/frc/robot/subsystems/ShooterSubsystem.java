@@ -26,11 +26,13 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     // Subsystem Constants
-    private static final int MAX_CURRENT = 13; // somewhat affected, but can get to 3200 rpm when set to 3500 rpm
+    private static final int MAX_CURRENT = 20; 
+        // 20: minimum recommanded by SparksMax Documentation
+        // 13: somewhat affected, but can get to 3200 rpm when set to 3500 rpm
     private double highestCurrent = 0;
 
     private static final double MAX_RPM = 6000;
-    private static final double IDLE_RPM = 2500;
+    private static final double IDLE_RPM = 1500;
     private static final double shooterBeltRatio = 0.66;
     private static final double speedIncrement = 100;
     private static final double speedMarginPercent = 0.02;
