@@ -26,7 +26,7 @@ import frc.robot.drivers.Pigeon;
 import frc.robot.subsystems.DriverVisionSubsystem;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.FeederSubsystem;
-import frc.robot.utils.ControllerUtils;
+import frc.robot.utils.ControllerHelper;
 import frc.robot.utils.Ranger;
 import frc.robot.utils.SimpleRanger;
 import frc.robot.utils.SwerveDriveConfig;
@@ -41,7 +41,6 @@ import static frc.robot.Constants.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -50,6 +49,7 @@ import java.util.function.Supplier;
 public class RobotContainer {
 
     private final XboxController driveController = new XboxController(Constants.DRIVE_CONTROLLER_PORT);
+    private final ControllerHelper driveControllerHelper = new ControllerHelper(driveController);   
     private final XboxController operatorController = new XboxController(Constants.OPERATOR_CONTROLLER_PORT);
 
     Pigeon pigeon = new Pigeon(DRIVETRAIN_PIGEON_ID);
@@ -124,9 +124,9 @@ public class RobotContainer {
         // create tele drive command
         drive = new DefaultDriveCommand(
                 drivetrain,
-                () -> -ControllerUtils.modifyAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
-                () -> -ControllerUtils.modifyAxis(driveController.getLeftX()) * drivetrain.maxVelocity,
-                () -> -ControllerUtils.modifyAxis(driveController.getRightX()) * drivetrain.maxAngularVelocity * 0.9);
+                () -> -driveControllerHelper.modifyAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
+                () -> -driveControllerHelper.modifyAxis(driveController.getLeftX()) * drivetrain.maxVelocity,
+                () -> -driveControllerHelper.modifyAxis(driveController.getRightX()) * drivetrain.maxAngularVelocity * 0.9);
         drivetrain.setDefaultCommand(drive);
 
         shooter.setDefaultCommand(new DefaultShooterCommand(shooter));
@@ -136,8 +136,6 @@ public class RobotContainer {
      * Use this method to define your button->command mappings.
      */
     private void configureButtonBindings() {
-
-        Function<Boolean, Void> rumble;
         
         // Reset the gyroscope on the Pigeon.
         new JoystickButton(driveController, Button.kStart.value)
@@ -145,13 +143,13 @@ public class RobotContainer {
 
         // Schedule the Shoot command to fire a cargo
         new Trigger(() -> driveController.getLeftTriggerAxis() > 0.8).whileActiveOnce(
-                new ParallelCommandGroup(new ShootCommand(shooter, feeder, (r) -> rumble(r), () -> driveController.getRightTriggerAxis() > 0.8, limelight),
+                new ParallelCommandGroup(new ShootCommand(shooter, feeder, driveControllerHelper::rumble, () -> driveController.getRightTriggerAxis() > 0.8, limelight),
                 new AutoAlignWithHubCommand(limelight, drivetrain, 
-                () -> -ControllerUtils.modifyAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
-                () -> -ControllerUtils.modifyAxis(driveController.getLeftX()) * drivetrain.maxVelocity)));
+                () -> -driveControllerHelper.modifyAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
+                () -> -driveControllerHelper.modifyAxis(driveController.getLeftX()) * drivetrain.maxVelocity)));
 
         new JoystickButton(driveController, Button.kA.value).whenHeld(
-                new ShootCommand(shooter, feeder, () -> driveController.getRightTriggerAxis() > 0.8, 0));
+                new ShootCommand(shooter, feeder, driveControllerHelper::rumble, () -> driveController.getRightTriggerAxis() > 0.8, 0));
 
         new JoystickButton(operatorController, Button.kA.value).whenPressed(
                     new InstantCommand(() -> feeder.setFeedMode(FeedMode.REVERSE_CONTINUOUS)));

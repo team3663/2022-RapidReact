@@ -1,7 +1,7 @@
 package frc.robot.commands;
 
 import java.util.function.BooleanSupplier;
-import java.util.function.Function;
+import java.util.function.Consumer;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.FeederSubsystem;
@@ -13,15 +13,17 @@ public class ShootCommand extends CommandBase {
 
     private ShooterSubsystem shooter;
     private FeederSubsystem feeder;
+    private Consumer<Boolean> shootReadyNotifier;
     private LimelightSubsystem limelight = null;
     private BooleanSupplier trigger;
     private double currentRange;
     private boolean stagingCargo;
 
     // Fixed range version, take the range to target as a parameter
-    public ShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, Function<Boolean,Void> readyCallback, BooleanSupplier trigger, double range) {
+    public ShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, Consumer<Boolean> shootReadyNotifier, BooleanSupplier trigger, double range) {
         this.shooter = shooter;
         this.feeder = feeder;
+        this.shootReadyNotifier = shootReadyNotifier;
         this.trigger = trigger;
         this.currentRange = range;
 
@@ -30,9 +32,9 @@ public class ShootCommand extends CommandBase {
 
     // Variable range version, takes a limelight object that is used to determine
     // the range
-    public ShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder,Function<Boolean,Void> readyCallback, BooleanSupplier trigger,
+    public ShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder,Consumer<Boolean> shootReadyNotifier, BooleanSupplier trigger,
             LimelightSubsystem limelight) {
-        this(shooter, feeder, readyCallback, trigger, 0);
+        this(shooter, feeder, shootReadyNotifier, trigger, 0);
 
         this.limelight = limelight;
     }
@@ -43,6 +45,7 @@ public class ShootCommand extends CommandBase {
         shooter.shoot();
         feeder.setFeedMode(FeedMode.PRESHOOT);
         stagingCargo = true;
+        shootReadyNotifier.accept(false);
 
         if (limelight != null) {
             limelight.setLEDMode(limelight.LED_ON);
@@ -71,6 +74,9 @@ public class ShootCommand extends CommandBase {
             }
         }
 
+        // Call our shoot ready notifier to let it know whether or not the shooter subsystem is ready to fire.
+        shootReadyNotifier.accept(shooter.ready());
+
         // We only get here if cargo staging has completed.
         // Use the state of the trigger to decided whether to run or stop the feeder.
         feeder.setFeedMode(trigger.getAsBoolean() ? FeedMode.CONTINUOUS : FeedMode.STOPPED);
@@ -82,6 +88,7 @@ public class ShootCommand extends CommandBase {
     public void end(boolean interrupted) {
         feeder.setFeedMode(FeedMode.STOPPED);
         shooter.idle();
+        shootReadyNotifier.accept(false);
 
         if (limelight != null) {
             limelight.setLEDMode(limelight.LED_OFF);
