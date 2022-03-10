@@ -80,6 +80,7 @@ public class SimpleRanger implements Ranger {
         return new FiringSolution(speed, angle);
     }
 
+    // TODO: Implement method to return a named preset firing solution instead of one based on a measured range.
     public FiringSolution getFiringSolution(String name)
     {
         return null;

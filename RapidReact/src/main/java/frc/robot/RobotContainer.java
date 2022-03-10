@@ -26,7 +26,7 @@ import frc.robot.drivers.Pigeon;
 import frc.robot.subsystems.DriverVisionSubsystem;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.FeederSubsystem;
-import frc.robot.utils.ControllerHelper;
+import frc.robot.utils.XboxControllerHelper;
 import frc.robot.utils.Ranger;
 import frc.robot.utils.SimpleRanger;
 import frc.robot.utils.SwerveDriveConfig;
@@ -49,7 +49,7 @@ import java.util.function.Supplier;
 public class RobotContainer {
 
     private final XboxController driveController = new XboxController(Constants.DRIVE_CONTROLLER_PORT);
-    private final ControllerHelper driveControllerHelper = new ControllerHelper(driveController);   
+    private final XboxControllerHelper driveControllerHelper = new XboxControllerHelper(driveController);   
     private final XboxController operatorController = new XboxController(Constants.OPERATOR_CONTROLLER_PORT);
 
     Pigeon pigeon = new Pigeon(DRIVETRAIN_PIGEON_ID);
@@ -106,6 +106,7 @@ public class RobotContainer {
         // We don't ever call the DriverVision subsystem, we just create it and let it do its thing.
         new DriverVisionSubsystem();
 
+        // TODO: Move these constants into Constants.java
         limelight = new LimelightSubsystem(36, 0.5842, 2.6414);
     }
 
@@ -124,9 +125,9 @@ public class RobotContainer {
         // create tele drive command
         drive = new DefaultDriveCommand(
                 drivetrain,
-                () -> -driveControllerHelper.modifyAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
-                () -> -driveControllerHelper.modifyAxis(driveController.getLeftX()) * drivetrain.maxVelocity,
-                () -> -driveControllerHelper.modifyAxis(driveController.getRightX()) * drivetrain.maxAngularVelocity * 0.9);
+                () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
+                () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity,
+                () -> -driveControllerHelper.scaleAxis(driveController.getRightX()) * drivetrain.maxAngularVelocity * 0.9);
         drivetrain.setDefaultCommand(drive);
 
         shooter.setDefaultCommand(new DefaultShooterCommand(shooter));
@@ -145,8 +146,8 @@ public class RobotContainer {
         new Trigger(() -> driveController.getLeftTriggerAxis() > 0.8).whileActiveOnce(
                 new ParallelCommandGroup(new ShootCommand(shooter, feeder, driveControllerHelper::rumble, () -> driveController.getRightTriggerAxis() > 0.8, limelight),
                 new AutoAlignWithHubCommand(limelight, drivetrain, 
-                () -> -driveControllerHelper.modifyAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
-                () -> -driveControllerHelper.modifyAxis(driveController.getLeftX()) * drivetrain.maxVelocity)));
+                () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
+                () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity)));
 
         new JoystickButton(driveController, Button.kA.value).whenHeld(
                 new ShootCommand(shooter, feeder, driveControllerHelper::rumble, () -> driveController.getRightTriggerAxis() > 0.8, 0));
