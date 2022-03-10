@@ -40,6 +40,7 @@ import static frc.robot.Constants.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -135,13 +136,15 @@ public class RobotContainer {
      */
     private void configureButtonBindings() {
 
+        Function<Boolean, Void> rumble;
+        
         // Reset the gyroscope on the Pigeon.
         new JoystickButton(driveController, Button.kStart.value)
                 .whenPressed(new InstantCommand(() -> drivetrain.resetGyroscope()));
 
         // Schedule the Shoot command to fire a cargo
         new Trigger(() -> driveController.getLeftTriggerAxis() > 0.8).whileActiveOnce(
-                new ParallelCommandGroup(new ShootCommand(shooter, feeder, () -> driveController.getRightTriggerAxis() > 0.8, limelight),
+                new ParallelCommandGroup(new ShootCommand(shooter, feeder, (r) -> rumble(r), () -> driveController.getRightTriggerAxis() > 0.8, limelight),
                 new AutoAlignWithHubCommand(limelight, drivetrain, 
                 () -> -ControllerUtils.modifyAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
                 () -> -ControllerUtils.modifyAxis(driveController.getLeftX()) * drivetrain.maxVelocity)));

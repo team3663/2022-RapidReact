@@ -1,6 +1,7 @@
 package frc.robot.commands;
 
 import java.util.function.BooleanSupplier;
+import java.util.function.Function;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.FeederSubsystem;
@@ -18,7 +19,7 @@ public class ShootCommand extends CommandBase {
     private boolean stagingCargo;
 
     // Fixed range version, take the range to target as a parameter
-    public ShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, BooleanSupplier trigger, double range) {
+    public ShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, Function<Boolean,Void> readyCallback, BooleanSupplier trigger, double range) {
         this.shooter = shooter;
         this.feeder = feeder;
         this.trigger = trigger;
@@ -29,9 +30,9 @@ public class ShootCommand extends CommandBase {
 
     // Variable range version, takes a limelight object that is used to determine
     // the range
-    public ShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, BooleanSupplier trigger,
+    public ShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder,Function<Boolean,Void> readyCallback, BooleanSupplier trigger,
             LimelightSubsystem limelight) {
-        this(shooter, feeder, trigger, 0);
+        this(shooter, feeder, readyCallback, trigger, 0);
 
         this.limelight = limelight;
     }
