@@ -17,7 +17,8 @@ import frc.robot.commands.AutoAlignWithHubCommand;
 import frc.robot.commands.AutoDriveCommand;
 import frc.robot.commands.AutoIntakeCommand;
 import frc.robot.commands.AutoShootCommand;
-import frc.robot.commands.DriveCommand;
+import frc.robot.commands.DefaultDriveCommand;
+import frc.robot.commands.DefaultShooterCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.ShootCommand;
 import frc.robot.commands.WaitShooterAvailableCommand;
@@ -62,7 +63,7 @@ public class RobotContainer {
     private LimelightSubsystem limelight;
 
     // Commands
-    private DriveCommand drive;
+    private DefaultDriveCommand drive;
 
     // Autonomous command creation
     private final HashMap<String, Supplier<Command>> commandCreators = new HashMap<String, Supplier<Command>>();
@@ -122,12 +123,14 @@ public class RobotContainer {
         // TODO create instant command to set shooter to idle?
         
         // create tele drive command
-        drive = new DriveCommand(
+        drive = new DefaultDriveCommand(
                 drivetrain,
                 () -> -ControllerUtils.modifyAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
                 () -> -ControllerUtils.modifyAxis(driveController.getLeftX()) * drivetrain.maxVelocity,
                 () -> -ControllerUtils.modifyAxis(driveController.getRightX()) * drivetrain.maxAngularVelocity * 0.9);
         drivetrain.setDefaultCommand(drive);
+
+        shooter.setDefaultCommand(new DefaultShooterCommand(shooter));
     }
 
     /**
