@@ -49,6 +49,11 @@ public class CubicRanger implements Ranger {
     return KNOWN_POINTS[KNOWN_POINTS.length - 3][ANGLE_COLUMN];
   }
 
+  public FiringSolution getFiringSolution(String name)
+  {
+      return null;
+  }
+  
   private int cubicInterpolation(int a, int b, int c, int d, double distance, boolean rpm) {
     // solve A(distance) + B(distance) + C(distance) + D(distance) = y
     // return y
