@@ -99,6 +99,9 @@ public class ShooterSubsystem extends SubsystemBase {
     private NetworkTableEntry currentRangeEntry;
     private NetworkTableEntry highestCurrentEntry;
 
+    private NetworkTableEntry shooterMotorOneCurrentEntry;
+    private NetworkTableEntry shooterMotorTwoCurrentEntry;
+
     /** Creates a new instance of the Shooter subsystem. */
     public ShooterSubsystem(int shooterMotor1CANID, int shooterMotor2CANID, int hoodMotorCANID, int hoodLimitDio,
             Ranger ranger) {
@@ -358,6 +361,15 @@ public class ShooterSubsystem extends SubsystemBase {
                 .withPosition(7, 0)
                 .withSize(1, 1)
                 .getEntry();
+
+        shooterMotorOneCurrentEntry = tab.add("motor 1 current", 0)
+                .withPosition(8, 0)
+                .withSize(1, 1)
+                .getEntry();
+        shooterMotorTwoCurrentEntry = tab.add("motor 2 current", 0)
+                .withPosition(9, 0)
+                .withSize(1, 1)
+                .getEntry();
     }
 
     private void updateTelemetry() {
@@ -375,6 +387,8 @@ public class ShooterSubsystem extends SubsystemBase {
         hoodLimitSwitchEntry.forceSetBoolean(hoodLimit.get());
 
         highestCurrentEntry.setNumber(getHighestCurrent());
+        shooterMotorOneCurrentEntry.setValue(shooterMotor1.getOutputCurrent());
+        shooterMotorTwoCurrentEntry.setValue(shooterMotor2.getOutputCurrent());
     }
 
     private double getHighestCurrent() {

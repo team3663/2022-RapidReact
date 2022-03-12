@@ -50,6 +50,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     private NetworkTableEntry driveSignalXEntry;
     private NetworkTableEntry driveSignalYEntry;
     private NetworkTableEntry driveSignalRotationEntry;
+
  //   private NetworkTableEntry cargoAreaEntry;
  //   private NetworkTableEntry cargoXEntry;
 
