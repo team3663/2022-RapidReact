@@ -61,6 +61,6 @@ public class AutoAlignWithHubCommand extends CommandBase {
   public boolean isFinished() {
       return false;
 
-    // return (Math.abs(speed) < 0.01) || (Math.abs(currentOffset) < 0.01); // TODO fix value
+    // return (Math.abs(speed) < 0.01) || (Math.abs(currentOffset) < 0.01); 
   }
 }

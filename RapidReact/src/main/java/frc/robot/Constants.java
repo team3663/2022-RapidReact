@@ -23,6 +23,11 @@ public final class Constants {
   public static final double BACK_LEFT_MODULE_STEER_OFFSET = -Math.toRadians(11.865234375);//95.27343750000001
   public static final double BACK_RIGHT_MODULE_STEER_OFFSET = -Math.toRadians(94.482421875);//310.60546875
 
+  // Limelight
+  public static final double CAMERA_ANGLE = 36;
+  public static final double CAMERA_HEIGHT = 0.5842;
+  public static final double TARGET_HEIGHT = 2.6414;
+
   // Xbox Controllers Port Indexes
   public static final int DRIVE_CONTROLLER_PORT = 0;
   public static final int OPERATOR_CONTROLLER_PORT = 1;

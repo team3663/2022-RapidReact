@@ -106,8 +106,7 @@ public class RobotContainer {
         // We don't ever call the DriverVision subsystem, we just create it and let it do its thing.
         new DriverVisionSubsystem();
 
-        // TODO: Move these constants into Constants.java
-        limelight = new LimelightSubsystem(36, 0.5842, 2.6414);
+        limelight = new LimelightSubsystem(CAMERA_ANGLE, CAMERA_HEIGHT, TARGET_HEIGHT);
     }
 
     /**

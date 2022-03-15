@@ -2,10 +2,6 @@ package frc.robot.utils;
 
 public class SimpleRanger implements Ranger {
 
-    private final double DISTANCE_LOB = 0;
-    private final double ANGLE_LOB = 77;
-    private final double SPEED_LOB = 2320;
-
     private final double DISTANCE_0 = 0.1;
     private final double DISTANCE_1 = 1.535;
     private final double DISTANCE_2 = 2.652;
@@ -32,9 +28,8 @@ public class SimpleRanger implements Ranger {
         {DISTANCE_3, ANGLE_3, SPEED_3}
     };
 
-    public double[][] PRESET_DATA = new double[][] {
-        {DISTANCE_LOB, ANGLE_LOB, SPEED_LOB},
-    };
+    private final double ANGLE_LOB = 77;
+    private final int SPEED_LOB = 2320;
 
     public enum InterpolationMode {
         ANGLE,
@@ -44,18 +39,6 @@ public class SimpleRanger implements Ranger {
     
     public FiringSolution getFiringSolution(double range) {
 
-        int speed = 0;
-        double angle= 0;
-
-        // preset point
-        for (int i = 0; i < PRESET_DATA.length; i ++) {
-            if (range == PRESET_DATA[i][DISTANCE_COLUMN_INDEX]) {
-                speed = (int) Math.round(PRESET_DATA[i][SPEED_COLUMN_INDEX]);
-                angle = PRESET_DATA[i][ANGLE_COLUMN_INDEX];
-                return new FiringSolution((int) Math.round(speed), angle);
-            }
-        }
-        
         // beyond endpoints
         if (range <= DISTANCE_0) {
             return new FiringSolution((int) Math.round(SPEED_0), ANGLE_0);
@@ -74,16 +57,23 @@ public class SimpleRanger implements Ranger {
             }
         }
 
-        speed = (int) Math.round(linearInterpolation(range, distanceHigherBoundIndex, InterpolationMode.SPEED));
-        angle = linearInterpolation(range, distanceHigherBoundIndex, InterpolationMode.ANGLE);
+        int speed = (int) Math.round(linearInterpolation(range, distanceHigherBoundIndex, InterpolationMode.SPEED));
+        double angle = linearInterpolation(range, distanceHigherBoundIndex, InterpolationMode.ANGLE);
 
         return new FiringSolution(speed, angle);
     }
 
-    // TODO: Implement method to return a named preset firing solution instead of one based on a measured range.
     public FiringSolution getFiringSolution(String name)
     {
-        return null;
+        int speed = 0;
+        double angle = 0;
+
+        if (name.equals("lob")) {
+            speed = SPEED_LOB;
+            angle = ANGLE_LOB;
+        }
+
+        return new FiringSolution(speed, angle);
     }
     
     private double linearInterpolation(double range, int distanceHigherBoundIndex, InterpolationMode mode) {
