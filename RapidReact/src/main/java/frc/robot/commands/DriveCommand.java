@@ -37,7 +37,7 @@ public class DriveCommand extends CommandBase {
                         translationXSupplier.getAsDouble(),
                         translationYSupplier.getAsDouble(),
                         rotationSupplier.getAsDouble(),
-                        drivetrainSubsystem.getGyroscopeRotation()
+                        drivetrainSubsystem.getPose().getRotation()
                 ));
     }
 

@@ -51,7 +51,7 @@ public class AutoAlignWithHubCommand extends CommandBase {
 
     drivetrain.drive(ChassisSpeeds.fromFieldRelativeSpeeds(translationXSupplier.getAsDouble(),
                                                             translationYSupplier.getAsDouble(),
-                                                            speed, drivetrain.getGyroscopeRotation()));
+                                                            speed, drivetrain.getPose().getRotation()));
   }
 
   @Override
