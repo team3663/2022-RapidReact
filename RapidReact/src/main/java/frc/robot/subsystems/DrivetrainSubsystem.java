@@ -218,13 +218,13 @@ public class DrivetrainSubsystem extends SubsystemBase {
                 SwerveModuleState[] states = kinematics.toSwerveModuleStates(chassisSpeeds);
                 SwerveDriveKinematics.desaturateWheelSpeeds(states, maxVelocity);
 
-                SwerveModuleState currentFrontLeft = new SwerveModuleState(frontLeftModule.getDriveVelocity() * 1.125,
+                SwerveModuleState currentFrontLeft = new SwerveModuleState(frontLeftModule.getDriveVelocity(),
                                 new Rotation2d(frontLeftModule.getSteerAngle()));
-                SwerveModuleState currentFrontRight = new SwerveModuleState(frontRightModule.getDriveVelocity() * 1.125,
+                SwerveModuleState currentFrontRight = new SwerveModuleState(frontRightModule.getDriveVelocity(),
                                 new Rotation2d(frontRightModule.getSteerAngle()));
-                SwerveModuleState currentBackLeft = new SwerveModuleState(backLeftModule.getDriveVelocity() * 1.125,
+                SwerveModuleState currentBackLeft = new SwerveModuleState(backLeftModule.getDriveVelocity(),
                                 new Rotation2d(backLeftModule.getSteerAngle()));
-                SwerveModuleState currentBackRight = new SwerveModuleState(backRightModule.getDriveVelocity() * 1.125,
+                SwerveModuleState currentBackRight = new SwerveModuleState(backRightModule.getDriveVelocity(),
                                 new Rotation2d(backRightModule.getSteerAngle()));
 
                 SwerveModuleState[] currentStates = new SwerveModuleState[4];
