@@ -2,6 +2,7 @@ package frc.robot;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
@@ -18,6 +19,7 @@ import frc.robot.commands.AutoDriveCommand;
 import frc.robot.commands.AutoIntakeCommand;
 import frc.robot.commands.AutoShootCommand;
 import frc.robot.commands.DriveCommand;
+import frc.robot.commands.FollowerCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.ShootCommand;
 import frc.robot.commands.WaitShooterAvailableCommand;
@@ -41,6 +43,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
+
+import org.frcteam2910.common.control.CentripetalAccelerationConstraint;
+import org.frcteam2910.common.control.MaxAccelerationConstraint;
+import org.frcteam2910.common.control.MaxVelocityConstraint;
+import org.frcteam2910.common.control.Path;
+import org.frcteam2910.common.control.SplinePathBuilder;
+import org.frcteam2910.common.control.Trajectory;
+import org.frcteam2910.common.control.TrajectoryConstraint;
+import org.frcteam2910.common.math.Rotation2;
+import org.frcteam2910.common.math.Vector2;
 
 /**
  * This class is where the bulk of the robot should be declared.
@@ -183,8 +195,45 @@ public class RobotContainer {
      * @return the command to run in autonomous
      */
     public Command getAutonomousCommand() {
-        Supplier<Command> creator = chooser.getSelected();
-        return creator.get();
+        //Supplier<Command> creator = chooser.getSelected();
+    Path ball2 = new SplinePathBuilder(new Vector2(-.5, -2), new Rotation2(-.6, -3.5, true), Rotation2.fromDegrees(90))
+      .hermite(new Vector2(-.6, -3.5), new Rotation2(-.6, -3.5, true), Rotation2.fromDegrees(90))
+      .build();
+    Path ball3 = new SplinePathBuilder(new Vector2(-.6, -3.5), new Rotation2(-2, -2, true), Rotation2.fromDegrees(90)) // heading
+      .hermite(new Vector2(-2, -2), new Rotation2(-3.5, -2.2, true), Rotation2.fromDegrees(-32)) // heading, rotation
+      .hermite(new Vector2(-3.5, -2.2), new Rotation2(-2, -2, true), Rotation2.fromDegrees(-32)) // heading, rotation
+      .build();
+    Path ball4 = new SplinePathBuilder(new Vector2(-3.5, -2.2), new Rotation2(-3.5, -2.2, true), Rotation2.fromDegrees(32))
+    .hermite(new Vector2(-7, -3), new Rotation2(-7, -3, true),Rotation2.fromDegrees(32))
+    .hermite(new Vector2(-4.5, -3), new Rotation2(-7, -3, true), Rotation2.fromDegrees(75))
+    .build();
+
+    Path ball5 = new SplinePathBuilder(new Vector2(-4.5, -3), new Rotation2(-7, -3, true), Rotation2.fromDegrees(75))
+    .hermite(new Vector2(-7, -3), new Rotation2(-7, -3, true),Rotation2.fromDegrees(32))
+    .hermite(new Vector2(-3, -3), new Rotation2(-7, -3, true), Rotation2.fromDegrees(75))
+    .build();
+
+    Path aim3 = new SplinePathBuilder(new Vector2(0, 0), Rotation2.ZERO, Rotation2.ZERO)
+      .hermite(new Vector2(-1.184, 0.475), Rotation2.ZERO, Rotation2.ZERO) // rotation
+      .build();
+
+      TrajectoryConstraint[] constraints = {
+        new MaxAccelerationConstraint(3),
+        new MaxVelocityConstraint(7),
+        new CentripetalAccelerationConstraint(5.0)
+      };
+  
+      Trajectory t1 = new Trajectory(ball2, constraints, Units.inchesToMeters(0.1));
+      Trajectory t2 = new Trajectory(ball3, constraints, Units.inchesToMeters(0.1));
+      Trajectory t3 = new Trajectory(ball4, constraints, Units.inchesToMeters(0.1));
+      //Trajectory t4 = new Trajectory(ball5, constraints, Units.inchesToMeters(0.1));
+      //same paths is t3 but with a different end point
+
+      return new SequentialCommandGroup(
+        new InstantCommand(() -> drivetrain.setAutoInitCommand(-.5,-2, Rotation2d.fromDegrees(90))),
+        new FollowerCommand(drivetrain, t1), 
+        new FollowerCommand(drivetrain, t2), 
+        new FollowerCommand(drivetrain, t3));
     }
 
     /**

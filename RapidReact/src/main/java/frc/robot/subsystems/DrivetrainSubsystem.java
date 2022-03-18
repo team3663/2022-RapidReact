@@ -186,8 +186,9 @@ public class DrivetrainSubsystem extends SubsystemBase {
                 pigeon.invert();
         }
 
-        public void setAutoInitCommand() {
-                odometry.resetPosition(new Pose2d(2.77, -0.65, new Rotation2d()), getGyroscopeRotation());
+        public void setAutoInitCommand(double x, double y, Rotation2d StartingRotation) {
+                
+                odometry.resetPosition(new Pose2d(x,y, StartingRotation), getGyroscopeRotation());
         }
 
         private Rotation2d getGyroscopeRotation() {
@@ -201,6 +202,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
         public SwerveDriveKinematics getKinematics() {
                 return kinematics;
         }
+
 
         public void setModuleStates(SwerveModuleState[] states) {
                 frontLeftModule.set(states[0].speedMetersPerSecond / maxVelocity * MAX_VOLTAGE,
