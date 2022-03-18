@@ -76,12 +76,16 @@ public class RobotContainer {
     // Commands
     private DriveCommand drive;
 
+    //Auto Commands
+    private Command FiveBallAuto;
+
     // Autonomous command creation
     private final HashMap<String, Supplier<Command>> commandCreators = new HashMap<String, Supplier<Command>>();
     private SendableChooser<Supplier<Command>> chooser = new SendableChooser<Supplier<Command>>();
 
     public RobotContainer() {
 
+        createAutoCommands();
         createSubsystems(); // Create our subsystems.
         createCommands(); // Create our commands
         configureButtonBindings(); // Setup our button bindings
@@ -119,6 +123,50 @@ public class RobotContainer {
         limelight = new LimelightSubsystem(36, 0.5842, 2.6414);
     }
 
+    private void createAutoCommands(){
+        Path ball2 = new SplinePathBuilder(new Vector2(-.5, -2), new Rotation2(-.6, -3.5, true), Rotation2.fromDegrees(90))
+        .hermite(new Vector2(-.6, -3.5), new Rotation2(-.6, -3.5, true), Rotation2.fromDegrees(90))
+        .build();
+      Path ball3 = new SplinePathBuilder(new Vector2(-.6, -3.5), new Rotation2(-2, -2, true), Rotation2.fromDegrees(90)) // heading
+        .hermite(new Vector2(-2, -2), new Rotation2(-3.5, -2.2, true), Rotation2.fromDegrees(-32)) // heading, rotation
+        .hermite(new Vector2(-3.5, -2.2), new Rotation2(-2, -2, true), Rotation2.fromDegrees(-32)) // heading, rotation
+        .build();
+      Path ball4 = new SplinePathBuilder(new Vector2(-3.5, -2.2), new Rotation2(-3.5, -2.2, true), Rotation2.fromDegrees(32))
+      .hermite(new Vector2(-7, -3), new Rotation2(-7, -3, true),Rotation2.fromDegrees(32))
+      .hermite(new Vector2(-4.5, -3), new Rotation2(-7, -3, true), Rotation2.fromDegrees(75))
+      .build();
+  
+      Path ball5 = new SplinePathBuilder(new Vector2(-4.5, -3), new Rotation2(-7, -3, true), Rotation2.fromDegrees(75))
+      .hermite(new Vector2(-7, -3), new Rotation2(-7, -3, true),Rotation2.fromDegrees(32))
+      .hermite(new Vector2(-3, -3), new Rotation2(-7, -3, true), Rotation2.fromDegrees(75))
+      .build();
+  
+      Path aim3 = new SplinePathBuilder(new Vector2(0, 0), Rotation2.ZERO, Rotation2.ZERO)
+        .hermite(new Vector2(-1.184, 0.475), Rotation2.ZERO, Rotation2.ZERO) // rotation
+        .build();
+  
+        TrajectoryConstraint[] constraints = {
+          new MaxAccelerationConstraint(3),
+          new MaxVelocityConstraint(7),
+          new CentripetalAccelerationConstraint(5.0)
+        };
+    
+        Trajectory t1 = new Trajectory(ball2, constraints, Units.inchesToMeters(0.1));
+        Trajectory t2 = new Trajectory(ball3, constraints, Units.inchesToMeters(0.1));
+        Trajectory t3 = new Trajectory(ball4, constraints, Units.inchesToMeters(0.1));
+        //Trajectory t4 = new Trajectory(ball5, constraints, Units.inchesToMeters(0.1));
+        //same paths is t3 but with a different end point
+  
+        FiveBallAuto = new SequentialCommandGroup(
+          new InstantCommand(() -> drivetrain.setAutoInitCommand(-.5,-2, Rotation2d.fromDegrees(90))),
+          new AutoShootCommand(shooter, feeder, 3),
+          new ParallelCommandGroup(new FollowerCommand(drivetrain, t1), new AutoIntakeCommand(intake, feeder)), 
+          new ParallelCommandGroup(new FollowerCommand(drivetrain, t2), new AutoIntakeCommand(intake, feeder)),
+          new AutoShootCommand(shooter, feeder, 3),
+          new ParallelCommandGroup(new FollowerCommand(drivetrain, t3), new AutoIntakeCommand(intake, feeder)),
+          new AutoShootCommand(shooter, feeder, 3)
+          );
+    }
     /**
      * Create all of our robot's command objects here.
      */
@@ -137,7 +185,7 @@ public class RobotContainer {
                 () -> -ControllerUtils.modifyAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
                 () -> -ControllerUtils.modifyAxis(driveController.getLeftX()) * drivetrain.maxVelocity,
                 () -> -ControllerUtils.modifyAxis(driveController.getRightX()) * drivetrain.maxAngularVelocity * 0.9);
-        drivetrain.setDefaultCommand(drive);
+                drivetrain.setDefaultCommand(drive);
     }
 
     /**
@@ -188,6 +236,7 @@ public class RobotContainer {
                 .whenHeld(new IntakeCommand(intake, feeder, (() -> driveController.getLeftBumper())));
     }
 
+
     /**
      * The main {@link Robot} class calls this to get the command to run during
      * autonomous.
@@ -196,44 +245,7 @@ public class RobotContainer {
      */
     public Command getAutonomousCommand() {
         //Supplier<Command> creator = chooser.getSelected();
-    Path ball2 = new SplinePathBuilder(new Vector2(-.5, -2), new Rotation2(-.6, -3.5, true), Rotation2.fromDegrees(90))
-      .hermite(new Vector2(-.6, -3.5), new Rotation2(-.6, -3.5, true), Rotation2.fromDegrees(90))
-      .build();
-    Path ball3 = new SplinePathBuilder(new Vector2(-.6, -3.5), new Rotation2(-2, -2, true), Rotation2.fromDegrees(90)) // heading
-      .hermite(new Vector2(-2, -2), new Rotation2(-3.5, -2.2, true), Rotation2.fromDegrees(-32)) // heading, rotation
-      .hermite(new Vector2(-3.5, -2.2), new Rotation2(-2, -2, true), Rotation2.fromDegrees(-32)) // heading, rotation
-      .build();
-    Path ball4 = new SplinePathBuilder(new Vector2(-3.5, -2.2), new Rotation2(-3.5, -2.2, true), Rotation2.fromDegrees(32))
-    .hermite(new Vector2(-7, -3), new Rotation2(-7, -3, true),Rotation2.fromDegrees(32))
-    .hermite(new Vector2(-4.5, -3), new Rotation2(-7, -3, true), Rotation2.fromDegrees(75))
-    .build();
-
-    Path ball5 = new SplinePathBuilder(new Vector2(-4.5, -3), new Rotation2(-7, -3, true), Rotation2.fromDegrees(75))
-    .hermite(new Vector2(-7, -3), new Rotation2(-7, -3, true),Rotation2.fromDegrees(32))
-    .hermite(new Vector2(-3, -3), new Rotation2(-7, -3, true), Rotation2.fromDegrees(75))
-    .build();
-
-    Path aim3 = new SplinePathBuilder(new Vector2(0, 0), Rotation2.ZERO, Rotation2.ZERO)
-      .hermite(new Vector2(-1.184, 0.475), Rotation2.ZERO, Rotation2.ZERO) // rotation
-      .build();
-
-      TrajectoryConstraint[] constraints = {
-        new MaxAccelerationConstraint(3),
-        new MaxVelocityConstraint(7),
-        new CentripetalAccelerationConstraint(5.0)
-      };
-  
-      Trajectory t1 = new Trajectory(ball2, constraints, Units.inchesToMeters(0.1));
-      Trajectory t2 = new Trajectory(ball3, constraints, Units.inchesToMeters(0.1));
-      Trajectory t3 = new Trajectory(ball4, constraints, Units.inchesToMeters(0.1));
-      //Trajectory t4 = new Trajectory(ball5, constraints, Units.inchesToMeters(0.1));
-      //same paths is t3 but with a different end point
-
-      return new SequentialCommandGroup(
-        new InstantCommand(() -> drivetrain.setAutoInitCommand(-.5,-2, Rotation2d.fromDegrees(90))),
-        new FollowerCommand(drivetrain, t1), 
-        new FollowerCommand(drivetrain, t2), 
-        new FollowerCommand(drivetrain, t3));
+        return FiveBallAuto;
     }
 
     /**
