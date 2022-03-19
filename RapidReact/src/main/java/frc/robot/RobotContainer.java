@@ -85,8 +85,8 @@ public class RobotContainer {
 
     public RobotContainer() {
 
-        createAutoCommands();
         createSubsystems(); // Create our subsystems.
+        createAutoCommands();
         createCommands(); // Create our commands
         configureButtonBindings(); // Setup our button bindings
         setupCommandChooser();
@@ -121,6 +121,10 @@ public class RobotContainer {
         new DriverVisionSubsystem();
 
         limelight = new LimelightSubsystem(36, 0.5842, 2.6414);
+    }
+
+    private Command createTunePathCommand() {
+        Path path
     }
 
     private void createAutoCommands(){
@@ -159,10 +163,10 @@ public class RobotContainer {
   
         FiveBallAuto = new SequentialCommandGroup(
           new InstantCommand(() -> drivetrain.setAutoInitCommand(-.5,-2, Rotation2d.fromDegrees(90))),
-          new AutoShootCommand(shooter, feeder, 3),
+          //new AutoShootCommand(shooter, feeder, 3),
           new ParallelCommandGroup(new FollowerCommand(drivetrain, t1), new AutoIntakeCommand(intake, feeder)), 
           new ParallelCommandGroup(new FollowerCommand(drivetrain, t2), new AutoIntakeCommand(intake, feeder)),
-          new AutoShootCommand(shooter, feeder, 3),
+          //new AutoShootCommand(shooter, feeder, 3),
           new ParallelCommandGroup(new FollowerCommand(drivetrain, t3), new AutoIntakeCommand(intake, feeder)),
           new AutoShootCommand(shooter, feeder, 3)
           );
@@ -195,7 +199,7 @@ public class RobotContainer {
 
         // Reset the gyroscope on the Pigeon.
         new JoystickButton(driveController, Button.kStart.value)
-                .whenPressed(new InstantCommand(() -> drivetrain.getPose()));
+                .whenPressed(new InstantCommand(() -> drivetrain.resetPosition()));
 
         // Schedule the Shoot command to fire a cargo
         new Trigger(() -> driveController.getLeftTriggerAxis() > 0.8).whileActiveOnce(

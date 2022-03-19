@@ -27,7 +27,7 @@ public class DriveCommand extends CommandBase {
 
     @Override
     public void initialize() {
-        drivetrainSubsystem.resetPosition();
+        //drivetrainSubsystem.resetPosition();
     }
 
     @Override
