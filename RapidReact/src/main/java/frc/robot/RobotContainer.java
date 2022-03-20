@@ -22,7 +22,9 @@ import frc.robot.commands.DriveCommand;
 import frc.robot.commands.FollowerCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.ShootCommand;
+import frc.robot.commands.Wait;
 import frc.robot.commands.WaitShooterAvailableCommand;
+import frc.robot.commands.AutoIntakeCommand.AutoPose;
 import frc.robot.drivers.Pigeon;
 import frc.robot.subsystems.DriverVisionSubsystem;
 import frc.robot.subsystems.DrivetrainSubsystem;
@@ -86,8 +88,8 @@ public class RobotContainer {
 
     public RobotContainer() {
 
-        createAutoCommands();
         createSubsystems(); // Create our subsystems.
+        createAutoCommands();
         createCommands(); // Create our commands
         configureButtonBindings(); // Setup our button bindings
         setupCommandChooser();
@@ -153,7 +155,7 @@ public class RobotContainer {
 
         // Reset the gyroscope on the Pigeon.
         new JoystickButton(driveController, Button.kStart.value)
-                .whenPressed(new InstantCommand(() -> drivetrain.getPose()));
+                .whenPressed(new InstantCommand(() -> drivetrain.resetPosition()));
 
         // Schedule the Shoot command to fire a cargo
         new Trigger(() -> driveController.getLeftTriggerAxis() > 0.8).whileActiveOnce(
@@ -202,7 +204,10 @@ public class RobotContainer {
      * @return the command to run in autonomous
      */
     public Command getAutonomousCommand() {
-        //Supplier<Command> creator = chooser.getSelected();
+        /*
+        Supplier<Command> creator = chooser.getSelected();
+        return creator.get();
+        */
         return FiveBallAuto;
     }
 
@@ -261,65 +266,82 @@ public class RobotContainer {
                 createShootOnlyCommand(),
                 new AutoDriveCommand(drivetrain, new Translation2d(3, 0), Rotation2d.fromDegrees(90)),
                 // new AutoFollowCargoCommand(drivetrain, pixy),
-                new AutoIntakeCommand(intake, feeder),
+                // new AutoIntakeCommand(intake, feeder),
                 new AutoAlignWithHubCommand(limelight, drivetrain, () -> 0, () -> 0),
                 createShootOnlyCommand());
     }
 
     private void createAutoCommands(){
-        Path ball2 = new SplinePathBuilder(new Vector2(-.5, -2), new Rotation2(-.6, -3.5, true), Rotation2.fromDegrees(90))
-        .hermite(new Vector2(-.6, -3.5), new Rotation2(-.6, -3.5, true), Rotation2.fromDegrees(90))
+        Path ball2 = new SplinePathBuilder(new Vector2(-.5, -2), new Rotation2(-.6, -3.5, true), Rotation2.fromDegrees(-90))
+        .hermite(new Vector2(-.6, -3.5), new Rotation2(-.6, -3.5, true), Rotation2.fromDegrees(-90))
+        .hermite(new Vector2(-2, -2), new Rotation2(-3.5, -2.2, true), Rotation2.fromDegrees(163.8720703125)) 
+        .hermite(new Vector2(-3.5, -2.2), new Rotation2(-2, -2, true), Rotation2.fromDegrees(-114.96093749999997)) 
         .build();
-      Path ball3 = new SplinePathBuilder(new Vector2(-.6, -3.5), new Rotation2(-2, -2, true), Rotation2.fromDegrees(90)) // heading
-        .hermite(new Vector2(-2, -2), new Rotation2(-3.5, -2.2, true), Rotation2.fromDegrees(-32)) // heading, rotation
-        .hermite(new Vector2(-3.5, -2.2), new Rotation2(-2, -2, true), Rotation2.fromDegrees(-32)) // heading, rotation
+        /*
+      Path ball3 = new SplinePathBuilder(new Vector2(-.6, -3.5), new Rotation2(-2, -2, true), Rotation2.fromDegrees(-90)) 
+        .hermite(new Vector2(-2, -2), new Rotation2(-3.5, -2.2, true), Rotation2.fromDegrees(163.8720703125)) 
+        .hermite(new Vector2(-3.5, -2.2), new Rotation2(-2, -2, true), Rotation2.fromDegrees(-114.96093749999997)) 
         .build();
-      Path ball4 = new SplinePathBuilder(new Vector2(-3.5, -2.2), new Rotation2(-3.5, -2.2, true), Rotation2.fromDegrees(32))
-      .hermite(new Vector2(-7, -3), new Rotation2(-7, -3, true),Rotation2.fromDegrees(32))
-      .hermite(new Vector2(-4.5, -3), new Rotation2(-7, -3, true), Rotation2.fromDegrees(75))
+        */
+      Path ball4 = new SplinePathBuilder(new Vector2(-3.5, -2.2), new Rotation2(-3.5, -2.2, true), Rotation2.fromDegrees(-114.96093749999997))
+      .hermite(new Vector2(-7, -3), new Rotation2(-7, -3, true),Rotation2.fromDegrees(-147.216796875))
+      .hermite(new Vector2(-4.5, -3), Rotation2.ZERO, Rotation2.fromDegrees(-114.96093749999997))
       .build();
   
-      Path ball5 = new SplinePathBuilder(new Vector2(-4.5, -3), new Rotation2(-7, -3, true), Rotation2.fromDegrees(75))
-      .hermite(new Vector2(-7, -3), new Rotation2(-7, -3, true),Rotation2.fromDegrees(32))
-      .hermite(new Vector2(-3, -3), new Rotation2(-7, -3, true), Rotation2.fromDegrees(75))
+      Path ball5 = new SplinePathBuilder(new Vector2(-4.5, -3), new Rotation2(-7, -3, true), Rotation2.fromDegrees(-75))
+      .hermite(new Vector2(-7, -3), new Rotation2(-7, -3, true),Rotation2.fromDegrees(-32))
+      .hermite(new Vector2(-3, -3), new Rotation2(-7, -3, true), Rotation2.fromDegrees(-75))
       .build();
   
       Path aim3 = new SplinePathBuilder(new Vector2(0, 0), Rotation2.ZERO, Rotation2.ZERO)
         .hermite(new Vector2(-1.184, 0.475), Rotation2.ZERO, Rotation2.ZERO) // rotation
         .build();
   
-        TrajectoryConstraint[] constraints = {
-          new MaxAccelerationConstraint(3),
+        TrajectoryConstraint[] fast = {
+          new MaxAccelerationConstraint(3.5),
           new MaxVelocityConstraint(7),
           new CentripetalAccelerationConstraint(5.0)
         };
+
+        TrajectoryConstraint[] slow = {
+            new MaxAccelerationConstraint(3.5),
+            new MaxVelocityConstraint(7),
+            new CentripetalAccelerationConstraint(5.0)
+          };
+        
     
-        Trajectory t1 = new Trajectory(ball2, constraints, Units.inchesToMeters(0.1));
-        Trajectory t2 = new Trajectory(ball3, constraints, Units.inchesToMeters(0.1));
-        Trajectory t3 = new Trajectory(ball4, constraints, Units.inchesToMeters(0.1));
+        Trajectory t1 = new Trajectory(ball2, fast, Units.inchesToMeters(0.1));
+        // Trajectory t2 = new Trajectory(ball3, fast, Units.inchesToMeters(0.1));
+        Trajectory t3 = new Trajectory(ball4, slow, Units.inchesToMeters(0.1));
         //Trajectory t4 = new Trajectory(ball5, constraints, Units.inchesToMeters(0.1));
         //same paths is t3 but with a different end point
   
         FiveBallAuto = new SequentialCommandGroup(
-          new InstantCommand(() -> drivetrain.setAutoInitCommand(-.5,-2, Rotation2d.fromDegrees(90))),
+          new InstantCommand(() -> drivetrain.setAutoInitCommand(-.5,-2, Rotation2d.fromDegrees(-90))),
+          new AutoIntakeCommand(intake, feeder, AutoPose.extended),
           new AutoShootCommand(shooter, feeder, 3),
-          new ParallelCommandGroup(new FollowerCommand(drivetrain, t1), new AutoIntakeCommand(intake, feeder)), 
-          new ParallelCommandGroup(new FollowerCommand(drivetrain, t2), new AutoIntakeCommand(intake, feeder)),
+          new AutoIntakeCommand(intake, feeder, AutoPose.extended),
+          new FollowerCommand(drivetrain, t1), 
+          // new FollowerCommand(drivetrain, t2),
           new AutoShootCommand(shooter, feeder, 3),
-          new ParallelCommandGroup(new FollowerCommand(drivetrain, t3), new AutoIntakeCommand(intake, feeder)),
+          new ParallelCommandGroup(new FollowerCommand(drivetrain, t3), new AutoIntakeCommand(intake, feeder, AutoPose.extended)),
+          new AutoIntakeCommand(intake,feeder,AutoPose.retracted),
           new AutoShootCommand(shooter, feeder, 3)
           );
+
     }
 
     public Command createTuneAutoCommand() {
-        Path path = new SimplePathBuilder(new Vector2(0, 0), Rotation2.ZERO).build();
+        Path path = new SimplePathBuilder(new Vector2(0, 0), Rotation2.ZERO).lineTo(new Vector2(1, 0), Rotation2.fromDegrees(180)).build();
         TrajectoryConstraint[] constraints = {
-            new MaxAccelerationConstraint(3),
-            new MaxVelocityConstraint(7),
+            new MaxAccelerationConstraint(1),
+            new MaxVelocityConstraint(1),
             new CentripetalAccelerationConstraint(5.0)
           };
         Trajectory t = new Trajectory(path, constraints, Units.inchesToMeters(0.1));
         
-        return new FollowerCommand(drivetrain, t);
+        return new SequentialCommandGroup(
+            new InstantCommand(() -> drivetrain.resetPosition()),
+            new FollowerCommand(drivetrain, t));
     }
 }
