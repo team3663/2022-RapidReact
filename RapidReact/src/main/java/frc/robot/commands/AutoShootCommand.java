@@ -59,10 +59,6 @@ public class AutoShootCommand extends CommandBase {
             shooter.setRange(currentRange);
         }
 
-        // TODO: Temporary work around for bug in fixed range mode.
-        shooter.setAngle(67); //70
-        shooter.setSpeed(1000); // 2600 TODO tune
-
         // We bail out here if we are staging cargo and the feeder has not stopped yet.
         if (stagingCargo) {
             if (feeder.isIdle()) {
@@ -73,7 +69,7 @@ public class AutoShootCommand extends CommandBase {
         }
 
         // We only get here if cargo staging has completed.
-        if (timer.hasElapsed(1.0)) { // TODO fix shooter.ready() && shooter.available()
+        if (timer.hasElapsed(1.0)) {
             feeder.setFeedMode(FeedMode.CONTINUOUS);
         }
       
@@ -94,6 +90,6 @@ public class AutoShootCommand extends CommandBase {
     // Returns true when the command should end.
     @Override
     public boolean isFinished() {
-        return timer.hasElapsed(2); // TODO find a shorter & more precise time
+        return timer.hasElapsed(2);
     }
 }

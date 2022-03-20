@@ -22,7 +22,6 @@ import frc.robot.commands.DriveCommand;
 import frc.robot.commands.FollowerCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.ShootCommand;
-import frc.robot.commands.Wait;
 import frc.robot.commands.WaitShooterAvailableCommand;
 import frc.robot.commands.AutoIntakeCommand.AutoPose;
 import frc.robot.drivers.Pigeon;
