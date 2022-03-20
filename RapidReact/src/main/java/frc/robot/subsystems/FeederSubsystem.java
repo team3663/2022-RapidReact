@@ -34,7 +34,7 @@ public class FeederSubsystem extends SubsystemBase {
 
     private final int FEED_RPM_STOPPED = 0;
     private final int FEED_RPM_SHOOT = 11000; // how fast the feeder should be running when we are shooting
-    private final int FEED_RPM_PRESHOOT = 6000; // how fast the feeder should be running when we are prepping shoot
+    private final int FEED_RPM_PRESHOOT = 11000; // how fast the feeder should be running when we are prepping shoot
     private final int FEED_RPM_INTAKE = 11000; // how fast the feeder should be running when indexing the balls
     private final int FEED_RPM_REVERSE_CONTINUOUS = -2500;
 
