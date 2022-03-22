@@ -63,8 +63,15 @@ public class XboxControllerHelper {
      * @param rumble - If true rumble is started, rumble is stopped if false
      */
     public void rumble(boolean rumble) {
-        controller.setRumble(RumbleType.kLeftRumble, rumbleIntensity);
-        controller.setRumble(RumbleType.kRightRumble, rumbleIntensity);
+        if (rumble) {
+            controller.setRumble(RumbleType.kLeftRumble, rumbleIntensity);
+            controller.setRumble(RumbleType.kRightRumble, rumbleIntensity);
+        }
+        else {
+            controller.setRumble(RumbleType.kLeftRumble, 0);
+            controller.setRumble(RumbleType.kRightRumble, 0);
+        }
+        
     }
 
     /**

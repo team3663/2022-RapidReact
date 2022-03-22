@@ -16,7 +16,7 @@ public class LimelightSubsystem extends SubsystemBase {
   public  final int LED_OFF = 1; //force off
   public  final int LED_BLINK = 2; //force blink
   public  final int LED_ON = 3; //force on
-  public  final int LED_DEFAULT_MODE = LED_OFF;
+  public  final int LED_DEFAULT_MODE = LED_ON;
 
   //camera mode constants
   public static final int CAMERA_VISION = 0; //Vision processor

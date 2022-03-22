@@ -61,7 +61,7 @@ public class ShootCommand extends CommandBase {
     public void execute() {
         // If we have a limelight then use it to update the current range to target
         if (limelight != null) {
-            currentRange = limelight.getAverageDistance();
+            currentRange = limelight.getDistance(); //avg
             shooter.setRange(currentRange);
         }
 

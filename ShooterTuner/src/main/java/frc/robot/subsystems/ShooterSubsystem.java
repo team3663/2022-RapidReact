@@ -23,8 +23,9 @@ public class ShooterSubsystem extends SubsystemBase {
 
   // Subsystem Constants
   private static final double MAX_RPM = 6000;
+  private static final int MAX_CURRENT = 70;
   private static final double shooterBeltRatio = 0.66;
-  private static final double speedIncrement = 100;
+  private static final double speedIncrement = 50;
 
   // Hood related constants
   private static final double MAX_HOOD_ANGLE = 85;
@@ -40,7 +41,7 @@ public class ShooterSubsystem extends SubsystemBase {
   private static final double kShooterI = 0.000000;
   private static final double kShooterD = 0.000003;
   private static final double kShooterIz = 0.000000;
-  private static final double kShooterFF = 0.000265;
+  private static final double kShooterFF = 0.00029625;
   private static final double kShooterMaxOutput = 1.000000;
   private static final double kShooterMinOutput = 0.000000;
 
@@ -118,12 +119,14 @@ public class ShooterSubsystem extends SubsystemBase {
     shooterMotor1 = new CANSparkMax(shooterMotor1CANID, MotorType.kBrushless);
     shooterMotor1.setInverted(true);
     shooterMotor1.setIdleMode(IdleMode.kCoast);
+    shooterMotor1.setSmartCurrentLimit(MAX_CURRENT);
     shooterEncoder = shooterMotor1.getEncoder();
     shooterEncoder.setVelocityConversionFactor(shooterBeltRatio);
 
     shooterMotor2 = new CANSparkMax(shooterMotor2CANID, MotorType.kBrushless);
     shooterMotor2.setIdleMode(IdleMode.kCoast);
     shooterMotor2.follow(shooterMotor1, true);
+    shooterMotor2.setSmartCurrentLimit(MAX_CURRENT);
 
     shooterPidController = shooterMotor1.getPIDController();
 

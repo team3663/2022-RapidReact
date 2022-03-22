@@ -33,15 +33,15 @@ public class FeederSubsystem extends SubsystemBase {
     private final double KD = 0.0009;
 
     private final int FEED_RPM_STOPPED = 0;
-    private final int FEED_RPM_SHOOT = 2500; // how fast the feeder should be running when we are shooting
-    private final int FEED_RPM_PRESHOOT = 2000; // how fast the feeder should be running when we are prepping shoot
-    private final int FEED_RPM_INTAKE = 1000; // how fast the feeder should be running when indexing the balls
-    private final int FEED_RPM_REVERSE_CONTINUOUS = -2500;
+    private final int FEED_RPM_SHOOT = 11000; // how fast the feeder should be running when we are shooting
+    private final int FEED_RPM_PRESHOOT = 11000; // how fast the feeder should be running when we are prepping shoot
+    private final int FEED_RPM_INTAKE = 11000; // how fast the feeder should be running when indexing the balls
+    private final int FEED_RPM_REVERSE_CONTINUOUS = -11000;
 
     // The number of revolutions of the feed motor required to cycle a ball all the
     // way from the feeders entry to the exit.
     public final int REV_PER_FULL_FEED = 1500;
-    public final int EXIT_ADVANCE_REV = 15;
+    public final int EXIT_ADVANCE_REV = 0;
 
     // Subsystems internal data
     private CANSparkMax feedMotor;

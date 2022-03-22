@@ -128,7 +128,6 @@ public class RobotContainer {
                 () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity,
                 () -> -driveControllerHelper.scaleAxis(driveController.getRightX()) * drivetrain.maxAngularVelocity * 0.9);
         drivetrain.setDefaultCommand(drive);
-
         shooter.setDefaultCommand(new DefaultShooterCommand(shooter));
     }
 

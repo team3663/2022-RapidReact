@@ -26,16 +26,17 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     // Subsystem Constants
-    private static final int MAX_CURRENT = 20; 
+    private static final int IDLE_CURRENT = 10; 
+    private static final int MAX_CURRENT = 50;
         // 20: minimum recommanded by SparksMax Documentation
         // 13: somewhat affected, but can get to 3200 rpm when set to 3500 rpm
     private double highestCurrent = 0;
 
     private static final double MAX_RPM = 6000;
-    private static final double IDLE_RPM = 1500;
+    private static final double IDLE_RPM = 1300;
     private static final double shooterBeltRatio = 0.66;
     private static final double speedIncrement = 100;
-    private static final double speedMarginPercent = 0.02;
+    private static final double speedMarginPercent = 0.01;
 
     private static final double MAX_HOOD_ANGLE = 85;
     private static final double MIN_HOOD_ANGLE = 67;
@@ -50,7 +51,7 @@ public class ShooterSubsystem extends SubsystemBase {
     private static final double kShooterI = 0.000000;
     private static final double kShooterD = 0.000003;
     private static final double kShooterIz = 0.000000;
-    private static final double kShooterFF = 0.000265;
+    private static final double kShooterFF = 0.00029625;
     private static final double kShooterMaxOutput = 1.000000;
     private static final double kShooterMinOutput = 0.000000;
 
@@ -85,6 +86,7 @@ public class ShooterSubsystem extends SubsystemBase {
     private double targetAngle = 0;
 
     private double currentRange = 0.0;
+    private double currentXOffset = 0;
 
     private NetworkTableEntry currentSpeedEntry;
     private NetworkTableEntry targetSpeedEntry;
@@ -97,6 +99,7 @@ public class ShooterSubsystem extends SubsystemBase {
     private NetworkTableEntry hoodLimitSwitchEntry;
     private NetworkTableEntry readyToShootEntry;
     private NetworkTableEntry currentRangeEntry;
+    private NetworkTableEntry currentXEntry;
     private NetworkTableEntry highestCurrentEntry;
 
     private NetworkTableEntry shooterMotorOneCurrentEntry;
@@ -111,14 +114,12 @@ public class ShooterSubsystem extends SubsystemBase {
         shooterMotor1 = new CANSparkMax(shooterMotor1CANID, MotorType.kBrushless);
         shooterMotor1.setInverted(true);
         shooterMotor1.setIdleMode(IdleMode.kCoast);
-        shooterMotor1.setSmartCurrentLimit(MAX_CURRENT);
         shooterEncoder = shooterMotor1.getEncoder();
         shooterEncoder.setVelocityConversionFactor(shooterBeltRatio);
 
         shooterMotor2 = new CANSparkMax(shooterMotor2CANID, MotorType.kBrushless);
         shooterMotor2.setIdleMode(IdleMode.kCoast);
         shooterMotor2.follow(shooterMotor1, true);
-        shooterMotor2.setSmartCurrentLimit(MAX_CURRENT);
 
         hoodMotor = new CANSparkMax(hoodMotorCANID, MotorType.kBrushless);
         hoodMotor.setIdleMode(IdleMode.kBrake);
@@ -180,11 +181,15 @@ public class ShooterSubsystem extends SubsystemBase {
     public void idle() {
         motorState = MotorState.IDLE;
         setSpeed(IDLE_RPM);
+        shooterMotor1.setSmartCurrentLimit(IDLE_CURRENT);
+        shooterMotor2.setSmartCurrentLimit(IDLE_CURRENT);
     }
 
     public void shoot() {
       motorState = MotorState.SHOOTING;
       setSpeed(targetSpeed);
+      shooterMotor1.setSmartCurrentLimit(MAX_CURRENT);
+      shooterMotor2.setSmartCurrentLimit(MAX_CURRENT);
     }
 
     public void stop() {
@@ -329,6 +334,10 @@ public class ShooterSubsystem extends SubsystemBase {
                 .withPosition(5, 2)
                 .withSize(1, 1)
                 .getEntry();
+        currentXEntry = tab.add("X offset", 0)
+                .withPosition(5, 1)
+                .withSize(1, 1)
+                .getEntry();
 
         readyToShootEntry = tab.add("Ready", false)
                 .withPosition(6, 2)
@@ -379,6 +388,7 @@ public class ShooterSubsystem extends SubsystemBase {
         speedErrorPercentEntry.setNumber(speedErrorPercent);
         shooterEncoderEntry.setNumber(shooterEncoder.getPosition());
         currentRangeEntry.setNumber(currentRange);
+        currentXEntry.setNumber(currentXOffset);
         readyToShootEntry.forceSetBoolean(ready());
 
         currentAngleEntry.setNumber(currentAngle);
