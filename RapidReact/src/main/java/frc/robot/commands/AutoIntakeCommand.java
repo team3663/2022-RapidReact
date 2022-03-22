@@ -22,7 +22,7 @@ public class AutoIntakeCommand extends CommandBase {
 
   @Override
   public void initialize() {
-    intake.extend(); // TODO this extend-spin-retract sequence doesn't seem to always work
+    intake.extend();
     feeder.setFeedMode(FeedMode.INTAKE);
   }
 

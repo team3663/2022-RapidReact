@@ -71,7 +71,6 @@ public class XboxControllerHelper {
             controller.setRumble(RumbleType.kLeftRumble, 0);
             controller.setRumble(RumbleType.kRightRumble, 0);
         }
-        
     }
 
     /**

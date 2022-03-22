@@ -55,7 +55,7 @@ public class SimpleRanger implements Ranger {
             return new FiringSolution((int) Math.round(SPEED_0), ANGLE_0);
         }
         if (range >= DISTANCE_6) {
-            return new FiringSolution((int) Math.round(SPEED_3), ANGLE_3);
+            return new FiringSolution((int) Math.round(SPEED_3), ANGLE_3);  // TODO: Are SPEED and ANGLE 3 what you actually want here?
         }
 
         // find the two data points to be used
