@@ -78,9 +78,6 @@ public class RobotContainer {
     // Commands
     private DriveCommand drive;
 
-    //Auto Commands
-    private Command FiveBallAuto;
-
     // Autonomous command creation
     private final HashMap<String, Supplier<Command>> commandCreators = new HashMap<String, Supplier<Command>>();
     private SendableChooser<Supplier<Command>> chooser = new SendableChooser<Supplier<Command>>();
@@ -88,7 +85,6 @@ public class RobotContainer {
     public RobotContainer() {
 
         createSubsystems(); // Create our subsystems.
-        createAutoCommands();
         createCommands(); // Create our commands
         configureButtonBindings(); // Setup our button bindings
         setupCommandChooser();
@@ -135,7 +131,7 @@ public class RobotContainer {
         registerAutoCommand("Shoot Only", this::createShootOnlyCommand);
         registerAutoCommand("Taxi Only", this::createTaxiOnlyCommand);
         registerAutoCommand("One Ball", this::createOneBallCommand);
-        // registerAutoCommand("Two Ball", this::createTwoBallCommand);
+        registerAutoCommand("Five Ball", this::createFiveBallCommand);
         registerAutoCommand("TUNE", this:: createTuneAutoCommand);
 
         // create tele drive command
@@ -203,11 +199,9 @@ public class RobotContainer {
      * @return the command to run in autonomous
      */
     public Command getAutonomousCommand() {
-        /*
+
         Supplier<Command> creator = chooser.getSelected();
         return creator.get();
-        */
-        return FiveBallAuto;
     }
 
     /**
@@ -270,7 +264,7 @@ public class RobotContainer {
                 createShootOnlyCommand());
     }
 
-    private void createAutoCommands(){
+    private Command createFiveBallCommand() {
         Path ball2 = new SplinePathBuilder(new Vector2(-.5, -2), new Rotation2(-.6, -3.5, true), Rotation2.fromDegrees(-90))
         .hermite(new Vector2(-.6, -3.5), new Rotation2(-.6, -3.5, true), Rotation2.fromDegrees(-90))
         .hermite(new Vector2(-2, -2), new Rotation2(-3.5, -2.2, true), Rotation2.fromDegrees(163.8720703125)) 
@@ -308,14 +302,13 @@ public class RobotContainer {
             new CentripetalAccelerationConstraint(5.0)
           };
         
-    
         Trajectory t1 = new Trajectory(ball2, fast, Units.inchesToMeters(0.1));
         // Trajectory t2 = new Trajectory(ball3, fast, Units.inchesToMeters(0.1));
         Trajectory t3 = new Trajectory(ball4, slow, Units.inchesToMeters(0.1));
         //Trajectory t4 = new Trajectory(ball5, constraints, Units.inchesToMeters(0.1));
         //same paths is t3 but with a different end point
   
-        FiveBallAuto = new SequentialCommandGroup(
+        Command cmd = new SequentialCommandGroup(
           new InstantCommand(() -> drivetrain.setAutoInitCommand(-.5,-2, Rotation2d.fromDegrees(-90))),
           new AutoIntakeCommand(intake, feeder, AutoPose.extended),
           new AutoShootCommand(shooter, feeder, 3),
@@ -328,6 +321,7 @@ public class RobotContainer {
           new AutoShootCommand(shooter, feeder, 3)
           );
 
+          return cmd;
     }
 
     public Command createTuneAutoCommand() {
