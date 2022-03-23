@@ -26,7 +26,7 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     // Subsystem Constants
-    private static final int IDLE_CURRENT = 10; 
+    private static final int IDLE_CURRENT = 13; 
     private static final int MAX_CURRENT = 60;
     private double highestCurrent = 0;
 
@@ -181,15 +181,19 @@ public class ShooterSubsystem extends SubsystemBase {
 
     public void idle() {
         motorState = MotorState.IDLE;
+
         setSpeed(IDLE_RPM);
         setAngle(IDLE_ANGLE);
+
         shooterMotor1.setSmartCurrentLimit(IDLE_CURRENT);
         shooterMotor2.setSmartCurrentLimit(IDLE_CURRENT);
     }
 
     public void shoot() {
       motorState = MotorState.SHOOTING;
+
       setSpeed(targetSpeed);
+
       shooterMotor1.setSmartCurrentLimit(MAX_CURRENT);
       shooterMotor2.setSmartCurrentLimit(MAX_CURRENT);
     }

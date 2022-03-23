@@ -23,7 +23,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
   // Subsystem Constants
   private static final double MAX_RPM = 6000;
-  private static final int MAX_CURRENT = 70;
+  private static final int MAX_CURRENT = 13;
   private static final double shooterBeltRatio = 0.66;
   private static final double speedIncrement = 50;
 
