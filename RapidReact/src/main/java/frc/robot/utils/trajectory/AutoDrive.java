@@ -1,13 +1,10 @@
-package frc.robot.utils.Terjectory;
+package frc.robot.utils.trajectory;
 
 import java.util.ArrayList;
 import java.util.List;
 import org.frcteam2910.common.control.Path;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.DrivetrainSubsystem;
-import frc.robot.utils.Terjectory.AutoPath;
-import frc.robot.utils.Terjectory.SwervePath;
-
 
 
 public class AutoDrive {

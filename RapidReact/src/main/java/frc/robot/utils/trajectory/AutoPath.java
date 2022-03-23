@@ -1,4 +1,4 @@
-package frc.robot.utils.Terjectory;
+package frc.robot.utils.trajectory;
 
 import java.util.ArrayList;
 import java.util.List;
