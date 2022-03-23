@@ -149,7 +149,15 @@ public class RobotContainer {
 
         new JoystickButton(driveController, Button.kA.value).whenHeld(
                 new ShootCommand(shooter, feeder, driveControllerHelper::rumble, () -> driveController.getRightTriggerAxis() > 0.8, 0));
+        
+        new JoystickButton(driveController, Button.kB.value).whenHeld(
+                new ShootCommand(shooter, feeder, driveControllerHelper::rumble, () -> true, limelight));
 
+        // Schedule the Intake command to pick-up cargo
+        new JoystickButton(driveController, Button.kRightBumper.value)
+                .whenHeld(new IntakeCommand(intake, feeder, (() -> driveController.getLeftBumper())));
+
+        // operator controls
         new JoystickButton(operatorController, Button.kA.value).whenPressed(
                     new InstantCommand(() -> feeder.setFeedMode(FeedMode.REVERSE_CONTINUOUS)));
                 
@@ -173,10 +181,6 @@ public class RobotContainer {
 
         new JoystickButton(operatorController, Button.kLeftBumper.value).whenReleased(
             new InstantCommand(() -> intake.stopMotor()));
-        
-        // Schedule the Intake command to pick-up cargo
-        new JoystickButton(driveController, Button.kRightBumper.value)
-                .whenHeld(new IntakeCommand(intake, feeder, (() -> driveController.getLeftBumper())));
     }
 
     /**
