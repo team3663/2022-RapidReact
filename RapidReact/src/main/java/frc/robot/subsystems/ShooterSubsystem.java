@@ -27,13 +27,12 @@ public class ShooterSubsystem extends SubsystemBase {
 
     // Subsystem Constants
     private static final int IDLE_CURRENT = 10; 
-    private static final int MAX_CURRENT = 50;
-        // 20: minimum recommanded by SparksMax Documentation
-        // 13: somewhat affected, but can get to 3200 rpm when set to 3500 rpm
+    private static final int MAX_CURRENT = 60;
     private double highestCurrent = 0;
 
     private static final double MAX_RPM = 6000;
-    private static final double IDLE_RPM = 1300;
+    private double IDLE_RPM;
+    private double IDLE_ANGLE;
     private static final double shooterBeltRatio = 0.66;
     private static final double speedIncrement = 100;
     private static final double speedMarginPercent = 0.01;
@@ -110,6 +109,8 @@ public class ShooterSubsystem extends SubsystemBase {
             Ranger ranger) {
 
         this.ranger = ranger;
+        IDLE_RPM = ranger.getFiringSolution("lob").speed;
+        IDLE_ANGLE = ranger.getFiringSolution("lob").angle;
 
         shooterMotor1 = new CANSparkMax(shooterMotor1CANID, MotorType.kBrushless);
         shooterMotor1.setInverted(true);
@@ -181,6 +182,7 @@ public class ShooterSubsystem extends SubsystemBase {
     public void idle() {
         motorState = MotorState.IDLE;
         setSpeed(IDLE_RPM);
+        setAngle(IDLE_ANGLE);
         shooterMotor1.setSmartCurrentLimit(IDLE_CURRENT);
         shooterMotor2.setSmartCurrentLimit(IDLE_CURRENT);
     }
