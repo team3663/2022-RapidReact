@@ -35,7 +35,7 @@ public class ShooterSubsystem extends SubsystemBase {
     private double IDLE_ANGLE;
     private static final double shooterBeltRatio = 0.66;
     private static final double speedIncrement = 100;
-    private static final double speedMarginPercent = 0.01;
+    private static final double speedMarginPercent = 0.02;
 
     private static final double MAX_HOOD_ANGLE = 85;
     private static final double MIN_HOOD_ANGLE = 67;
@@ -101,8 +101,8 @@ public class ShooterSubsystem extends SubsystemBase {
     private NetworkTableEntry currentXEntry;
     private NetworkTableEntry highestCurrentEntry;
 
-    private NetworkTableEntry shooterMotorOneCurrentEntry;
-    private NetworkTableEntry shooterMotorTwoCurrentEntry;
+    private NetworkTableEntry shooterMotorCurrentEntry;
+    private NetworkTableEntry hoodMotorCurrentEntry;
 
     /** Creates a new instance of the Shooter subsystem. */
     public ShooterSubsystem(int shooterMotor1CANID, int shooterMotor2CANID, int hoodMotorCANID, int hoodLimitDio,
@@ -377,11 +377,11 @@ public class ShooterSubsystem extends SubsystemBase {
                 .withSize(1, 1)
                 .getEntry();
 
-        shooterMotorOneCurrentEntry = tab.add("motor 1 current", 0)
+        shooterMotorCurrentEntry = tab.add("shooter motor current", 0)
                 .withPosition(8, 0)
                 .withSize(1, 1)
                 .getEntry();
-        shooterMotorTwoCurrentEntry = tab.add("motor 2 current", 0)
+        hoodMotorCurrentEntry = tab.add("hood motor current", 0)
                 .withPosition(9, 0)
                 .withSize(1, 1)
                 .getEntry();
@@ -403,12 +403,12 @@ public class ShooterSubsystem extends SubsystemBase {
         hoodLimitSwitchEntry.forceSetBoolean(hoodLimit.get());
 
         highestCurrentEntry.setNumber(getHighestCurrent());
-        shooterMotorOneCurrentEntry.setValue(shooterMotor1.getOutputCurrent());
-        shooterMotorTwoCurrentEntry.setValue(shooterMotor2.getOutputCurrent());
+        shooterMotorCurrentEntry.setValue(shooterMotor1.getOutputCurrent());
+        hoodMotorCurrentEntry.setValue(hoodMotor.getOutputCurrent());
     }
 
     private double getHighestCurrent() {
-      double current = shooterMotor1.getOutputCurrent();
+      double current = hoodMotor.getOutputCurrent();
       if (current > highestCurrent) {
         highestCurrent = current;
       }
