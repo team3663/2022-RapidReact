@@ -78,7 +78,7 @@ public class RobotContainer {
     private LimelightSubsystem limelight;
 
     // Commands
-    private DefaultDriveCommand drive;
+    private Command fiveBallAutoCommand;
 
     // Autonomous command creation
     private final HashMap<String, Supplier<Command>> commandCreators = new HashMap<String, Supplier<Command>>();
@@ -128,21 +128,25 @@ public class RobotContainer {
      */
     void createCommands() {
 
+        // Since the path generation is slow we pre-create the autonomous commands that use them to speed things up
+        // and pass a lambda to the command chooser that just returns the pre-created command.
+        fiveBallAutoCommand = createFiveBallCommand();
+
         // Register a creators for our autonomous commands
         registerAutoCommand("Do Nothing", this::createNullCommand);
         registerAutoCommand("Shoot Only", this::createShootOnlyCommand);
         registerAutoCommand("Taxi Only", this::createTaxiOnlyCommand);
         registerAutoCommand("One Ball", this::createOneBallCommand);
-        registerAutoCommand("Five Ball", this::createFiveBallCommand);
-        registerAutoCommand("TUNE", this:: createTuneAutoCommand);
+        registerAutoCommand("Five Ball", () -> fiveBallAutoCommand);
+        registerAutoCommand("TUNE", this::createTuneAutoCommand);
 
-        // create tele drive command
-        drive = new DefaultDriveCommand(
+        // Create commands used during teleop
+        drivetrain.setDefaultCommand(new DefaultDriveCommand(
                 drivetrain,
                 () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
                 () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity,
-                () -> -driveControllerHelper.scaleAxis(driveController.getRightX()) * drivetrain.maxAngularVelocity * 0.9);
-        drivetrain.setDefaultCommand(drive);
+                () -> -driveControllerHelper.scaleAxis(driveController.getRightX()) * drivetrain.maxAngularVelocity * 0.9));
+
         shooter.setDefaultCommand(new DefaultShooterCommand(shooter));
     }
 
@@ -297,6 +301,11 @@ public class RobotContainer {
                 createShootOnlyCommand());
     }
 
+    /**
+     * Create our 5-ball autonomous command.
+     * 
+     * @return Command to perform 5 ball autonomous
+     */
     private Command createFiveBallCommand() {
         Path ball2 = new SplinePathBuilder(new Vector2(-.5, -2), new Rotation2(-.6, -3.5, true), Rotation2.fromDegrees(-90))
         .hermite(new Vector2(-.6, -3.5), new Rotation2(-.6, -3.5, true), Rotation2.fromDegrees(-90))
@@ -354,7 +363,7 @@ public class RobotContainer {
           new AutoShootCommand(shooter, feeder, 3)
           );
 
-          return cmd;
+        return cmd;
     }
 
     public Command createTuneAutoCommand() {
