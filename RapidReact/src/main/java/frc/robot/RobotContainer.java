@@ -18,7 +18,8 @@ import frc.robot.commands.AutoAlignWithHubCommand;
 import frc.robot.commands.AutoDriveCommand;
 import frc.robot.commands.AutoIntakeCommand;
 import frc.robot.commands.AutoShootCommand;
-import frc.robot.commands.DriveCommand;
+import frc.robot.commands.DefaultDriveCommand;
+import frc.robot.commands.DefaultShooterCommand;
 import frc.robot.commands.FollowerCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.ShootCommand;
@@ -28,7 +29,7 @@ import frc.robot.drivers.Pigeon;
 import frc.robot.subsystems.DriverVisionSubsystem;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.FeederSubsystem;
-import frc.robot.utils.ControllerUtils;
+import frc.robot.utils.XboxControllerHelper;
 import frc.robot.utils.Ranger;
 import frc.robot.utils.SimpleRanger;
 import frc.robot.utils.SwerveDriveConfig;
@@ -62,6 +63,7 @@ import org.frcteam2910.common.math.Vector2;
 public class RobotContainer {
 
     private final XboxController driveController = new XboxController(Constants.DRIVE_CONTROLLER_PORT);
+    private final XboxControllerHelper driveControllerHelper = new XboxControllerHelper(driveController);   
     private final XboxController operatorController = new XboxController(Constants.OPERATOR_CONTROLLER_PORT);
 
     Pigeon pigeon = new Pigeon(DRIVETRAIN_PIGEON_ID);
@@ -76,7 +78,7 @@ public class RobotContainer {
     private LimelightSubsystem limelight;
 
     // Commands
-    private DriveCommand drive;
+    private DefaultDriveCommand drive;
 
     // Autonomous command creation
     private final HashMap<String, Supplier<Command>> commandCreators = new HashMap<String, Supplier<Command>>();
@@ -118,7 +120,7 @@ public class RobotContainer {
         // We don't ever call the DriverVision subsystem, we just create it and let it do its thing.
         new DriverVisionSubsystem();
 
-        limelight = new LimelightSubsystem(36, 0.5842, 2.6414);
+        limelight = new LimelightSubsystem(CAMERA_ANGLE, CAMERA_HEIGHT, TARGET_HEIGHT);
     }
 
     /**
@@ -135,32 +137,33 @@ public class RobotContainer {
         registerAutoCommand("TUNE", this:: createTuneAutoCommand);
 
         // create tele drive command
-        drive = new DriveCommand(
+        drive = new DefaultDriveCommand(
                 drivetrain,
-                () -> -ControllerUtils.modifyAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
-                () -> -ControllerUtils.modifyAxis(driveController.getLeftX()) * drivetrain.maxVelocity,
-                () -> -ControllerUtils.modifyAxis(driveController.getRightX()) * drivetrain.maxAngularVelocity * 0.9);
-                drivetrain.setDefaultCommand(drive);
+                () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
+                () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity,
+                () -> -driveControllerHelper.scaleAxis(driveController.getRightX()) * drivetrain.maxAngularVelocity * 0.9);
+        drivetrain.setDefaultCommand(drive);
+        shooter.setDefaultCommand(new DefaultShooterCommand(shooter));
     }
 
     /**
      * Use this method to define your button->command mappings.
      */
     private void configureButtonBindings() {
-
+        
         // Reset the gyroscope on the Pigeon.
         new JoystickButton(driveController, Button.kStart.value)
                 .whenPressed(new InstantCommand(() -> drivetrain.resetPosition()));
 
         // Schedule the Shoot command to fire a cargo
         new Trigger(() -> driveController.getLeftTriggerAxis() > 0.8).whileActiveOnce(
-                new ParallelCommandGroup(new ShootCommand(shooter, feeder, () -> driveController.getRightTriggerAxis() > 0.8, limelight),
+                new ParallelCommandGroup(new ShootCommand(shooter, feeder, driveControllerHelper::rumble, () -> driveController.getRightTriggerAxis() > 0.8, limelight),
                 new AutoAlignWithHubCommand(limelight, drivetrain, 
-                () -> -ControllerUtils.modifyAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
-                () -> -ControllerUtils.modifyAxis(driveController.getLeftX()) * drivetrain.maxVelocity)));
+                () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
+                () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity)));
 
         new JoystickButton(driveController, Button.kA.value).whenHeld(
-                new ShootCommand(shooter, feeder, () -> driveController.getRightTriggerAxis() > 0.8, 0));
+                new ShootCommand(shooter, feeder, driveControllerHelper::rumble, () -> driveController.getRightTriggerAxis() > 0.8, 0));
 
         new JoystickButton(operatorController, Button.kA.value).whenPressed(
                     new InstantCommand(() -> feeder.setFeedMode(FeedMode.REVERSE_CONTINUOUS)));
@@ -244,7 +247,10 @@ public class RobotContainer {
     }
 
     private Command createShootOnlyCommand() {
-        return new SequentialCommandGroup(new WaitShooterAvailableCommand(shooter), new AutoShootCommand(shooter, feeder, 2.0));
+        return new SequentialCommandGroup(
+            new InstantCommand(() -> shooter.idle()),
+            new WaitShooterAvailableCommand(shooter),
+            new AutoShootCommand(shooter, feeder, 2.0));
     }
 
     private Command createOneBallCommand() {
@@ -255,9 +261,8 @@ public class RobotContainer {
     private Command createTwoBallCommand() {
         // don't use this because pixy hardware is not working
         return new SequentialCommandGroup(
-                new AutoAlignWithHubCommand(limelight, drivetrain, () -> 0, () -> 0),
-                createShootOnlyCommand(),
-                new AutoDriveCommand(drivetrain, new Translation2d(3, 0), Rotation2d.fromDegrees(90)),
+                new InstantCommand(() -> shooter.idle()),
+                new AutoDriveCommand(drivetrain, new Translation2d(3, 0), Rotation2d.fromDegrees(0)),
                 // new AutoFollowCargoCommand(drivetrain, pixy),
                 // new AutoIntakeCommand(intake, feeder),
                 new AutoAlignWithHubCommand(limelight, drivetrain, () -> 0, () -> 0),

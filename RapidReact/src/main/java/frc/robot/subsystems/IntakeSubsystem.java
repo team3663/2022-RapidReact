@@ -38,6 +38,9 @@ public class IntakeSubsystem extends SubsystemBase {
   private NetworkTableEntry armIsOutEntry;
   private NetworkTableEntry intakeMotorSpeedEntry;
 
+  private NetworkTableEntry currentSpeedEntry;
+
+
   /** Creates a new instance of the Shooter subsystem. */
   /**
    * Boom is the upper-arm of the intake, Arm is the fore-arm of the intake
@@ -180,11 +183,18 @@ public class IntakeSubsystem extends SubsystemBase {
         .withPosition(2, 0)
         .withSize(1, 1)
         .getEntry();
+
+
+    currentSpeedEntry = tab.add("current speed", false)
+        .withPosition(3, 0)
+        .withSize(1, 1)
+        .getEntry();
   }
 
   private void updateTelemetry() {
     intakeMotorSpeedEntry.setValue(intakeMotor.get());
     boomIsOutEntry.setBoolean(boomIsOut);
     armIsOutEntry.setBoolean(armIsOut);
+    currentSpeedEntry.setValue(intakeMotor.getOutputCurrent());
   }
 }

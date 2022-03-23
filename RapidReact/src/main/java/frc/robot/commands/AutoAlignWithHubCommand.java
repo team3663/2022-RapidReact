@@ -16,7 +16,6 @@ public class AutoAlignWithHubCommand extends CommandBase {
   private DrivetrainSubsystem drivetrain;
   private LimelightSubsystem limelight;
 
-  // private PIDController rotationPidController = new PIDController(0.05, 0, 0); // original
   private PIDController rotationPidController = new PIDController(0.12, 0, 0);
 
   private double currentOffset;
@@ -61,6 +60,6 @@ public class AutoAlignWithHubCommand extends CommandBase {
   public boolean isFinished() {
       return false;
 
-    // return (Math.abs(speed) < 0.01) || (Math.abs(currentOffset) < 0.01); // TODO fix value
+    // return (Math.abs(speed) < 0.01) || (Math.abs(currentOffset) < 0.01); 
   }
 }
