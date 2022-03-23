@@ -285,7 +285,7 @@ public class ShooterSubsystem extends SubsystemBase {
         }
 
         // if the hood is not at the limit then set power to start lowering it and return.
-        if (!hoodLimit.get()) {
+        if (hoodMotor.getOutputCurrent() <= 1) {
             hoodMotor.set(-0.05);
             return;
         }
