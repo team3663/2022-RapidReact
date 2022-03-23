@@ -323,14 +323,14 @@ public class RobotContainer {
       .hermite(new Vector2(-4.5, -3), Rotation2.ZERO, Rotation2.fromDegrees(-114.96093749999997))
       .build();
   
-      Path ball5 = new SplinePathBuilder(new Vector2(-4.5, -3), new Rotation2(-7, -3, true), Rotation2.fromDegrees(-75))
-      .hermite(new Vector2(-7, -3), new Rotation2(-7, -3, true),Rotation2.fromDegrees(-32))
-      .hermite(new Vector2(-3, -3), new Rotation2(-7, -3, true), Rotation2.fromDegrees(-75))
-      .build();
+    //   Path ball5 = new SplinePathBuilder(new Vector2(-4.5, -3), new Rotation2(-7, -3, true), Rotation2.fromDegrees(-75))
+    //   .hermite(new Vector2(-7, -3), new Rotation2(-7, -3, true),Rotation2.fromDegrees(-32))
+    //   .hermite(new Vector2(-3, -3), new Rotation2(-7, -3, true), Rotation2.fromDegrees(-75))
+    //   .build();
   
-      Path aim3 = new SplinePathBuilder(new Vector2(0, 0), Rotation2.ZERO, Rotation2.ZERO)
-        .hermite(new Vector2(-1.184, 0.475), Rotation2.ZERO, Rotation2.ZERO) // rotation
-        .build();
+    //   Path aim3 = new SplinePathBuilder(new Vector2(0, 0), Rotation2.ZERO, Rotation2.ZERO)
+    //     .hermite(new Vector2(-1.184, 0.475), Rotation2.ZERO, Rotation2.ZERO) // rotation
+    //     .build();
   
         TrajectoryConstraint[] fast = {
           new MaxAccelerationConstraint(3.5),
