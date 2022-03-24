@@ -1,8 +1,4 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
-package frc.robot.utils;
+package frc.robot.utils.trajectory;
 
 import org.frcteam2910.common.control.SplinePathBuilder;
 import org.frcteam2910.common.control.Trajectory;
@@ -14,7 +10,6 @@ import org.frcteam2910.common.control.SimplePathBuilder;
 import org.frcteam2910.common.math.Rotation2;
 import org.frcteam2910.common.math.Vector2;
 
-/** Add your docs here. */
 public class TrajectoryFactory {
 
     // smaller sample distance, more precision
