@@ -301,7 +301,7 @@ public class ShooterSubsystem extends SubsystemBase {
         parkingHood = false;
         hoodMotor.set(0);
         hoodEncoder.setPosition(-0.25);
-        setAngle(0.0);
+        setAngle(MAX_HOOD_ANGLE);
     }
 
     // ---------------------------------------------------------------------------
