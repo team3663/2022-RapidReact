@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+
 public class ClimberSubsystem {
 
     /**
@@ -20,6 +21,26 @@ public class ClimberSubsystem {
      * Initilalize the climber subsystem
      */
     public ClimberSubsystem() {
+    }
+
+    
+    /**
+     * Set target position of the elevator.
+     * 
+     * @param position
+     */
+    public void setElevatorPosition(double position) {
+
+    }
+
+
+    /**
+     * Check to see if the elevator has reached the target position.
+     * 
+     * @return - True if elevator has reached the target position.
+     */
+    public boolean getElevatorReady() {
+        return false;
     }
 
 
