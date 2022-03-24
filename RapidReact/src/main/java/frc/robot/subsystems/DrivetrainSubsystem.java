@@ -186,9 +186,8 @@ public class DrivetrainSubsystem extends SubsystemBase {
                 pigeon.invert();
         }
 
-        public void setAutoInitCommand(double x, double y, Rotation2d StartingRotation) {
-                
-                odometry.resetPosition(new Pose2d(x,y, StartingRotation), getGyroscopeRotation());
+        public void setAutoInitPose(Pose2d initPose) {
+                odometry.resetPosition(initPose, getGyroscopeRotation());
         }
 
         private Rotation2d getGyroscopeRotation() {
