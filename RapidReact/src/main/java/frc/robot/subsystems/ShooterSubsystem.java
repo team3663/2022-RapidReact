@@ -124,6 +124,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
         hoodMotor = new CANSparkMax(hoodMotorCANID, MotorType.kBrushless);
         hoodMotor.setIdleMode(IdleMode.kBrake);
+        hoodMotor.setSmartCurrentLimit(15);
         hoodEncoder = hoodMotor.getEncoder();
         hoodLimit = new DigitalInput(hoodLimitDio);
 
@@ -299,8 +300,8 @@ public class ShooterSubsystem extends SubsystemBase {
         // Hood has reached limit, clear parking flag, stop motor and zero encoder.
         parkingHood = false;
         hoodMotor.set(0);
-        hoodEncoder.setPosition(0);
-        targetAngle = MAX_HOOD_ANGLE;
+        hoodEncoder.setPosition(-0.25);
+        setAngle(0.0);
     }
 
     // ---------------------------------------------------------------------------
