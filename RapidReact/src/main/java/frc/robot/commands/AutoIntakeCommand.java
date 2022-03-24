@@ -12,29 +12,29 @@ import frc.robot.subsystems.FeederSubsystem.FeedMode;
 
 
 public class AutoIntakeCommand extends CommandBase {
-  public enum AutoPose{
+  public enum IntakeMode {
     extended,
     retracted
   };
   
   private IntakeSubsystem intake;
   private FeederSubsystem feeder;
-  private AutoPose currentPose;
+  private IntakeMode currentMode;
   
-  public AutoIntakeCommand(IntakeSubsystem intake, FeederSubsystem feeder, AutoPose pose) {
+  public AutoIntakeCommand(IntakeSubsystem intake, FeederSubsystem feeder, IntakeMode mode) {
     this.intake = intake;
     this.feeder = feeder;
-    currentPose = pose;
+    currentMode = mode;
     addRequirements(intake, feeder);
   }
 
   @Override
   public void initialize() {
-    if(currentPose == AutoPose.extended){
+    if(currentMode == IntakeMode.extended){
       intake.extend();
       feeder.setFeedMode(FeedMode.INTAKE);
     }
-    if(currentPose == AutoPose.retracted){
+    if(currentMode == IntakeMode.retracted){
       intake.retract();
       feeder.setFeedMode(FeedMode.STOPPED);
     }
@@ -42,7 +42,7 @@ public class AutoIntakeCommand extends CommandBase {
 
   @Override
   public void execute() {
-    if(currentPose == AutoPose.extended){
+    if(currentMode == IntakeMode.extended){
       intake.spinBallIn();
     }
   }

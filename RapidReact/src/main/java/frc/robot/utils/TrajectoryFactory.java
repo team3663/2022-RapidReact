@@ -17,8 +17,10 @@ import org.frcteam2910.common.math.Vector2;
 /** Add your docs here. */
 public class TrajectoryFactory {
 
+    // smaller sample distance, more precision
     private static double sampleDistance = 0.00254;
 
+    // velocity and 
     public static TrajectoryConstraint[] fast = {
         new MaxAccelerationConstraint(3.5),
         new MaxVelocityConstraint(7),
@@ -31,11 +33,19 @@ public class TrajectoryFactory {
           new CentripetalAccelerationConstraint(5.0)
         };
 
+    // for tuning pid & feedforward
     public static Trajectory tune = new Trajectory(
         new SimplePathBuilder(new Vector2(0, 0), Rotation2.ZERO).lineTo(new Vector2(1, 0), Rotation2.fromDegrees(180)).build(),
         fast,
         sampleDistance);
 
+    // two ball trajectory (does not use coordinates: reset odometry)
+    public static Trajectory twoMetersForward = new Trajectory(
+        new SimplePathBuilder(new Vector2(0, 0), Rotation2.ZERO).lineTo(new Vector2(2.5, 0), Rotation2.fromDegrees(180)).build(),
+        fast,
+        sampleDistance);
+
+    // five ball trajectories (use coordinates: do not reset odometry)
     public static Trajectory start_ball2_ball3 = new Trajectory(
             new SplinePathBuilder(new Vector2(-.5, -2), new Rotation2(-.6, -3.5, true), Rotation2.fromDegrees(-90))
                 .hermite(new Vector2(-.6, -3.5), new Rotation2(-.6, -3.5, true), Rotation2.fromDegrees(-90))

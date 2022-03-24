@@ -2,8 +2,6 @@ package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
@@ -11,12 +9,9 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import frc.robot.commands.AutoAlignWithHubCommand;
-import frc.robot.commands.AutoDriveCommand;
 import frc.robot.commands.AutoIntakeCommand;
 import frc.robot.commands.AutoShootCommand;
 import frc.robot.commands.DefaultDriveCommand;
@@ -24,8 +19,7 @@ import frc.robot.commands.DefaultShooterCommand;
 import frc.robot.commands.FollowerCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.ShootCommand;
-import frc.robot.commands.WaitShooterAvailableCommand;
-import frc.robot.commands.AutoIntakeCommand.AutoPose;
+import frc.robot.commands.AutoIntakeCommand.IntakeMode;
 import frc.robot.drivers.Pigeon;
 import frc.robot.subsystems.DriverVisionSubsystem;
 import frc.robot.subsystems.DrivetrainSubsystem;
@@ -47,17 +41,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
-
-import org.frcteam2910.common.control.CentripetalAccelerationConstraint;
-import org.frcteam2910.common.control.MaxAccelerationConstraint;
-import org.frcteam2910.common.control.MaxVelocityConstraint;
-import org.frcteam2910.common.control.Path;
-import org.frcteam2910.common.control.SimplePathBuilder;
-import org.frcteam2910.common.control.SplinePathBuilder;
-import org.frcteam2910.common.control.Trajectory;
-import org.frcteam2910.common.control.TrajectoryConstraint;
-import org.frcteam2910.common.math.Rotation2;
-import org.frcteam2910.common.math.Vector2;
 
 /**
  * This class is where the bulk of the robot should be declared.
@@ -139,6 +122,7 @@ public class RobotContainer {
         registerAutoCommand("Shoot Only", this::createShootOnlyCommand);
         registerAutoCommand("Taxi Only", this::createTaxiOnlyCommand);
         registerAutoCommand("One Ball", this::createOneBallCommand);
+        registerAutoCommand("Two Ball", this::createTwoBallCommand);
         registerAutoCommand("Five Ball", () -> fiveBallAutoCommand);
         registerAutoCommand("TUNE", this::createTuneAutoCommand);
 
@@ -277,28 +261,29 @@ public class RobotContainer {
     }
 
     private Command createTaxiOnlyCommand() {
-        return new AutoDriveCommand(drivetrain, new Translation2d(2, 0), Rotation2d.fromDegrees(0));
+        return new SequentialCommandGroup(
+            new InstantCommand(() -> drivetrain.resetPosition()),
+            new FollowerCommand(drivetrain, TrajectoryFactory.twoMetersForward)
+        );
     }
 
     private Command createShootOnlyCommand() {
         return new SequentialCommandGroup(
             new InstantCommand(() -> shooter.idle()),
-            new AutoShootCommand(shooter, feeder, 2.0));
+            new ShootCommand(shooter, feeder, drivetrain, limelight));
     }
 
     private Command createOneBallCommand() {
         return new SequentialCommandGroup(createShootOnlyCommand(), createTaxiOnlyCommand());
     }
 
-    @SuppressWarnings("unused")
     private Command createTwoBallCommand() {
         return new SequentialCommandGroup(
             new InstantCommand(() -> shooter.idle()),
-            new AutoDriveCommand(drivetrain, new Translation2d(3, 0), Rotation2d.fromDegrees(0)),
-            // new AutoFollowCargoCommand(drivetrain, pixy),
-            // new AutoIntakeCommand(intake, feeder),
-            new 
-            
+            new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
+            new FollowerCommand(drivetrain, TrajectoryFactory.twoMetersForward),
+            new ShootCommand(shooter, feeder, drivetrain, limelight),
+            new AutoIntakeCommand(intake, feeder, IntakeMode.retracted));
     }
 
     /**
@@ -309,13 +294,13 @@ public class RobotContainer {
     private Command createFiveBallCommand() {
         return new SequentialCommandGroup(
           new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-.5,-2, Rotation2d.fromDegrees(-90)))),
-          new AutoIntakeCommand(intake, feeder, AutoPose.extended),
+          new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
           new AutoShootCommand(shooter, feeder, 3),
           new FollowerCommand(drivetrain, TrajectoryFactory.start_ball2_ball3),
           new AutoShootCommand(shooter, feeder, 3),
           new FollowerCommand(drivetrain, TrajectoryFactory.ball3_station_shoot),
           new AutoShootCommand(shooter, feeder, 3),
-          new AutoIntakeCommand(intake,feeder,AutoPose.retracted)
+          new AutoIntakeCommand(intake,feeder, IntakeMode.retracted)
           );
     }
 
