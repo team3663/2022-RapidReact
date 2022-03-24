@@ -36,6 +36,7 @@ public class ClimberSubsystem extends SubsystemBase {
     private static final double ELEVATOR_POSITION_CONVERSION_FACTOR = 1.0;
     private static final double ELEVATOR_MAX_POSITION = 17;
     private static final double ELEVATOR_MIN_POSITION = 0;
+    private static final double ELEVATOR_MAX_ERROR = 1.0;
     private static final double kElevatorP = 0.000153;
     private static final double kElevatorI = 0.000000;
     private static final double kElevatorD = 0.000003;
@@ -221,8 +222,8 @@ public class ClimberSubsystem extends SubsystemBase {
      * 
      * @return - True if elevator has reached the target position.
      */
-    public boolean getElevatorReady() {
-        return WithinDelta(elevatorCurrentPosition, elevatorTargetPosition, 1.0);
+    public boolean elevatorAtTarget() {
+        return WithinDelta(elevatorCurrentPosition, elevatorTargetPosition, ELEVATOR_MAX_ERROR);
     }
 
 
@@ -251,7 +252,7 @@ public class ClimberSubsystem extends SubsystemBase {
      * 
      * @return - True if the windmill has reached the target position.
      */
-    public boolean getWindmillReady() {
+    public boolean windmillAtTarget() {
         return false;
     }
 
