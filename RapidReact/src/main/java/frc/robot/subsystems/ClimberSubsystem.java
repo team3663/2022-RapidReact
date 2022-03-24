@@ -19,11 +19,16 @@ public class ClimberSubsystem {
 
     /**
      * Initilalize the climber subsystem
+     * 
+     * Elevator - One Neo  gearbox ???, Winch drum diameter ???
+     * Windmill - 2 Neo with 100:1 gearboxes, chain 20-tooth drive gear, 72-tooth driven gear
+     * Hooks - Neo 550, ??? gear reduction
+     *
      */
     public ClimberSubsystem() {
     }
 
-    
+
     /**
      * Set target position of the elevator.
      * 
