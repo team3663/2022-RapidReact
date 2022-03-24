@@ -42,7 +42,7 @@ public class ClimberSubsystem extends SubsystemBase {
     private static final double kElevatorIz = 0.000000;
     private static final double kElevatorFF = 0.00029625;
     private static final double kElevatorMaxOutput = 1.000000;
-    private static final double kElevatorMinOutput = 0.000000;
+    private static final double kElevatorMinOutput = -0.1;
 
     private static final int WINDMILL_MOTOR_CURRENT_LIMIT = 80;
     private static final double WINDMILL_POSITION_CONVERSION_FACTOR = 1.0;
@@ -51,8 +51,8 @@ public class ClimberSubsystem extends SubsystemBase {
     private static final double kWindmillD = 0.000003;
     private static final double kWindmillIz = 0.000000;
     private static final double kWindmillFF = 0.00029625;
-    private static final double kWindmillMaxOutput = 1.000000;
-    private static final double kWindmillMinOutput = 0.000000;
+    private static final double kWindmillMaxOutput = 1.0;
+    private static final double kWindmillMinOutput = -1.0;
 
     private static final int HOOK_MOTOR_CURRENT_LIMIT = 15;
     private static final double HOOK_POSITION_CONVERSION_FACTOR = 1.0;
@@ -61,8 +61,8 @@ public class ClimberSubsystem extends SubsystemBase {
     private static final double kHookD = 1;
     private static final double kHookIz = 0;
     private static final double kHookFF = 0;
-    private static final double kHookMaxOutput = 1;
-    private static final double kHookMinOutput = -1;
+    private static final double kHookMaxOutput = 1.0;
+    private static final double kHookMinOutput = -1.0;
 
     // Motors and associated encoders
     private CANSparkMax elevatorMotor;
@@ -174,6 +174,9 @@ public class ClimberSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         home();
+
+        // Read the current positions back from our various encoders
+        elevatorCurrentPosition = elevatorEncoder.getPosition();
 
         updateTelemetry();
     }
@@ -314,12 +317,12 @@ public class ClimberSubsystem extends SubsystemBase {
         ShuffleboardTab tab = Shuffleboard.getTab("Climber");
 
         // Elevator Data
-        elevatorTargetPositionEntry = tab.add("Target Pos", 0)
+        elevatorTargetPositionEntry = tab.add("Target Position", 0)
                 .withPosition(0, 0)
                 .withSize(1, 1)
                 .getEntry();
 
-        elevatorCurrentPositionEntry = tab.add("Current Pos", 0)
+        elevatorCurrentPositionEntry = tab.add("Current Position", 0)
                 .withPosition(1, 0)
                 .withSize(1, 1)
                 .getEntry();
