@@ -33,10 +33,10 @@ public class FeederSubsystem extends SubsystemBase {
     private final double KD = 0.0009;
 
     private final int FEED_RPM_STOPPED = 0;
-    private final int FEED_RPM_SHOOT = 11000; // how fast the feeder should be running when we are shooting
-    private final int FEED_RPM_PRESHOOT = 11000; // how fast the feeder should be running when we are prepping shoot
-    private final int FEED_RPM_INTAKE = 11000; // how fast the feeder should be running when indexing the balls
-    private final int FEED_RPM_REVERSE_CONTINUOUS = -11000;
+    private final int FEED_RPM_SHOOT = 3500; // how fast the feeder should be running when we are shooting
+    private final int FEED_RPM_PRESHOOT = 1500; // how fast the feeder should be running when we are prepping shoot
+    private final int FEED_RPM_INTAKE = 2500; // how fast the feeder should be running when indexing the balls
+    private final int FEED_RPM_REVERSE_CONTINUOUS = -2500;
 
     // The number of revolutions of the feed motor required to cycle a ball all the
     // way from the feeders entry to the exit.
@@ -66,6 +66,8 @@ public class FeederSubsystem extends SubsystemBase {
 
         feedMotor = new CANSparkMax(feedMotorCanId, MotorType.kBrushless);
         feedMotor.setIdleMode(IdleMode.kBrake);
+
+        feedMotor.setSmartCurrentLimit(40);
 
         feedPID = feedMotor.getPIDController();
         feedPID.setP(KP);
@@ -120,8 +122,7 @@ public class FeederSubsystem extends SubsystemBase {
 
         // We need to clear our exit sensor tripped flag once we no longer see a cargo
         // breaking the beam.
-        if (exitSensor.get())
-        {
+        if (exitSensor.get()) {
             exitSensorTripped = false;
         }
 
@@ -164,13 +165,13 @@ public class FeederSubsystem extends SubsystemBase {
      * @return True if a ball is present at the entry sensor, false otherwise.
      */
     private boolean ballInEntry() {
-        
+
         return !entrySensor.get();
     }
 
     /**
-     * Tell caller if there is a at the exit end of the feeder.  This is true
-     * if the exit sensor has been tripped AND the 
+     * Tell caller if there is a at the exit end of the feeder. This is true
+     * if the exit sensor has been tripped AND the
      * 
      * @return True if a ball is present at the exit sensor, false otherwise.
      */
@@ -307,7 +308,8 @@ public class FeederSubsystem extends SubsystemBase {
 
     /************************************************************************************************
      * Implements Shoot mode, advances one ball out of the feeder into the shooter,
-     * advances next ball (if there is one) to the top of the feeder then terminates.
+     * advances next ball (if there is one) to the top of the feeder then
+     * terminates.
      */
     private class ShootOneMode extends FeedModeBase {
         private boolean gapSeen;
