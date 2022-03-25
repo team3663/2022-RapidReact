@@ -158,6 +158,7 @@ public class RobotContainer {
             new RotateWindmillCommand(climber, bar2ClimbAngle),
             new SwitchBlueHookCommand(climber, HookPosition.Locked),
             new SwitchRedHookCommand(climber, HookPosition.Release),
+            new SwitchRedHookCommand(climber, HookPosition.Grab),
             new RotateWindmillCommand(climber, bar3ClimbAngle), 
             new SwitchRedHookCommand(climber, HookPosition.Locked),
             new SwitchBlueHookCommand(climber, HookPosition.Release)     
