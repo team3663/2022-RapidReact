@@ -87,6 +87,8 @@ public class ShooterSubsystem extends SubsystemBase {
     private double currentRange = 0.0;
     private double currentXOffset = 0;
 
+    public boolean aligned = false;
+
     private NetworkTableEntry currentSpeedEntry;
     private NetworkTableEntry targetSpeedEntry;
     private NetworkTableEntry shooterEncoderEntry;
@@ -100,6 +102,7 @@ public class ShooterSubsystem extends SubsystemBase {
     private NetworkTableEntry currentRangeEntry;
     private NetworkTableEntry currentXEntry;
     private NetworkTableEntry highestCurrentEntry;
+    private NetworkTableEntry alignedWithHubEntry;
 
     private NetworkTableEntry shooterMotorCurrentEntry;
     private NetworkTableEntry hoodMotorCurrentEntry;
@@ -124,6 +127,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
         hoodMotor = new CANSparkMax(hoodMotorCANID, MotorType.kBrushless);
         hoodMotor.setIdleMode(IdleMode.kBrake);
+        hoodMotor.setSmartCurrentLimit(15);
         hoodEncoder = hoodMotor.getEncoder();
         hoodLimit = new DigitalInput(hoodLimitDio);
 
@@ -299,8 +303,8 @@ public class ShooterSubsystem extends SubsystemBase {
         // Hood has reached limit, clear parking flag, stop motor and zero encoder.
         parkingHood = false;
         hoodMotor.set(0);
-        hoodEncoder.setPosition(0);
-        targetAngle = MAX_HOOD_ANGLE;
+        hoodEncoder.setPosition(-0.25);
+        setAngle(MAX_HOOD_ANGLE);
     }
 
     // ---------------------------------------------------------------------------
@@ -350,6 +354,11 @@ public class ShooterSubsystem extends SubsystemBase {
                 .withSize(1, 1)
                 .getEntry();
 
+        alignedWithHubEntry = tab.add("Aligned", false)
+                .withPosition(7, 2)
+                .withSize(1, 1)
+                .getEntry();
+
         // Hood Data
         currentAngleEntry = tab.add("Current Angle", 0)
                 .withPosition(0, 3)
@@ -396,6 +405,7 @@ public class ShooterSubsystem extends SubsystemBase {
         currentRangeEntry.setNumber(currentRange);
         currentXEntry.setNumber(currentXOffset);
         readyToShootEntry.forceSetBoolean(ready());
+        alignedWithHubEntry.setBoolean(aligned);
 
         currentAngleEntry.setNumber(currentAngle);
         targetAngleEntry.setNumber(targetAngle);
