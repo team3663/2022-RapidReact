@@ -31,4 +31,23 @@ public class MathUtils {
         return (value >= min) && (value <= max);
     }
 
+    /**
+     * Clip an input value so it it within a specified range
+     * 
+     * @param value - Value to be clipped to target range
+     * @param min - Lower boundry of test range.
+     * @param max - Upper boundry of test range
+     * 
+     * @return - If value between min and max (inclusive) returns value otherwise returns min or max.
+     */
+    public static double ClipToRange(double value, double min, double max) {
+
+        if (value < min) {
+            return min;
+        } else if (value > max) {
+            return max;
+        } else {
+            return value;
+        }
+    }
 }
