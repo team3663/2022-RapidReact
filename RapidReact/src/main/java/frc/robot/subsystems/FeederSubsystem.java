@@ -33,10 +33,10 @@ public class FeederSubsystem extends SubsystemBase {
     private final double KD = 0.0009;
 
     private final int FEED_RPM_STOPPED = 0;
-    private final int FEED_RPM_SHOOT = 11000; // how fast the feeder should be running when we are shooting
-    private final int FEED_RPM_PRESHOOT = 11000; // how fast the feeder should be running when we are prepping shoot
-    private final int FEED_RPM_INTAKE = 11000; // how fast the feeder should be running when indexing the balls
-    private final int FEED_RPM_REVERSE_CONTINUOUS = -11000;
+    private final int FEED_RPM_SHOOT = 3500; // how fast the feeder should be running when we are shooting
+    private final int FEED_RPM_PRESHOOT = 1500; // how fast the feeder should be running when we are prepping shoot
+    private final int FEED_RPM_INTAKE = 2500; // how fast the feeder should be running when indexing the balls
+    private final int FEED_RPM_REVERSE_CONTINUOUS = -2500;
 
     // The number of revolutions of the feed motor required to cycle a ball all the
     // way from the feeders entry to the exit.
@@ -66,6 +66,8 @@ public class FeederSubsystem extends SubsystemBase {
 
         feedMotor = new CANSparkMax(feedMotorCanId, MotorType.kBrushless);
         feedMotor.setIdleMode(IdleMode.kBrake);
+
+        feedMotor.setSmartCurrentLimit(35);
 
         feedPID = feedMotor.getPIDController();
         feedPID.setP(KP);
@@ -110,6 +112,8 @@ public class FeederSubsystem extends SubsystemBase {
                 .withPosition(2, 1)
                 .withSize(1, 1)
                 .getEntry();
+
+        System.out.println(feedMotor.getOutputCurrent() + " --------------------");
     }
 
     /**
