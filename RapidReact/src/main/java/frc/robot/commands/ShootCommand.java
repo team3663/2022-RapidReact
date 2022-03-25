@@ -49,6 +49,7 @@ public class ShootCommand extends CommandBase {
         this.translationYSupplier = translationYSupplier;
         
         this.tController.setSetpoint(0);
+        this.tController.setTolerance(3);
 
         this.currentRange = range;
         this.fixedRange = true;
@@ -93,6 +94,10 @@ public class ShootCommand extends CommandBase {
         drivetrain.drive(ChassisSpeeds.fromFieldRelativeSpeeds(translationXSupplier.getAsDouble(),
                                                             translationYSupplier.getAsDouble(),
                                                             speed, drivetrain.getPose().getRotation()));
+        
+        if (tController.atSetpoint()) {
+            shooter.aligned = true;
+        }
 
         // If we have a limelight then use it to update the current range to target
         if (!fixedRange) {
