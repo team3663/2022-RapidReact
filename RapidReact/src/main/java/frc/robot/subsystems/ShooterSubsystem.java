@@ -355,7 +355,7 @@ public class ShooterSubsystem extends SubsystemBase {
                 .getEntry();
 
         alignedWithHubEntry = tab.add("Aligned", false)
-                .withPosition(6, 2)
+                .withPosition(7, 2)
                 .withSize(1, 1)
                 .getEntry();
 
