@@ -87,6 +87,8 @@ public class ShooterSubsystem extends SubsystemBase {
     private double currentRange = 0.0;
     private double currentXOffset = 0;
 
+    public boolean aligned = false;
+
     private NetworkTableEntry currentSpeedEntry;
     private NetworkTableEntry targetSpeedEntry;
     private NetworkTableEntry shooterEncoderEntry;
@@ -100,6 +102,7 @@ public class ShooterSubsystem extends SubsystemBase {
     private NetworkTableEntry currentRangeEntry;
     private NetworkTableEntry currentXEntry;
     private NetworkTableEntry highestCurrentEntry;
+    private NetworkTableEntry alignedWithHubEntry;
 
     private NetworkTableEntry shooterMotorCurrentEntry;
     private NetworkTableEntry hoodMotorCurrentEntry;
@@ -351,6 +354,11 @@ public class ShooterSubsystem extends SubsystemBase {
                 .withSize(1, 1)
                 .getEntry();
 
+        alignedWithHubEntry = tab.add("Aligned", false)
+                .withPosition(6, 2)
+                .withSize(1, 1)
+                .getEntry();
+
         // Hood Data
         currentAngleEntry = tab.add("Current Angle", 0)
                 .withPosition(0, 3)
@@ -397,6 +405,7 @@ public class ShooterSubsystem extends SubsystemBase {
         currentRangeEntry.setNumber(currentRange);
         currentXEntry.setNumber(currentXOffset);
         readyToShootEntry.forceSetBoolean(ready());
+        alignedWithHubEntry.setBoolean(aligned);
 
         currentAngleEntry.setNumber(currentAngle);
         targetAngleEntry.setNumber(targetAngle);
