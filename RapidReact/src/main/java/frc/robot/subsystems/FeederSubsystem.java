@@ -67,7 +67,7 @@ public class FeederSubsystem extends SubsystemBase {
         feedMotor = new CANSparkMax(feedMotorCanId, MotorType.kBrushless);
         feedMotor.setIdleMode(IdleMode.kBrake);
 
-        feedMotor.setSmartCurrentLimit(35);
+        feedMotor.setSmartCurrentLimit(40);
 
         feedPID = feedMotor.getPIDController();
         feedPID.setP(KP);
