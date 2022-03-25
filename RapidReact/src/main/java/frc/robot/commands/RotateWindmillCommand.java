@@ -7,25 +7,23 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.ClimberSubsystem;
 
-public class ExtendElevatorCommand extends CommandBase {
+public class RotateWindmillCommand extends CommandBase {
 
 	private ClimberSubsystem climber;
-	private double elevatorPosition;
+	private double windmillAngle;
 
-	public ExtendElevatorCommand(ClimberSubsystem climber, double elevatorPosition) {
+	public RotateWindmillCommand(ClimberSubsystem climber, double windmillAngle) {
 		this.climber = climber;
-		this.elevatorPosition = elevatorPosition;
-
+		this.windmillAngle = windmillAngle;
 		addRequirements(climber);
 	}
 
 	@Override
-	public void initialize() {
-	}
+	public void initialize() {}
 
 	@Override
 	public void execute() {
-		climber.setElevatorPosition(elevatorPosition);
+		climber.setWindmillAngle(windmillAngle);
 	}
 
 	@Override
@@ -34,6 +32,6 @@ public class ExtendElevatorCommand extends CommandBase {
 
 	@Override
 	public boolean isFinished() {
-		return climber.elevatorAtTarget();
+		return climber.windmillAtTarget();
 	}
 }
