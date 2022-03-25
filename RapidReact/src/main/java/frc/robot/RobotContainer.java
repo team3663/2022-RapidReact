@@ -18,10 +18,15 @@ import frc.robot.commands.AutoIntakeCommand;
 import frc.robot.commands.AutoShootCommand;
 import frc.robot.commands.DefaultDriveCommand;
 import frc.robot.commands.DefaultShooterCommand;
+import frc.robot.commands.ExtendElevatorCommand;
 import frc.robot.commands.IntakeCommand;
+import frc.robot.commands.RotateWindmillCommand;
 import frc.robot.commands.ShootCommand;
+import frc.robot.commands.SwitchBlueHookCommand;
+import frc.robot.commands.SwitchRedHookCommand;
 import frc.robot.commands.WaitShooterAvailableCommand;
 import frc.robot.drivers.Pigeon;
+import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.DriverVisionSubsystem;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.FeederSubsystem;
@@ -33,6 +38,7 @@ import frc.robot.utils.SwerveModuleConfig;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.subsystems.ClimberSubsystem.HookPosition;
 import frc.robot.subsystems.FeederSubsystem.FeedMode;
 
 import static frc.robot.Constants.*;
@@ -61,9 +67,12 @@ public class RobotContainer {
     private IntakeSubsystem intake;
     private DrivetrainSubsystem drivetrain;
     private LimelightSubsystem limelight;
+    private ClimberSubsystem climber;
 
     // Commands
     private DefaultDriveCommand drive;
+    private ExtendElevatorCommand extendElevator;
+    private Command climb;
 
     // Autonomous command creation
     private final HashMap<String, Supplier<Command>> commandCreators = new HashMap<String, Supplier<Command>>();
@@ -127,7 +136,24 @@ public class RobotContainer {
                 () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity,
                 () -> -driveControllerHelper.scaleAxis(driveController.getRightX()) * drivetrain.maxAngularVelocity * 0.9);
         drivetrain.setDefaultCommand(drive);
+
+        // create idle shoot command
         shooter.setDefaultCommand(new DefaultShooterCommand(shooter));
+
+        // create climb command
+        double windmillShift = 0;
+        double windmillClimb = 0;
+
+        climb = new SequentialCommandGroup(
+            new SwitchRedHookCommand(climber, HookPosition.Grab),
+            new SwitchRedHookCommand(climber, HookPosition.Locked),
+            new SwitchBlueHookCommand(climber, HookPosition.Grab),
+            new RotateWindmillCommand(climber, windmillClimb),
+            new SwitchBlueHookCommand(climber, HookPosition.Locked),
+            new RotateWindmillCommand(climber, windmillShift),
+            new SwitchRedHookCommand(climber, HookPosition.Release)
+        );
+
     }
 
     /**
@@ -179,6 +205,12 @@ public class RobotContainer {
         // Schedule the Intake command to pick-up cargo
         new JoystickButton(driveController, Button.kRightBumper.value)
                 .whenHeld(new IntakeCommand(intake, feeder, (() -> driveController.getLeftBumper())));
+
+        // climb
+        new JoystickButton(driveController, Button.kX.value)
+            .whenHeld(new ExtendElevatorCommand(climber, 1));
+
+        new JoystickButton(driveController, Button.kY.value).whenHeld(climb);
 
         // operator controls
         new JoystickButton(operatorController, Button.kA.value).whenPressed(

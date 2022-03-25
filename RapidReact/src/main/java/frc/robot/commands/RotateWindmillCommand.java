@@ -19,16 +19,15 @@ public class RotateWindmillCommand extends CommandBase {
 	}
 
 	@Override
-	public void initialize() {}
-
-	@Override
-	public void execute() {
+	public void initialize() {
 		climber.setWindmillAngle(windmillAngle);
 	}
 
 	@Override
-	public void end(boolean interrupted) {
-	}
+	public void execute() {}
+
+	@Override
+	public void end(boolean interrupted) {}
 
 	@Override
 	public boolean isFinished() {
