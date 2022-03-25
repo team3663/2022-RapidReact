@@ -11,6 +11,7 @@ import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.utils.MathUtils;
 
 import static frc.robot.utils.MathUtils.*;
 
@@ -206,15 +207,8 @@ public class ClimberSubsystem extends SubsystemBase {
      * @param position
      */
     public void setElevatorPosition(double position) {
-        elevatorTargetPosition = position;
-
-        if (elevatorTargetPosition > ELEVATOR_MAX_POSITION) {
-            elevatorTargetPosition = ELEVATOR_MAX_POSITION;
-        } else if (elevatorTargetPosition < ELEVATOR_MIN_POSITION) {
-            elevatorTargetPosition = ELEVATOR_MIN_POSITION;
-        }
-
-        elevatorPID.setReference(position, ControlType.kPosition);       
+        elevatorTargetPosition = MathUtils.ClipToRange(position, ELEVATOR_MIN_POSITION, ELEVATOR_MAX_POSITION);
+        elevatorPID.setReference(elevatorTargetPosition, ControlType.kPosition);       
     }
 
     /**
