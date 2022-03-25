@@ -71,8 +71,8 @@ public class RobotContainer {
 
     // Commands
     private DefaultDriveCommand drive;
-    private ExtendElevatorCommand extendElevator;
-    private Command climb;
+    private Command deployClimberCommand;
+    private Command climbCommand;
 
     // Autonomous command creation
     private final HashMap<String, Supplier<Command>> commandCreators = new HashMap<String, Supplier<Command>>();
@@ -140,20 +140,28 @@ public class RobotContainer {
         // create idle shoot command
         shooter.setDefaultCommand(new DefaultShooterCommand(shooter));
 
-        // create climb command
-        double windmillShift = 0;
-        double windmillClimb = 0;
+        // Create the command to deploy the climber
+        double elevatorPosition = 12;
 
-        climb = new SequentialCommandGroup(
+        deployClimberCommand = new SequentialCommandGroup(
+            new ExtendElevatorCommand(climber, elevatorPosition),
             new SwitchRedHookCommand(climber, HookPosition.Grab),
-            new SwitchRedHookCommand(climber, HookPosition.Locked),
-            new SwitchBlueHookCommand(climber, HookPosition.Grab),
-            new RotateWindmillCommand(climber, windmillClimb),
-            new SwitchBlueHookCommand(climber, HookPosition.Locked),
-            new RotateWindmillCommand(climber, windmillShift),
-            new SwitchRedHookCommand(climber, HookPosition.Release)
+            new SwitchBlueHookCommand(climber, HookPosition.Grab)
         );
+        
+        // Create climb command
+        double bar2ClimbAngle = 120;
+        double bar3ClimbAngle = 300;
 
+        climbCommand = new SequentialCommandGroup(
+            new SwitchRedHookCommand(climber, HookPosition.Locked),
+            new RotateWindmillCommand(climber, bar2ClimbAngle),
+            new SwitchBlueHookCommand(climber, HookPosition.Locked),
+            new SwitchRedHookCommand(climber, HookPosition.Release),
+            new RotateWindmillCommand(climber, bar3ClimbAngle), 
+            new SwitchRedHookCommand(climber, HookPosition.Locked),
+            new SwitchBlueHookCommand(climber, HookPosition.Release)     
+        );
     }
 
     /**
@@ -208,9 +216,9 @@ public class RobotContainer {
 
         // climb
         new JoystickButton(driveController, Button.kX.value)
-            .whenHeld(new ExtendElevatorCommand(climber, 1));
+            .whenHeld(deployClimberCommand);
 
-        new JoystickButton(driveController, Button.kY.value).whenHeld(climb);
+        new JoystickButton(driveController, Button.kY.value).whenHeld(climbCommand);
 
         // operator controls
         new JoystickButton(operatorController, Button.kA.value).whenPressed(
