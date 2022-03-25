@@ -285,6 +285,10 @@ public class ClimberSubsystem extends SubsystemBase {
         return HookPosition.Unknown;
     }
 
+	public boolean redHookAtTarget() {
+		return false;
+	}
+
 
      /**
      * Move the blue hook to its home position to establish our zero reference
@@ -309,6 +313,10 @@ public class ClimberSubsystem extends SubsystemBase {
     public HookPosition getBlueHookPosition() {
         return HookPosition.Unknown;
     }
+
+	public boolean blueHookAtTarget() {
+		return false;
+	}
 
     // ---------------------------------------------------------------------------
     // Telemetry
