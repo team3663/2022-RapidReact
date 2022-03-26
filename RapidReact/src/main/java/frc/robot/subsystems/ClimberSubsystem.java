@@ -13,8 +13,10 @@
 *   - Gearing 100:1 gearboxes -> 20-tooth drive sprocket -> 72-tooth driven sprocket
 *   - Total reduction 360:1
 
-* Hooks - Neo 550, 27:1 gear reduction to 16-tooth sprocket  -> 72 tooth sprocket
-*
+* Hooks 
+*   - Motor: Neo 550
+*   - Gearing: 27:1 gearbox -> 16-tooth sprocket -> 72 tooth sprocket
+*   - Total reduction: 121.5:1
 */
 
 package frc.robot.subsystems;
