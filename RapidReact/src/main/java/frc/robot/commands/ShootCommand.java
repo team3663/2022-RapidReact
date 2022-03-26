@@ -93,7 +93,8 @@ public class ShootCommand extends CommandBase {
         double speed = tController.calculate(currentOffset);
         drivetrain.drive(ChassisSpeeds.fromFieldRelativeSpeeds(translationXSupplier.getAsDouble(),
                                                             translationYSupplier.getAsDouble(),
-                                                            speed, drivetrain.getPose().getRotation()));
+                                                            speed,
+                                                            drivetrain.getPose().getRotation()));
         
         if (tController.atSetpoint()) {
             shooter.aligned = true;
