@@ -425,7 +425,6 @@ public class ClimberSubsystem extends SubsystemBase {
     private class ClimberHook {
         private static final int MOTOR_CURRENT_LIMIT = 15;
         private static final double POSITION_CONVERSION_FACTOR = 1.0;
-        private static final double MAX_ANGLE = 360;
         private static final double MIN_ANGLE = 0;
         private static final double MAX_ANGLE_OFFSET = 2;
         private static final double GRAB_ANGLE = 0;
