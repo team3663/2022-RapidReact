@@ -23,7 +23,7 @@ public class FeederSubsystem extends SubsystemBase {
     private final double KD = 0.0009;
 
     private final int FEED_RPM_STOPPED = 0;
-    private final int FEED_RPM_SHOOT = 11000; // how fast the feeder should be running when we are shooting
+    private final int FEED_RPM_SHOOT = 4000; // how fast the feeder should be running when we are shooting
 
     // Subsystems internal data
     private CANSparkMax feedMotor;
