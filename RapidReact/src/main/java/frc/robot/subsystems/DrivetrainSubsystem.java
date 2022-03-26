@@ -51,10 +51,10 @@ public class DrivetrainSubsystem extends SubsystemBase {
     private NetworkTableEntry driveSignalYEntry;
     private NetworkTableEntry driveSignalRotationEntry;
 
- //   private NetworkTableEntry cargoAreaEntry;
- //   private NetworkTableEntry cargoXEntry;
+    // private NetworkTableEntry cargoAreaEntry;
+    // private NetworkTableEntry cargoXEntry;
 
-    public DrivetrainSubsystem(SwerveDriveConfig config, Pigeon pigeon) { //Pixy pixy
+    public DrivetrainSubsystem(SwerveDriveConfig config, Pigeon pigeon) { // Pixy pixy
 
         this.pigeon = pigeon;
         // this.pixy = pixy;
@@ -83,11 +83,11 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
         // Create our swerve module objects.
         /*
-        Front Left to Front Right
-        Back Left to Front Left
-        Front Right to Back Right
-        Back Right to Back Left
-        */
+         * Front Left to Front Right
+         * Back Left to Front Left
+         * Front Right to Back Right
+         * Back Right to Back Left
+         */
         ShuffleboardTab drivetrainModuletab = Shuffleboard.getTab("Swerve Modules");
         frontLeftModule = Mk4SwerveModuleHelper.createFalcon500(
                 drivetrainModuletab.getLayout("Front Left Module", BuiltInLayouts.kList)
@@ -143,13 +143,13 @@ public class DrivetrainSubsystem extends SubsystemBase {
                 .withSize(1, 1)
                 .getEntry();
         // cargoAreaEntry = drivetrainRobotTab.add("Cargo Area", 0.0)
-        //         .withPosition(1, 0)
-        //         .withSize(1, 1)
-        //         .getEntry();
+        // .withPosition(1, 0)
+        // .withSize(1, 1)
+        // .getEntry();
         // cargoXEntry = drivetrainRobotTab.add("Cargo X", 0.0)
-        //         .withPosition(1, 1)
-        //         .withSize(1, 1)
-        //         .getEntry();
+        // .withPosition(1, 1)
+        // .withSize(1, 1)
+        // .getEntry();
         ShuffleboardLayout driveSignalContainer = drivetrainRobotTab
                 .getLayout("Drive Signal", BuiltInLayouts.kGrid)
                 .withPosition(0, 3)
@@ -163,6 +163,16 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
     public void resetPosition() {
         odometry.resetPosition(new Pose2d(), pigeon.getRotation2d());
+    }
+
+    public void invertRotation() {
+        odometry.resetPosition(new Pose2d(getPose().getTranslation(), Rotation2d.fromDegrees(180)),
+                pigeon.getRotation2d());
+    }
+
+    public void resetRotation() {
+        odometry.resetPosition(new Pose2d(getPose().getTranslation(), new Rotation2d()),
+                pigeon.getRotation2d());
     }
 
     public Pose2d getPose() {
@@ -182,7 +192,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     }
 
     public SwerveDriveKinematics getKinematics() {
-            return kinematics;
+        return kinematics;
     }
 
     public void setModuleStates(SwerveModuleState[] states) {
@@ -194,7 +204,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
                 states[2].angle.getRadians());
         backRightModule.set(states[3].speedMetersPerSecond / maxVelocity * MAX_VOLTAGE,
                 states[3].angle.getRadians());
-        
+
         robotPosition = odometry.update(getGyroscopeRotation(), states);
     }
 
@@ -211,9 +221,9 @@ public class DrivetrainSubsystem extends SubsystemBase {
         poseYEntry.setDouble(getPose().getTranslation().getY());
         poseAbsoluteAngleEntry.setDouble(getPose().getRotation().getDegrees());
 
- //       Block cargo = pixy.getLargestBlock();
- //       cargoAreaEntry.setDouble(pixy.getArea(cargo));
- //       cargoXEntry.setDouble(pixy.getX(cargo));
+        // Block cargo = pixy.getLargestBlock();
+        // cargoAreaEntry.setDouble(pixy.getArea(cargo));
+        // cargoXEntry.setDouble(pixy.getX(cargo));
 
         // pose angle entry (for trajectory following tuning)
     }
