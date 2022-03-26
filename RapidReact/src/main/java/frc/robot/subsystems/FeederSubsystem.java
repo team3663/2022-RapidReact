@@ -28,12 +28,13 @@ public class FeederSubsystem extends SubsystemBase {
     private final double FEEDER_GEAR_RATIO_MULTIPLIER = 1;
 
     // Feeder PID constants
-    private final double KP = 0.0001;
+    
+    private final double KP = 0.00008;
     private final double KI = 0.000001;
     private final double KD = 0.0009;
 
     private final int FEED_RPM_STOPPED = 0;
-    private final int FEED_RPM_SHOOT = 4000; // how fast the feeder should be running when we are shooting
+    private final int FEED_RPM_SHOOT = 4500; // how fast the feeder should be running when we are shooting
     private final int FEED_RPM_PRESHOOT = 1500; // how fast the feeder should be running when we are prepping shoot
     private final int FEED_RPM_INTAKE = 2000; // how fast the feeder should be running when indexing the balls
     private final int FEED_RPM_REVERSE_CONTINUOUS = -2500;
