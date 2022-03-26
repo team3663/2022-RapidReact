@@ -174,9 +174,12 @@ public class ClimberSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
 
-        // Call the subsystem initialization method for each component
+        // Call the initialization method for each component
         // this call becomes essentially a noop after init completes
-        initialize();
+        initElevator();
+        initWindmill();
+        redHook.initialize();
+        blueHook.initialize();
 
         // Update internal state
         elevatorCurrentPosition = elevatorEncoder.getPosition();
@@ -185,13 +188,6 @@ public class ClimberSubsystem extends SubsystemBase {
         blueHook.update();
 
         updateTelemetry();
-    }
-
-    private void initialize() {
-        initElevator();
-        initWindmill();
-        redHook.initialize();
-        blueHook.initialize();
     }
 
     // ---------------------------------------------------------------------------
@@ -207,11 +203,10 @@ public class ClimberSubsystem extends SubsystemBase {
             return;
         }
 
-        // If the elevator has not stopped moving yet then let it keep running and
-        // return.
+        // If the elevator has not stopped moving then let it keep running and return
         if (elevatorEncoder.getPosition() > 0.0) {
             elevatorEncoder.setPosition(0.0);
-            elevatorMotor.set(0.05);
+            elevatorMotor.set(-0.05);
             return;
         }
 
@@ -430,6 +425,9 @@ public class ClimberSubsystem extends SubsystemBase {
     private class ClimberHook {
         private static final int MOTOR_CURRENT_LIMIT = 15;
         private static final double POSITION_CONVERSION_FACTOR = 1.0;
+        private static final double MAX_ANGLE = 360;
+        private static final double MIN_ANGLE = 0;
+        private static final double MAX_OFFSET = 2;
         private static final double GRAB_ANGLE = 0;
         private static final double RELEASE_ANGLE = 0;
         private static final double LOCKED_ANGLE = 0;
@@ -456,6 +454,7 @@ public class ClimberSubsystem extends SubsystemBase {
             motor.setSmartCurrentLimit(MOTOR_CURRENT_LIMIT);
             encoder = motor.getEncoder();
             encoder.setPositionConversionFactor(POSITION_CONVERSION_FACTOR);
+            elevatorEncoder.setPosition(1.0); // Initial encoder position must be > 0 for init function to work.
             pidController = motor.getPIDController();
             pidController.setP(kP);
             pidController.setI(kI);
@@ -469,7 +468,22 @@ public class ClimberSubsystem extends SubsystemBase {
          * Move the hook to its home position to establish our zero reference
          */
         private void initialize() {
+            if (initialized) {
+                return;
+            }
 
+            // If the elevator has not stopped moving then let it keep running and return
+            if (encoder.getPosition() > 0.0) {
+                encoder.setPosition(0.0);
+                motor.set(-0.05);
+                return;
+            }
+
+            // If we got here then the elevator has stopped and the cables are taut so we
+            // are at our zero position.
+            initialized = true;
+            motor.set(0);
+            encoder.setPosition(MIN_ANGLE);
         }
 
         /**
@@ -499,7 +513,7 @@ public class ClimberSubsystem extends SubsystemBase {
         }
 
         private boolean atTarget() {
-            return false;
+            return WithinDelta(currentAngle, targetAngle, MAX_OFFSET);
         }
     }
 }
