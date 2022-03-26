@@ -98,7 +98,10 @@ public class ShootCommand extends CommandBase {
         shooter.shoot();
         feeder.setFeedMode(FeedMode.PRESHOOT);
         stagingCargo = true;
-        shootReadyNotifier.accept(false);
+
+        if (!auto) {
+            shootReadyNotifier.accept(false);
+        }
 
         if (!fixedRange) {
             limelight.setLEDMode(limelight.LED_ON);
@@ -116,12 +119,15 @@ public class ShootCommand extends CommandBase {
     public void execute() {
 
         // align with hub
-        double currentOffset = limelight.getXOffset();
-        double speed = tController.calculate(currentOffset);
-        drivetrain.drive(ChassisSpeeds.fromFieldRelativeSpeeds(translationXSupplier.getAsDouble(),
+        if (!auto) {
+            double currentOffset = limelight.getXOffset();
+            double speed = tController.calculate(currentOffset);
+            drivetrain.drive(ChassisSpeeds.fromFieldRelativeSpeeds(translationXSupplier.getAsDouble(),
                                                             translationYSupplier.getAsDouble(),
                                                             speed, drivetrain.getPose().getRotation()));
+        }
         
+        // shuffleboard
         if (tController.atSetpoint()) {
             shooter.aligned = true;
         }

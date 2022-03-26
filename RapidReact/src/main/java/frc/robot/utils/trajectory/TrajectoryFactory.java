@@ -23,15 +23,15 @@ public class TrajectoryFactory {
       };
 
     public static TrajectoryConstraint[] slow = {
-          new MaxAccelerationConstraint(3.5),
-          new MaxVelocityConstraint(7),
+          new MaxAccelerationConstraint(2),
+          new MaxVelocityConstraint(5),
           new CentripetalAccelerationConstraint(5.0)
         };
 
     // for tuning pid & feedforward
     public static Trajectory tune = new Trajectory(
-        new SimplePathBuilder(new Vector2(0, 0), Rotation2.ZERO).lineTo(new Vector2(1, 0), Rotation2.fromDegrees(180)).build(),
-        fast,
+        new SimplePathBuilder(new Vector2(0, 0), Rotation2.ZERO).lineTo(new Vector2(5, 0), Rotation2.fromDegrees(180)).build(),
+        slow,
         sampleDistance);
 
     // two ball trajectory (does not use coordinates: reset odometry)
@@ -42,12 +42,12 @@ public class TrajectoryFactory {
 
     // five ball trajectories (use coordinates: do not reset odometry)
     public static Trajectory start_ball2_ball3 = new Trajectory(
-            new SplinePathBuilder(new Vector2(-.5, -2), new Rotation2(-.6, -3.5, true), Rotation2.fromDegrees(-90))
-                .hermite(new Vector2(-.6, -3.5), new Rotation2(-.6, -3.5, true), Rotation2.fromDegrees(-90))
-                .hermite(new Vector2(-2, -2), new Rotation2(-3.5, -2.2, true), Rotation2.fromDegrees(163.8720703125)) 
-                .hermite(new Vector2(-3.5, -2.2), new Rotation2(-2, -2, true), Rotation2.fromDegrees(-114.96093749999997)) 
+            new SplinePathBuilder(new Vector2(-.5, -2), new Rotation2(-.5, -2, true), Rotation2.fromDegrees(-90))
+                .hermite(new Vector2(-1.06, -2.76), new Rotation2(.5, 2, true), Rotation2.fromDegrees(-90))
+                //.hermite(new Vector2(-2, -2), new Rotation2(-3.5, -2.2, true), Rotation2.fromDegrees(163.8720703125)) 
+                .hermite(new Vector2(-3.38, -1.56), new Rotation2(-3.20, -1.14, true), Rotation2.fromDegrees(-136)) 
                 .build(),
-            fast,
+            slow,
             sampleDistance);
 
     public static Trajectory ball2_ball3 = new Trajectory(
@@ -55,7 +55,7 @@ public class TrajectoryFactory {
             .hermite(new Vector2(-2, -2), new Rotation2(-3.5, -2.2, true), Rotation2.fromDegrees(163.8720703125)) 
             .hermite(new Vector2(-3.5, -2.2), new Rotation2(-2, -2, true), Rotation2.fromDegrees(-114.96093749999997)) 
             .build(),
-        fast,
+        slow,
         sampleDistance);
 
     public static Trajectory ball3_station_shoot = new Trajectory(

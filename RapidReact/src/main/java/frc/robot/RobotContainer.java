@@ -143,7 +143,7 @@ public class RobotContainer {
         
         // Reset the gyroscope on the Pigeon.
         new JoystickButton(driveController, Button.kStart.value)
-                .whenPressed(new InstantCommand(() -> drivetrain.resetPosition()));
+                .whenPressed(new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-.5, -2, Rotation2d.fromDegrees(-90)))));
 
         // Schedule the Shoot command to fire a cargo
         /*
@@ -293,14 +293,15 @@ public class RobotContainer {
      */
     private Command createFiveBallCommand() {
         return new SequentialCommandGroup(
-          new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-.5,-2, Rotation2d.fromDegrees(-90)))),
-          new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
-          new AutoShootCommand(shooter, feeder, 3),
-          new FollowerCommand(drivetrain, TrajectoryFactory.start_ball2_ball3),
-          new AutoShootCommand(shooter, feeder, 3),
-          new FollowerCommand(drivetrain, TrajectoryFactory.ball3_station_shoot),
-          new AutoShootCommand(shooter, feeder, 3),
-          new AutoIntakeCommand(intake,feeder, IntakeMode.retracted)
+            new InstantCommand(() -> shooter.idle()),
+            new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-0.5, -2, Rotation2d.fromDegrees(-90)))),
+            new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
+            new ShootCommand(shooter, feeder, drivetrain, limelight),
+            new FollowerCommand(drivetrain, TrajectoryFactory.start_ball2_ball3),
+            new ShootCommand(shooter, feeder, drivetrain, limelight),
+            // new FollowerCommand(drivetrain, TrajectoryFactory.ball3_station_shoot),
+            // new AutoShootCommand(shooter, feeder, 2),
+            new AutoIntakeCommand(intake,feeder, IntakeMode.retracted)
           );
     }
 
