@@ -20,6 +20,7 @@ import frc.robot.commands.DefaultShooterCommand;
 import frc.robot.commands.FollowerCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.ShootCommand;
+import frc.robot.commands.WaitShooterAvailableCommand;
 import frc.robot.commands.AutoIntakeCommand.IntakeMode;
 import frc.robot.drivers.Pigeon;
 import frc.robot.subsystems.DriverVisionSubsystem;
@@ -295,6 +296,7 @@ public class RobotContainer {
      */
     private Command createFiveBallCommand() {
         return new SequentialCommandGroup(
+            new WaitShooterAvailableCommand(shooter),
             new InstantCommand(() -> shooter.idle()),
             new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-0.5, -2, Rotation2d.fromDegrees(-90)))),
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
@@ -303,11 +305,12 @@ public class RobotContainer {
                 new FollowerCommand(drivetrain, TrajectoryFactory.start_ball2_ball3),
                 new InstantCommand(() -> feeder.setFeedMode(FeedMode.PRESHOOT))),
             new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
-            new ShootCommand(shooter, feeder, drivetrain, limelight)
-            // new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
-            // new FollowerCommand(drivetrain, TrajectoryFactory.ball3_station_shoot),
-            // new AutoShootCommand(shooter, feeder, limelight),
-            // new AutoIntakeCommand(intake,feeder, IntakeMode.retracted)
+            new ShootCommand(shooter, feeder, drivetrain, limelight),
+            new ShootCommand(shooter, feeder, drivetrain, limelight),
+            new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
+            new FollowerCommand(drivetrain, TrajectoryFactory.ball3_station_shoot),
+            new AutoShootCommand(shooter, feeder, limelight),
+            new AutoIntakeCommand(intake,feeder, IntakeMode.retracted)
           );
     }
 

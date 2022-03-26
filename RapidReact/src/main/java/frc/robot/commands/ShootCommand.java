@@ -114,6 +114,7 @@ public class ShootCommand extends CommandBase {
         shooter.setRange(currentRange);
 
         timer.reset();
+        timer.start();
     }
 
     // Called every time the scheduler runs while the command is scheduled.
