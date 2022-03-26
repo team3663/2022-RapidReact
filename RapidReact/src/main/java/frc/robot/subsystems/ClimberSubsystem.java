@@ -36,14 +36,14 @@ import static frc.robot.utils.MathUtils.*;
 public class ClimberSubsystem extends SubsystemBase {
 
     /**
-     * Defined hook positions.
+     * Defined hook states
      * 
      * Grab - Opened to grab the next bar
      * Release - Opened to release the current bar
      * Locked - Locked to hold onto a bar
-     * Unknown - Hook is moving between defined positions
+     * Unknown - Hook is moving between defined states
      */
-    public enum HookPosition {
+    public enum HookState {
         Grab,
         Release,
         Locked,
@@ -132,7 +132,7 @@ public class ClimberSubsystem extends SubsystemBase {
         elevatorMotor.setSmartCurrentLimit(ELEVATOR_MOTOR_CURRENT_LIMIT);
         elevatorEncoder = elevatorMotor.getEncoder();
         elevatorEncoder.setPositionConversionFactor(ELEVATOR_POSITION_CONVERSION_FACTOR);
-        elevatorEncoder.setPosition(1.0); // Initial encoder position must be > than 0 for init function to work.
+        elevatorEncoder.setPosition(-1); // Initial encoder position must be < than 0 for init function to work.
         elevatorPID = elevatorMotor.getPIDController();
         elevatorPID.setP(kElevatorP);
         elevatorPID.setI(kElevatorI);
@@ -204,7 +204,7 @@ public class ClimberSubsystem extends SubsystemBase {
         }
 
         // If the elevator has not stopped moving then let it keep running and return
-        if (elevatorEncoder.getPosition() > 0.0) {
+        if (elevatorEncoder.getPosition() < 0.0) {
             elevatorEncoder.setPosition(0.0);
             elevatorMotor.set(-0.05);
             return;
@@ -271,24 +271,24 @@ public class ClimberSubsystem extends SubsystemBase {
     // Hook control methods
     // ---------------------------------------------------------------------------
 
-    public void setRedHookPosition(HookPosition position) {
-        redHook.setPosition(position);
+    public void setRedHookState(HookState state) {
+        redHook.setState(state);
     }
 
-    public HookPosition getRedHookPosition() {
-        return redHook.getPosition();
+    public HookState getRedHookState() {
+        return redHook.getState();
     }
 
     public boolean redHookAtTarget() {
         return redHook.atTarget();
     }
 
-    public void setBlueHookPosition(HookPosition position) {
-        blueHook.setPosition(position);
+    public void setBlueHookState(HookState state) {
+        blueHook.setState(state);
     }
 
-    public HookPosition getBlueHookPosition() {
-        return blueHook.getPosition();
+    public HookState getBlueHookState() {
+        return blueHook.getState();
     }
 
     public boolean blueHookAtTarget() {
@@ -427,7 +427,7 @@ public class ClimberSubsystem extends SubsystemBase {
         private static final double POSITION_CONVERSION_FACTOR = 1.0;
         private static final double MAX_ANGLE = 360;
         private static final double MIN_ANGLE = 0;
-        private static final double MAX_OFFSET = 2;
+        private static final double MAX_ANGLE_OFFSET = 2;
         private static final double GRAB_ANGLE = 0;
         private static final double RELEASE_ANGLE = 0;
         private static final double LOCKED_ANGLE = 0;
@@ -454,7 +454,7 @@ public class ClimberSubsystem extends SubsystemBase {
             motor.setSmartCurrentLimit(MOTOR_CURRENT_LIMIT);
             encoder = motor.getEncoder();
             encoder.setPositionConversionFactor(POSITION_CONVERSION_FACTOR);
-            elevatorEncoder.setPosition(1.0); // Initial encoder position must be > 0 for init function to work.
+            elevatorEncoder.setPosition(-1); // Initial encoder position must be < 0 for init function to work.
             pidController = motor.getPIDController();
             pidController.setP(kP);
             pidController.setI(kI);
@@ -472,14 +472,14 @@ public class ClimberSubsystem extends SubsystemBase {
                 return;
             }
 
-            // If the elevator has not stopped moving then let it keep running and return
-            if (encoder.getPosition() > 0.0) {
+            // If the hook has not stopped moving then let it keep running and return
+            if (encoder.getPosition() < 0.0) {
                 encoder.setPosition(0.0);
                 motor.set(-0.05);
                 return;
             }
 
-            // If we got here then the elevator has stopped and the cables are taut so we
+            // If we got here then the hook has reached its hard limit and we
             // are at our zero position.
             initialized = true;
             motor.set(0);
@@ -499,21 +499,46 @@ public class ClimberSubsystem extends SubsystemBase {
          * 
          * @param position
          */
-        private void setPosition(HookPosition position) {
+        private void setState(HookState position) {
 
+            switch (position) {
+                case Grab:
+                    pidController.setReference(GRAB_ANGLE, ControlType.kPosition);
+                    break;
+
+                case Release:
+                    pidController.setReference(RELEASE_ANGLE, ControlType.kPosition);
+                    break;
+
+                case Locked:
+                    pidController.setReference(LOCKED_ANGLE, ControlType.kPosition);
+                    break;
+
+                case Unknown:
+                    break;
+            }
         }
 
         /**
-         * Get the current position of the climbing hook
+         * Get the current state of the climbing hook
          * 
-         * @return - HookPosition enum telling what position the hook is currently in.
+         * @return - HookState enum telling what state the hook is currently in.
          */
-        private HookPosition getPosition() {
-            return HookPosition.Unknown;
+        private HookState getState() {
+
+            if (WithinDelta(currentAngle, GRAB_ANGLE, MAX_ANGLE_OFFSET)) {
+                return HookState.Grab;
+            } else if (WithinDelta(currentAngle, RELEASE_ANGLE, MAX_ANGLE_OFFSET)) {
+                return HookState.Release;
+            } else if (WithinDelta(currentAngle, LOCKED_ANGLE, MAX_ANGLE_OFFSET)) {
+                return HookState.Locked;
+            } else {
+                return HookState.Unknown;
+            }
         }
 
         private boolean atTarget() {
-            return WithinDelta(currentAngle, targetAngle, MAX_OFFSET);
+            return WithinDelta(currentAngle, targetAngle, MAX_ANGLE_OFFSET);
         }
     }
 }

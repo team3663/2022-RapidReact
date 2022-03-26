@@ -38,7 +38,7 @@ import frc.robot.utils.SwerveModuleConfig;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
-import frc.robot.subsystems.ClimberSubsystem.HookPosition;
+import frc.robot.subsystems.ClimberSubsystem.HookState;
 import frc.robot.subsystems.FeederSubsystem.FeedMode;
 
 import static frc.robot.Constants.*;
@@ -145,8 +145,8 @@ public class RobotContainer {
 
         deployClimberCommand = new SequentialCommandGroup(
             new ExtendElevatorCommand(climber, elevatorPosition),
-            new SwitchRedHookCommand(climber, HookPosition.Grab),
-            new SwitchBlueHookCommand(climber, HookPosition.Grab)
+            new SwitchRedHookCommand(climber, HookState.Grab),
+            new SwitchBlueHookCommand(climber, HookState.Grab)
         );
         
         // Create climb command
@@ -154,14 +154,14 @@ public class RobotContainer {
         double bar3ClimbAngle = 300;
 
         climbCommand = new SequentialCommandGroup(
-            new SwitchRedHookCommand(climber, HookPosition.Locked),
+            new SwitchRedHookCommand(climber, HookState.Locked),
             new RotateWindmillCommand(climber, bar2ClimbAngle),
-            new SwitchBlueHookCommand(climber, HookPosition.Locked),
-            new SwitchRedHookCommand(climber, HookPosition.Release),
-            new SwitchRedHookCommand(climber, HookPosition.Grab),
+            new SwitchBlueHookCommand(climber, HookState.Locked),
+            new SwitchRedHookCommand(climber, HookState.Release),
+            new SwitchRedHookCommand(climber, HookState.Grab),
             new RotateWindmillCommand(climber, bar3ClimbAngle), 
-            new SwitchRedHookCommand(climber, HookPosition.Locked),
-            new SwitchBlueHookCommand(climber, HookPosition.Release)     
+            new SwitchRedHookCommand(climber, HookState.Locked),
+            new SwitchBlueHookCommand(climber, HookState.Release)     
         );
     }
 
