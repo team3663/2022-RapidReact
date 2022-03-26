@@ -23,8 +23,8 @@ public class TrajectoryFactory {
       };
 
     public static TrajectoryConstraint[] slow = {
-          new MaxAccelerationConstraint(2),
-          new MaxVelocityConstraint(5),
+          new MaxAccelerationConstraint(0.5),
+          new MaxVelocityConstraint(2),
           new CentripetalAccelerationConstraint(5.0)
         };
 
@@ -42,8 +42,8 @@ public class TrajectoryFactory {
 
     // five ball trajectories (use coordinates: do not reset odometry)
     public static Trajectory start_ball2_ball3 = new Trajectory(
-            new SplinePathBuilder(new Vector2(-.5, -2), new Rotation2(-.5, -2, true), Rotation2.fromDegrees(-90))
-                .hermite(new Vector2(-1.06, -2.76), new Rotation2(.5, 2, true), Rotation2.fromDegrees(-90))
+            new SplinePathBuilder(new Vector2(-0.5, -2), new Rotation2(-.5, -2, true), Rotation2.fromDegrees(-90))
+                .hermite(new Vector2(-.58, -2.85), new Rotation2(0, 1, true), Rotation2.fromDegrees(-90))
                 //.hermite(new Vector2(-2, -2), new Rotation2(-3.5, -2.2, true), Rotation2.fromDegrees(163.8720703125)) 
                 .hermite(new Vector2(-3.38, -1.56), new Rotation2(-3.20, -1.14, true), Rotation2.fromDegrees(-136)) 
                 .build(),

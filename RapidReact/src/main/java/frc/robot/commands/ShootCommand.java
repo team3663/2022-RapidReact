@@ -90,6 +90,8 @@ public class ShootCommand extends CommandBase {
         this.currentRange = 0;
         this.fixedRange = false;
         this.auto = true;
+
+        addRequirements(limelight, drivetrain, feeder, shooter);
     }
 
     // Called when the command is initially scheduled.
@@ -117,15 +119,16 @@ public class ShootCommand extends CommandBase {
     // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute() {
+        System.out.println(timer.get());
 
         // align with hub
-        if (!auto) {
+        // if (!auto) {
             double currentOffset = limelight.getXOffset();
             double speed = tController.calculate(currentOffset);
             drivetrain.drive(ChassisSpeeds.fromFieldRelativeSpeeds(translationXSupplier.getAsDouble(),
                                                             translationYSupplier.getAsDouble(),
                                                             speed, drivetrain.getPose().getRotation()));
-        }
+        // }
         
         // shuffleboard
         if (tController.atSetpoint()) {
@@ -154,8 +157,8 @@ public class ShootCommand extends CommandBase {
 
         // We only get here if cargo staging has completed.
         // Use the state of the trigger to decided whether to run or stop the feeder.
-        if (shooter.ready() && tController.atSetpoint()) { 
-            if (auto) {
+        if (shooter.ready()) { 
+            if (auto  && tController.atSetpoint()) {
                 feeder.setFeedMode(FeedMode.CONTINUOUS);
             }
             else if (trigger.getAsBoolean()) {

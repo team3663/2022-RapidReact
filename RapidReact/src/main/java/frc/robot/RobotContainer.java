@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -279,6 +280,7 @@ public class RobotContainer {
 
     private Command createTwoBallCommand() {
         return new SequentialCommandGroup(
+            new InstantCommand(() -> drivetrain.resetPosition()),
             new InstantCommand(() -> shooter.idle()),
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
             new FollowerCommand(drivetrain, TrajectoryFactory.twoMetersForward),
@@ -297,11 +299,15 @@ public class RobotContainer {
             new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-0.5, -2, Rotation2d.fromDegrees(-90)))),
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
             new ShootCommand(shooter, feeder, drivetrain, limelight),
-            new FollowerCommand(drivetrain, TrajectoryFactory.start_ball2_ball3),
-            new ShootCommand(shooter, feeder, drivetrain, limelight),
+            new ParallelCommandGroup(
+                new FollowerCommand(drivetrain, TrajectoryFactory.start_ball2_ball3),
+                new InstantCommand(() -> feeder.setFeedMode(FeedMode.PRESHOOT))),
+            new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
+            new ShootCommand(shooter, feeder, drivetrain, limelight)
+            // new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
             // new FollowerCommand(drivetrain, TrajectoryFactory.ball3_station_shoot),
-            // new AutoShootCommand(shooter, feeder, 2),
-            new AutoIntakeCommand(intake,feeder, IntakeMode.retracted)
+            // new AutoShootCommand(shooter, feeder, limelight),
+            // new AutoIntakeCommand(intake,feeder, IntakeMode.retracted)
           );
     }
 
