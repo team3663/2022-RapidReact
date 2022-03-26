@@ -77,27 +77,25 @@ public class ClimberSubsystem extends SubsystemBase {
     private static final double kWindmillMaxOutput = 1.0;
     private static final double kWindmillMinOutput = -1.0;
 
-    // Motors and associated encoders
+    // Elevator related variables
     private CANSparkMax elevatorMotor;
-    private CANSparkMax windmillMotor1;
-    private CANSparkMax windmillMotor2;
-
     private RelativeEncoder elevatorEncoder;
     private SparkMaxPIDController elevatorPID;
-
-    private RelativeEncoder windmillEncoder;
-    private SparkMaxPIDController windmillPID;
-
     private boolean elevatorInitialized = false;
     private double elevatorTargetPosition = 0.0;
     private double elevatorCurrentPosition = 0.0;
 
+    // Windmill related variables
+    private CANSparkMax windmillMotor1;
+    private CANSparkMax windmillMotor2;
+    private RelativeEncoder windmillEncoder;
+    private SparkMaxPIDController windmillPID;
     private boolean windmillInitialized = false;
     private double windmillTargetAngle = 0.0;
     private double windmillCurrentAngle = 0.0;
 
-    private Hook redHook;
-    private Hook blueHook;
+    private ClimberHook redHook;
+    private ClimberHook blueHook;
 
     // Network table entries for Shuffleboard
     private NetworkTableEntry elevatorInitializedEntry;
@@ -110,6 +108,16 @@ public class ClimberSubsystem extends SubsystemBase {
     private NetworkTableEntry windmillCurrentAngleEntry;
     private NetworkTableEntry windmillMotor1CurrentEntry;
     private NetworkTableEntry windmillMotor2CurrentEntry;
+
+    private NetworkTableEntry redHookInitializedEntry;
+    private NetworkTableEntry redHookTargetAngleEntry;
+    private NetworkTableEntry redHookCurrentAngleEntry;
+    private NetworkTableEntry redHookMotorCurrentEntry;
+
+    private NetworkTableEntry blueHookInitializedEntry;
+    private NetworkTableEntry blueHookTargetAngleEntry;
+    private NetworkTableEntry blueHookCurrentAngleEntry;
+    private NetworkTableEntry blueHookMotorCurrentEntry;
 
     /**
      * Initilalize the climber subsystem
@@ -124,7 +132,7 @@ public class ClimberSubsystem extends SubsystemBase {
         elevatorMotor.setSmartCurrentLimit(ELEVATOR_MOTOR_CURRENT_LIMIT);
         elevatorEncoder = elevatorMotor.getEncoder();
         elevatorEncoder.setPositionConversionFactor(ELEVATOR_POSITION_CONVERSION_FACTOR);
-        elevatorEncoder.setPosition(1.0); // The initial encoder position must be greater than zero for homing function to work.
+        elevatorEncoder.setPosition(1.0); // Initial encoder position must be > than 0 for init function to work.
         elevatorPID = elevatorMotor.getPIDController();
         elevatorPID.setP(kElevatorP);
         elevatorPID.setI(kElevatorI);
@@ -133,7 +141,7 @@ public class ClimberSubsystem extends SubsystemBase {
         elevatorPID.setFF(kElevatorFF);
         elevatorPID.setOutputRange(kElevatorMinOutput, kElevatorMaxOutput);
 
-        // Setup the motor controllers for the windmill
+        // Setup the motor controllers for the windmill motors
         windmillMotor1 = new CANSparkMax(windmillMotor1CanId, MotorType.kBrushless);
         windmillMotor1.restoreFactoryDefaults();
         windmillMotor1.setInverted(true);
@@ -157,8 +165,8 @@ public class ClimberSubsystem extends SubsystemBase {
         windmillPID.setFF(kWindmillFF);
         windmillPID.setOutputRange(kWindmillMinOutput, kWindmillMaxOutput);
 
-        redHook = new Hook(redHookMotorCanId);
-        blueHook = new Hook(blueHookMotorCanId);
+        redHook = new ClimberHook(redHookMotorCanId);
+        blueHook = new ClimberHook(blueHookMotorCanId);
 
         initTelemetry();
     }
@@ -166,13 +174,15 @@ public class ClimberSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
 
-        // Call the subsystem initialization code each component has completed initialization
-        // this call becomes essentially a noop
+        // Call the subsystem initialization method for each component
+        // this call becomes essentially a noop after init completes
         initialize();
 
-        // Read the current positions back from each of our encoder
+        // Update internal state
         elevatorCurrentPosition = elevatorEncoder.getPosition();
         windmillCurrentAngle = windmillEncoder.getPosition();
+        redHook.update();
+        blueHook.update();
 
         updateTelemetry();
     }
@@ -180,10 +190,9 @@ public class ClimberSubsystem extends SubsystemBase {
     private void initialize() {
         initElevator();
         initWindmill();
-        redHook.init();
-        blueHook.init();
+        redHook.initialize();
+        blueHook.initialize();
     }
-
 
     // ---------------------------------------------------------------------------
     // Elevator control methods
@@ -198,14 +207,16 @@ public class ClimberSubsystem extends SubsystemBase {
             return;
         }
 
-        // If the elevator has not stopped moving yet then let it keep running and return.
+        // If the elevator has not stopped moving yet then let it keep running and
+        // return.
         if (elevatorEncoder.getPosition() > 0.0) {
             elevatorEncoder.setPosition(0.0);
             elevatorMotor.set(0.05);
             return;
         }
 
-        // If we got here then the elevator has stopped and the cables are taut so we are at our zero position.
+        // If we got here then the elevator has stopped and the cables are taut so we
+        // are at our zero position.
         elevatorInitialized = true;
         elevatorMotor.set(0);
         elevatorEncoder.setPosition(ELEVATOR_MIN_POSITION);
@@ -229,7 +240,6 @@ public class ClimberSubsystem extends SubsystemBase {
     public boolean elevatorAtTarget() {
         return WithinDelta(elevatorCurrentPosition, elevatorTargetPosition, ELEVATOR_MAX_OFFSET);
     }
-
 
     // ---------------------------------------------------------------------------
     // Windmill control methods
@@ -262,7 +272,6 @@ public class ClimberSubsystem extends SubsystemBase {
         return WithinDelta(windmillCurrentAngle, windmillTargetAngle, WINDMILL_MAX_OFFSET);
     }
 
-
     // ---------------------------------------------------------------------------
     // Hook control methods
     // ---------------------------------------------------------------------------
@@ -278,7 +287,6 @@ public class ClimberSubsystem extends SubsystemBase {
     public boolean redHookAtTarget() {
         return redHook.atTarget();
     }
-
 
     public void setBlueHookPosition(HookPosition position) {
         blueHook.setPosition(position);
@@ -320,7 +328,6 @@ public class ClimberSubsystem extends SubsystemBase {
                 .withSize(1, 1)
                 .getEntry();
 
-
         // Windmill Data
         windmillInitializedEntry = tab.add("Initialized", 0)
                 .withPosition(0, 1)
@@ -347,8 +354,47 @@ public class ClimberSubsystem extends SubsystemBase {
                 .withSize(1, 1)
                 .getEntry();
 
-        // Hook Data
+        // Red Hook Data
+        redHookInitializedEntry = tab.add("Initialized", 0)
+                .withPosition(0, 2)
+                .withSize(1, 1)
+                .getEntry();
 
+        redHookTargetAngleEntry = tab.add("Target Angle", 0)
+                .withPosition(1, 2)
+                .withSize(1, 1)
+                .getEntry();
+
+        redHookCurrentAngleEntry = tab.add("Current Angle", 0)
+                .withPosition(2, 2)
+                .withSize(1, 1)
+                .getEntry();
+
+        redHookMotorCurrentEntry = tab.add("Motor Amps", 0)
+                .withPosition(3, 2)
+                .withSize(1, 1)
+                .getEntry();
+
+        // Blue Hook Data
+        blueHookInitializedEntry = tab.add("Initialized", 0)
+                .withPosition(0, 3)
+                .withSize(1, 1)
+                .getEntry();
+
+        blueHookTargetAngleEntry = tab.add("Target Angle", 0)
+                .withPosition(1, 3)
+                .withSize(1, 1)
+                .getEntry();
+
+        blueHookCurrentAngleEntry = tab.add("Current Angle", 0)
+                .withPosition(2, 3)
+                .withSize(1, 1)
+                .getEntry();
+
+        blueHookMotorCurrentEntry = tab.add("Motor Amps", 0)
+                .withPosition(3, 3)
+                .withSize(1, 1)
+                .getEntry();
     }
 
     private void updateTelemetry() {
@@ -357,26 +403,36 @@ public class ClimberSubsystem extends SubsystemBase {
         elevatorInitializedEntry.forceSetBoolean(elevatorInitialized);
         elevatorTargetPositionEntry.setNumber(elevatorTargetPosition);
         elevatorCurrentPositionEntry.setNumber(elevatorCurrentPosition);
-        elevatorMotorCurrentEntry.setNumber( elevatorMotor.getOutputCurrent());
+        elevatorMotorCurrentEntry.setNumber(elevatorMotor.getOutputCurrent());
 
         // Windmill
         windmillInitializedEntry.forceSetBoolean(windmillInitialized);
         windmillTargetAngleEntry.setNumber(windmillTargetAngle);
         windmillCurrentAngleEntry.setNumber(windmillCurrentAngle);
-        windmillMotor1CurrentEntry.setNumber( windmillMotor1.getOutputCurrent());
-        windmillMotor2CurrentEntry.setNumber( windmillMotor2.getOutputCurrent());
-    
-        // Hooks
-    }
+        windmillMotor1CurrentEntry.setNumber(windmillMotor1.getOutputCurrent());
+        windmillMotor2CurrentEntry.setNumber(windmillMotor2.getOutputCurrent());
 
+        // Hooks
+        redHookInitializedEntry.forceSetBoolean(redHook.initialized);
+        redHookTargetAngleEntry.setNumber(redHook.targetAngle);
+        redHookCurrentAngleEntry.setNumber(redHook.currentAngle);
+        redHookMotorCurrentEntry.setNumber(redHook.motor.getOutputCurrent());
+
+        blueHookInitializedEntry.forceSetBoolean(blueHook.initialized);
+        blueHookTargetAngleEntry.setNumber(blueHook.targetAngle);
+        blueHookCurrentAngleEntry.setNumber(blueHook.currentAngle);
+        blueHookMotorCurrentEntry.setNumber(blueHook.motor.getOutputCurrent());
+    }
 
     /**
      * Nested class that encapsulates the climbing hooks
      */
-    private class Hook
-    {
+    private class ClimberHook {
         private static final int MOTOR_CURRENT_LIMIT = 15;
         private static final double POSITION_CONVERSION_FACTOR = 1.0;
+        private static final double GRAB_ANGLE = 0;
+        private static final double RELEASE_ANGLE = 0;
+        private static final double LOCKED_ANGLE = 0;
         private static final double kP = 0.1;
         private static final double kI = 1e-4;
         private static final double kD = 1;
@@ -388,8 +444,11 @@ public class ClimberSubsystem extends SubsystemBase {
         private CANSparkMax motor;
         private RelativeEncoder encoder;
         private SparkMaxPIDController pidController;
-    
-        public Hook(int motorCanId) {
+        private boolean initialized = false;
+        private double targetAngle = 0.0;
+        private double currentAngle = 0.0;
+
+        private ClimberHook(int motorCanId) {
 
             motor = new CANSparkMax(motorCanId, MotorType.kBrushless);
             motor.restoreFactoryDefaults();
@@ -409,8 +468,16 @@ public class ClimberSubsystem extends SubsystemBase {
         /**
          * Move the hook to its home position to establish our zero reference
          */
-        private void init() {
+        private void initialize() {
 
+        }
+
+        /**
+         * Perform periodic update of hooks internal state, called by subsystem periodic
+         * method
+         */
+        private void update() {
+            currentAngle = encoder.getPosition();
         }
 
         /**
@@ -418,7 +485,7 @@ public class ClimberSubsystem extends SubsystemBase {
          * 
          * @param position
          */
-        public void setPosition(HookPosition position) {
+        private void setPosition(HookPosition position) {
 
         }
 
@@ -427,11 +494,11 @@ public class ClimberSubsystem extends SubsystemBase {
          * 
          * @return - HookPosition enum telling what position the hook is currently in.
          */
-        public HookPosition getPosition() {
+        private HookPosition getPosition() {
             return HookPosition.Unknown;
         }
 
-        public boolean atTarget() {
+        private boolean atTarget() {
             return false;
         }
     }
