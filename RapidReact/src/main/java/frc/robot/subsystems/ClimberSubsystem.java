@@ -5,12 +5,14 @@
 *   - Motor: 1x Neo
 *   - Gearing: 27:1 gearbox
 *   - Winch drum: Diameter 1-3/16 inches (3.73 inch circumference)
-*   = 0.138 inches of travel motor per revolution (7.237 RPI)
+*   = 0.138 inches of travel per motor revolution (7.237 RPI of travel)
 *   - Maximum extension: 17 inches
 *
-* Windmill - 2 Neos with 100:1 gearboxes, chain 20-tooth drive gear, 72-tooth driven gear
+* Windmill
+*   - Motors: 2x Neos
+*   - Gearing 100:1 gearboxes -> 20-tooth drive sprocket -> 72-tooth driven sprocket
 
-* Hooks - Neo 550, 27:1 gear reduction
+* Hooks - Neo 550, 27:1 gear reduction to 16-tooth sprocket  -> 72 tooth sprocket
 *
 */
 
@@ -27,7 +29,6 @@ import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.utils.MathUtils;
 
 import static frc.robot.utils.MathUtils.*;
 
@@ -64,6 +65,9 @@ public class ClimberSubsystem extends SubsystemBase {
 
     private static final int WINDMILL_MOTOR_CURRENT_LIMIT = 80;
     private static final double WINDMILL_POSITION_CONVERSION_FACTOR = 1.0;
+    private static final double WINDMILL_MAX_ANGLE = 360;
+    private static final double WINDMILL_MIN_ANGLE = 0;
+    private static final double WINDMILL_MAX_OFFSET = 2;
     private static final double kWindmillP = 0.000153;
     private static final double kWindmillI = 0.000000;
     private static final double kWindmillD = 0.000003;
@@ -91,7 +95,6 @@ public class ClimberSubsystem extends SubsystemBase {
 
     private RelativeEncoder elevatorEncoder;
     private SparkMaxPIDController elevatorPID;
-    private boolean elevatorInitialized = false;
 
     private RelativeEncoder windmillEncoder;
     private SparkMaxPIDController windmillPID;
@@ -102,14 +105,25 @@ public class ClimberSubsystem extends SubsystemBase {
     private RelativeEncoder blueHookEncoder;
     private SparkMaxPIDController blueHookPID;
 
+    private boolean elevatorInitialized = false;
     private double elevatorTargetPosition = 0.0;
     private double elevatorCurrentPosition = 0.0;
+
+    private boolean windmillInitialized = false;
+    private double windmillTargetAngle = 0.0;
+    private double windmillCurrentAngle = 0.0;
 
     // Network table entries for Shuffleboard
     private NetworkTableEntry elevatorInitializedEntry;
     private NetworkTableEntry elevatorTargetPositionEntry;
     private NetworkTableEntry elevatorCurrentPositionEntry;
     private NetworkTableEntry elevatorMotorCurrentEntry;
+
+    private NetworkTableEntry windmillInitializedEntry;
+    private NetworkTableEntry windmillTargetAngleEntry;
+    private NetworkTableEntry windmillCurrentAngleEntry;
+    private NetworkTableEntry windmillMotor1CurrentEntry;
+    private NetworkTableEntry windmillMotor2CurrentEntry;
 
     /**
      * Initilalize the climber subsystem
@@ -191,10 +205,14 @@ public class ClimberSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
+
+        // Call the subsystem initialization code each component has completed initialization
+        // this call becomes essentially a noop
         initialize();
 
-        // Read the current positions back from our various encoders
+        // Read the current positions back from each of our encoder
         elevatorCurrentPosition = elevatorEncoder.getPosition();
+        windmillCurrentAngle = windmillEncoder.getPosition();
 
         updateTelemetry();
     }
@@ -205,6 +223,7 @@ public class ClimberSubsystem extends SubsystemBase {
         initRedHook();
         initBlueHook();
     }
+
 
     // ---------------------------------------------------------------------------
     // Elevator control methods
@@ -238,7 +257,7 @@ public class ClimberSubsystem extends SubsystemBase {
      * @param position - Desired height of the elevator in inches.
      */
     public void setElevatorPosition(double position) {
-        elevatorTargetPosition = MathUtils.ClipToRange(position, ELEVATOR_MIN_POSITION, ELEVATOR_MAX_POSITION);
+        elevatorTargetPosition = ClipToRange(position, ELEVATOR_MIN_POSITION, ELEVATOR_MAX_POSITION);
         elevatorPID.setReference(elevatorTargetPosition, ControlType.kPosition);
     }
 
@@ -261,6 +280,7 @@ public class ClimberSubsystem extends SubsystemBase {
      */
     private void initWindmill() {
 
+        windmillInitialized = true;
     }
 
     /**
@@ -269,7 +289,8 @@ public class ClimberSubsystem extends SubsystemBase {
      * @param angle - Target angle.
      */
     public void setWindmillAngle(double angle) {
-
+        windmillTargetAngle = ClipToRange(angle, WINDMILL_MIN_ANGLE, WINDMILL_MAX_ANGLE);
+        windmillPID.setReference(windmillTargetAngle, ControlType.kPosition);
     }
 
     /**
@@ -278,7 +299,7 @@ public class ClimberSubsystem extends SubsystemBase {
      * @return - True if the windmill has reached the target position.
      */
     public boolean windmillAtTarget() {
-        return false;
+        return WithinDelta(windmillCurrentAngle, windmillTargetAngle, WINDMILL_MAX_OFFSET);
     }
 
 
@@ -367,13 +388,37 @@ public class ClimberSubsystem extends SubsystemBase {
                 .withSize(1, 1)
                 .getEntry();
 
-        elevatorMotorCurrentEntry = tab.add("Motor Current", 0)
+        elevatorMotorCurrentEntry = tab.add("Motor Amps", 0)
                 .withPosition(3, 0)
                 .withSize(1, 1)
                 .getEntry();
 
 
         // Windmill Data
+        windmillInitializedEntry = tab.add("Initialized", 0)
+                .withPosition(0, 1)
+                .withSize(1, 1)
+                .getEntry();
+
+        windmillTargetAngleEntry = tab.add("Target Angle", 0)
+                .withPosition(1, 1)
+                .withSize(1, 1)
+                .getEntry();
+
+        windmillCurrentAngleEntry = tab.add("Current Angle", 0)
+                .withPosition(2, 1)
+                .withSize(1, 1)
+                .getEntry();
+
+        windmillMotor1CurrentEntry = tab.add("Motor1 Amps", 0)
+                .withPosition(3, 1)
+                .withSize(1, 1)
+                .getEntry();
+
+        windmillMotor2CurrentEntry = tab.add("Motor2 Amps", 0)
+                .withPosition(4, 1)
+                .withSize(1, 1)
+                .getEntry();
 
         // Hook Data
 
@@ -388,7 +433,12 @@ public class ClimberSubsystem extends SubsystemBase {
         elevatorMotorCurrentEntry.setNumber( elevatorMotor.getOutputCurrent());
 
         // Windmill
-
+        windmillInitializedEntry.forceSetBoolean(windmillInitialized);
+        windmillTargetAngleEntry.setNumber(windmillTargetAngle);
+        windmillCurrentAngleEntry.setNumber(windmillCurrentAngle);
+        windmillMotor1CurrentEntry.setNumber( windmillMotor1.getOutputCurrent());
+        windmillMotor2CurrentEntry.setNumber( windmillMotor2.getOutputCurrent());
+    
         // Hooks
     }
 }
