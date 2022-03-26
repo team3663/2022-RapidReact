@@ -5,7 +5,7 @@
 *   - Motor: 1x Neo
 *   - Gearing: 27:1 gearbox
 *   - Winch drum: Diameter 1-3/16 inches (3.73 inch circumference)
-*   = 0.138 inches of travel per motor revolution (7.237 RPI of travel)
+*   = 0.138 inches of travel per motor revolution (7.237 motor revolutions per inch of travel)
 *   - Maximum extension: 17 inches
 *
 * Windmill
@@ -15,8 +15,9 @@
 
 * Hooks 
 *   - Motor: Neo 550
-*   - Gearing: 27:1 gearbox -> 16-tooth sprocket -> 72 tooth sprocket
-*   - Total reduction: 121.5:1
+*   - Gearing: 27:1 gearbox -> 18-tooth sprocket -> 40 tooth sprocket
+*   - Total reduction: 60:1
+*   - 6-degrees of hook rotation per motor revolution (0.1667 motor revolutions per degree of hook rotation)
 */
 
 package frc.robot.subsystems;
@@ -41,8 +42,8 @@ public class ClimberSubsystem extends SubsystemBase {
      * Defined hook states
      * 
      * Grab - Opened to grab the next bar
+     * Locked - Locked to hold onto a bar *
      * Release - Opened to release the current bar
-     * Locked - Locked to hold onto a bar
      * Unknown - Hook is moving between defined states
      */
     public enum HookState {
@@ -177,7 +178,7 @@ public class ClimberSubsystem extends SubsystemBase {
     public void periodic() {
 
         // Call the initialization method for each component
-        // this call becomes essentially a noop after init completes
+        // these calls become essentially a noop after init completes
         initElevator();
         initWindmill();
         redHook.initialize();
@@ -198,6 +199,8 @@ public class ClimberSubsystem extends SubsystemBase {
 
     /**
      * Move the elevator to its home position to establish our zero reference
+     * 
+     * NOTE: For this to work the encoder needs be initialized to a value < zero
      */
     private void initElevator() {
 
@@ -263,7 +266,7 @@ public class ClimberSubsystem extends SubsystemBase {
     /**
      * Check to see if the windwill has reached the current target angle.
      * 
-     * @return - True if the windmill has reached the target position.
+     * @return - True if the windmill is within the target angle range.
      */
     public boolean windmillAtTarget() {
         return WithinDelta(windmillCurrentAngle, windmillTargetAngle, WINDMILL_MAX_OFFSET);
@@ -426,12 +429,12 @@ public class ClimberSubsystem extends SubsystemBase {
      */
     private class ClimberHook {
         private static final int MOTOR_CURRENT_LIMIT = 15;
-        private static final double POSITION_CONVERSION_FACTOR = 1.0;
+        private static final double POSITION_CONVERSION_FACTOR = 6.0;
         private static final double MIN_ANGLE = 0;
         private static final double MAX_ANGLE_OFFSET = 2;
         private static final double GRAB_ANGLE = 0;
-        private static final double RELEASE_ANGLE = 0;
         private static final double LOCKED_ANGLE = 0;
+        private static final double RELEASE_ANGLE = 0;
         private static final double kP = 0.1;
         private static final double kI = 1e-4;
         private static final double kD = 1;
@@ -467,6 +470,8 @@ public class ClimberSubsystem extends SubsystemBase {
 
         /**
          * Move the hook to its home position to establish our zero reference
+         * 
+         * NOTE: For this to work the encoder needs be initialized to a value < zero
          */
         private void initialize() {
             if (initialized) {
