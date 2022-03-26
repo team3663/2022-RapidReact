@@ -11,6 +11,7 @@
 * Windmill
 *   - Motors: 2x Neos
 *   - Gearing 100:1 gearboxes -> 20-tooth drive sprocket -> 72-tooth driven sprocket
+*   - Total reduction 360:1
 
 * Hooks - Neo 550, 27:1 gear reduction to 16-tooth sprocket  -> 72 tooth sprocket
 *
@@ -76,34 +77,16 @@ public class ClimberSubsystem extends SubsystemBase {
     private static final double kWindmillMaxOutput = 1.0;
     private static final double kWindmillMinOutput = -1.0;
 
-    private static final int HOOK_MOTOR_CURRENT_LIMIT = 15;
-    private static final double HOOK_POSITION_CONVERSION_FACTOR = 1.0;
-    private static final double kHookP = 0.1;
-    private static final double kHookI = 1e-4;
-    private static final double kHookD = 1;
-    private static final double kHookIz = 0;
-    private static final double kHookFF = 0;
-    private static final double kHookMaxOutput = 1.0;
-    private static final double kHookMinOutput = -1.0;
-
     // Motors and associated encoders
     private CANSparkMax elevatorMotor;
     private CANSparkMax windmillMotor1;
     private CANSparkMax windmillMotor2;
-    private CANSparkMax redHookMotor;
-    private CANSparkMax blueHookMotor;
 
     private RelativeEncoder elevatorEncoder;
     private SparkMaxPIDController elevatorPID;
 
     private RelativeEncoder windmillEncoder;
     private SparkMaxPIDController windmillPID;
-
-    private RelativeEncoder redHookEncoder;
-    private SparkMaxPIDController redHookPID;
-
-    private RelativeEncoder blueHookEncoder;
-    private SparkMaxPIDController blueHookPID;
 
     private boolean elevatorInitialized = false;
     private double elevatorTargetPosition = 0.0;
@@ -112,6 +95,9 @@ public class ClimberSubsystem extends SubsystemBase {
     private boolean windmillInitialized = false;
     private double windmillTargetAngle = 0.0;
     private double windmillCurrentAngle = 0.0;
+
+    private Hook redHook;
+    private Hook blueHook;
 
     // Network table entries for Shuffleboard
     private NetworkTableEntry elevatorInitializedEntry;
@@ -171,34 +157,8 @@ public class ClimberSubsystem extends SubsystemBase {
         windmillPID.setFF(kWindmillFF);
         windmillPID.setOutputRange(kWindmillMinOutput, kWindmillMaxOutput);
 
-        // Setup the motor controllers for the hooks
-        redHookMotor = new CANSparkMax(redHookMotorCanId, MotorType.kBrushless);
-        redHookMotor.restoreFactoryDefaults();
-        redHookMotor.setIdleMode(IdleMode.kBrake);
-        redHookMotor.setSmartCurrentLimit(HOOK_MOTOR_CURRENT_LIMIT);
-        redHookEncoder = redHookMotor.getEncoder();
-        redHookEncoder.setPositionConversionFactor(HOOK_POSITION_CONVERSION_FACTOR);
-        redHookPID = redHookMotor.getPIDController();
-        redHookPID.setP(kHookP);
-        redHookPID.setI(kHookI);
-        redHookPID.setD(kHookD);
-        redHookPID.setIZone(kHookIz);
-        redHookPID.setFF(kHookFF);
-        redHookPID.setOutputRange(kHookMinOutput, kHookMaxOutput);
-
-        blueHookMotor = new CANSparkMax(blueHookMotorCanId, MotorType.kBrushless);
-        blueHookMotor.restoreFactoryDefaults();
-        blueHookMotor.setIdleMode(IdleMode.kBrake);
-        blueHookMotor.setSmartCurrentLimit(HOOK_MOTOR_CURRENT_LIMIT);
-        blueHookEncoder = blueHookMotor.getEncoder();
-        blueHookEncoder.setPositionConversionFactor(HOOK_POSITION_CONVERSION_FACTOR);
-        blueHookPID = redHookMotor.getPIDController();
-        blueHookPID.setP(kHookP);
-        blueHookPID.setI(kHookI);
-        blueHookPID.setD(kHookD);
-        blueHookPID.setIZone(kHookIz);
-        blueHookPID.setFF(kHookFF);
-        blueHookPID.setOutputRange(kHookMinOutput, kHookMaxOutput);
+        redHook = new Hook(redHookMotorCanId);
+        blueHook = new Hook(blueHookMotorCanId);
 
         initTelemetry();
     }
@@ -220,8 +180,8 @@ public class ClimberSubsystem extends SubsystemBase {
     private void initialize() {
         initElevator();
         initWindmill();
-        initRedHook();
-        initBlueHook();
+        redHook.init();
+        blueHook.init();
     }
 
 
@@ -307,62 +267,29 @@ public class ClimberSubsystem extends SubsystemBase {
     // Hook control methods
     // ---------------------------------------------------------------------------
 
-    /**
-     * Move the red hook to its home position to establish our zero reference
-     */
-    private void initRedHook() {
-
-    }
-
-    /**
-     * Set the position of the Red climbing hook
-     * 
-     * @param position
-     */
     public void setRedHookPosition(HookPosition position) {
-
+        redHook.setPosition(position);
     }
 
-    /**
-     * Get the current position of the Red climbing hook
-     * 
-     * @return - HookPosition enum telling what position the hook is currently in.
-     */
     public HookPosition getRedHookPosition() {
-        return HookPosition.Unknown;
+        return redHook.getPosition();
     }
 
     public boolean redHookAtTarget() {
-        return false;
+        return redHook.atTarget();
     }
 
-    /**
-     * Move the blue hook to its home position to establish our zero reference
-     */
-    private void initBlueHook() {
 
-    }
-
-    /**
-     * Set the position of the Blue climbing hook
-     * 
-     * @param position
-     */
     public void setBlueHookPosition(HookPosition position) {
-
+        blueHook.setPosition(position);
     }
 
-    /**
-     * Get the current position of the Blue climbing hook
-     * 
-     * @return - HookPosition enum telling what position the hook is currently in.
-     */
     public HookPosition getBlueHookPosition() {
-        return HookPosition.Unknown;
+        return blueHook.getPosition();
     }
 
     public boolean blueHookAtTarget() {
-        return false;
+        return blueHook.atTarget();
     }
 
     // ---------------------------------------------------------------------------
@@ -440,5 +367,72 @@ public class ClimberSubsystem extends SubsystemBase {
         windmillMotor2CurrentEntry.setNumber( windmillMotor2.getOutputCurrent());
     
         // Hooks
+    }
+
+
+    /**
+     * Nested class that encapsulates the climbing hooks
+     */
+    private class Hook
+    {
+        private static final int MOTOR_CURRENT_LIMIT = 15;
+        private static final double POSITION_CONVERSION_FACTOR = 1.0;
+        private static final double kP = 0.1;
+        private static final double kI = 1e-4;
+        private static final double kD = 1;
+        private static final double kIz = 0;
+        private static final double kFF = 0;
+        private static final double kMaxOutput = 1.0;
+        private static final double kMinOutput = -1.0;
+
+        private CANSparkMax motor;
+        private RelativeEncoder encoder;
+        private SparkMaxPIDController pidController;
+    
+        public Hook(int motorCanId) {
+
+            motor = new CANSparkMax(motorCanId, MotorType.kBrushless);
+            motor.restoreFactoryDefaults();
+            motor.setIdleMode(IdleMode.kBrake);
+            motor.setSmartCurrentLimit(MOTOR_CURRENT_LIMIT);
+            encoder = motor.getEncoder();
+            encoder.setPositionConversionFactor(POSITION_CONVERSION_FACTOR);
+            pidController = motor.getPIDController();
+            pidController.setP(kP);
+            pidController.setI(kI);
+            pidController.setD(kD);
+            pidController.setIZone(kIz);
+            pidController.setFF(kFF);
+            pidController.setOutputRange(kMinOutput, kMaxOutput);
+        }
+
+        /**
+         * Move the hook to its home position to establish our zero reference
+         */
+        private void init() {
+
+        }
+
+        /**
+         * Set the position of the climbing hook
+         * 
+         * @param position
+         */
+        public void setPosition(HookPosition position) {
+
+        }
+
+        /**
+         * Get the current position of the climbing hook
+         * 
+         * @return - HookPosition enum telling what position the hook is currently in.
+         */
+        public HookPosition getPosition() {
+            return HookPosition.Unknown;
+        }
+
+        public boolean atTarget() {
+            return false;
+        }
     }
 }
