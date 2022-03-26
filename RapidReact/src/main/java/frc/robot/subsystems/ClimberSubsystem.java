@@ -1,3 +1,19 @@
+/*
+* Climber hardware description
+* 
+* Elevator
+*   - Motor: 1x Neo
+*   - Gearing: 27:1 gearbox
+*   - Winch drum: Diameter 1-3/16 inches (3.73 inch circumference)
+*   = 0.138 inches of travel motor per revolution (7.237 RPI)
+*   - Maximum extension: 17 inches
+*
+* Windmill - 2 Neos with 100:1 gearboxes, chain 20-tooth drive gear, 72-tooth driven gear
+
+* Hooks - Neo 550, 27:1 gear reduction
+*
+*/
+
 package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
@@ -33,11 +49,11 @@ public class ClimberSubsystem extends SubsystemBase {
     }
 
     // Constants
-    private static final int ELEVATOR_MOTOR_CURRENT_LIMIT = 80;
-    private static final double ELEVATOR_POSITION_CONVERSION_FACTOR = 1.0;
+    private static final int ELEVATOR_MOTOR_CURRENT_LIMIT = 40;
+    private static final double ELEVATOR_POSITION_CONVERSION_FACTOR = 0.138;
     private static final double ELEVATOR_MAX_POSITION = 17;
     private static final double ELEVATOR_MIN_POSITION = 0;
-    private static final double ELEVATOR_MAX_OFFSET = 1.0;
+    private static final double ELEVATOR_MAX_OFFSET = 0.125;
     private static final double kElevatorP = 0.000153;
     private static final double kElevatorI = 0.000000;
     private static final double kElevatorD = 0.000003;
@@ -75,6 +91,7 @@ public class ClimberSubsystem extends SubsystemBase {
 
     private RelativeEncoder elevatorEncoder;
     private SparkMaxPIDController elevatorPID;
+    private boolean elevatorInitialized = false;
 
     private RelativeEncoder windmillEncoder;
     private SparkMaxPIDController windmillPID;
@@ -89,26 +106,25 @@ public class ClimberSubsystem extends SubsystemBase {
     private double elevatorCurrentPosition = 0.0;
 
     // Network table entries for Shuffleboard
+    private NetworkTableEntry elevatorInitializedEntry;
     private NetworkTableEntry elevatorTargetPositionEntry;
-    private NetworkTableEntry elevatorCurrentPositionEntry;  
+    private NetworkTableEntry elevatorCurrentPositionEntry;
+    private NetworkTableEntry elevatorMotorCurrentEntry;
 
     /**
      * Initilalize the climber subsystem
-     * 
-     * Elevator - One Neo  gearbox ???, Winch drum diameter ???
-     * Windmill - 2 Neo with 100:1 gearboxes, chain 20-tooth drive gear, 72-tooth driven gear
-     * Hooks - Neo 550, ??? gear reduction
-     *
      */
-    public ClimberSubsystem(int elevatorMotorCanId, int windmillMotor1CanId, int windmillMotor2CanId, int redHookMotorCanId, int blueHookMotorCanId) {
+    public ClimberSubsystem(int elevatorMotorCanId, int windmillMotor1CanId, int windmillMotor2CanId,
+            int redHookMotorCanId, int blueHookMotorCanId) {
 
-        // Setup the elevator motor controllers
+        // Setup the elevator motor controller
         elevatorMotor = new CANSparkMax(windmillMotor1CanId, MotorType.kBrushless);
         elevatorMotor.restoreFactoryDefaults();
         elevatorMotor.setIdleMode(IdleMode.kBrake);
         elevatorMotor.setSmartCurrentLimit(ELEVATOR_MOTOR_CURRENT_LIMIT);
         elevatorEncoder = elevatorMotor.getEncoder();
         elevatorEncoder.setPositionConversionFactor(ELEVATOR_POSITION_CONVERSION_FACTOR);
+        elevatorEncoder.setPosition(1.0); // The initial encoder position must be greater than zero for homing function to work.
         elevatorPID = elevatorMotor.getPIDController();
         elevatorPID.setP(kElevatorP);
         elevatorPID.setI(kElevatorI);
@@ -175,7 +191,7 @@ public class ClimberSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        home();
+        initialize();
 
         // Read the current positions back from our various encoders
         elevatorCurrentPosition = elevatorEncoder.getPosition();
@@ -183,11 +199,11 @@ public class ClimberSubsystem extends SubsystemBase {
         updateTelemetry();
     }
 
-    private void home() {
-        homeElevator();
-        homeWindmill();
-        homeRedHook();
-        homeBlueHook();
+    private void initialize() {
+        initElevator();
+        initWindmill();
+        initRedHook();
+        initBlueHook();
     }
 
     // ---------------------------------------------------------------------------
@@ -197,18 +213,33 @@ public class ClimberSubsystem extends SubsystemBase {
     /**
      * Move the elevator to its home position to establish our zero reference
      */
-    private void homeElevator() {
+    private void initElevator() {
 
+        if (elevatorInitialized) {
+            return;
+        }
+
+        // If the elevator has not stopped moving yet then let it keep running and return.
+        if (elevatorEncoder.getPosition() > 0.0) {
+            elevatorEncoder.setPosition(0.0);
+            elevatorMotor.set(0.05);
+            return;
+        }
+
+        // If we got here then the elevator has stopped and the cables are taut so we are at our zero position.
+        elevatorInitialized = true;
+        elevatorMotor.set(0);
+        elevatorEncoder.setPosition(ELEVATOR_MIN_POSITION);
     }
 
     /**
      * Set target position of the elevator.
      * 
-     * @param position
+     * @param position - Desired height of the elevator in inches.
      */
     public void setElevatorPosition(double position) {
         elevatorTargetPosition = MathUtils.ClipToRange(position, ELEVATOR_MIN_POSITION, ELEVATOR_MAX_POSITION);
-        elevatorPID.setReference(elevatorTargetPosition, ControlType.kPosition);       
+        elevatorPID.setReference(elevatorTargetPosition, ControlType.kPosition);
     }
 
     /**
@@ -228,10 +259,10 @@ public class ClimberSubsystem extends SubsystemBase {
     /**
      * Move the windmill to its home position to establish our zero reference
      */
-    private void homeWindmill() {
-
+    private void initWindmill() {
 
     }
+
     /**
      * Set target angle for windmill to rotate to.
      * 
@@ -258,7 +289,7 @@ public class ClimberSubsystem extends SubsystemBase {
     /**
      * Move the red hook to its home position to establish our zero reference
      */
-    private void homeRedHook() {
+    private void initRedHook() {
 
     }
 
@@ -273,23 +304,23 @@ public class ClimberSubsystem extends SubsystemBase {
 
     /**
      * Get the current position of the Red climbing hook
+     * 
      * @return - HookPosition enum telling what position the hook is currently in.
      */
     public HookPosition getRedHookPosition() {
         return HookPosition.Unknown;
     }
 
-	public boolean redHookAtTarget() {
-		return false;
-	}
+    public boolean redHookAtTarget() {
+        return false;
+    }
 
-
-     /**
+    /**
      * Move the blue hook to its home position to establish our zero reference
      */
-    private void homeBlueHook() {
+    private void initBlueHook() {
 
-    }   
+    }
 
     /**
      * Set the position of the Blue climbing hook
@@ -302,15 +333,16 @@ public class ClimberSubsystem extends SubsystemBase {
 
     /**
      * Get the current position of the Blue climbing hook
+     * 
      * @return - HookPosition enum telling what position the hook is currently in.
      */
     public HookPosition getBlueHookPosition() {
         return HookPosition.Unknown;
     }
 
-	public boolean blueHookAtTarget() {
-		return false;
-	}
+    public boolean blueHookAtTarget() {
+        return false;
+    }
 
     // ---------------------------------------------------------------------------
     // Telemetry
@@ -320,15 +352,26 @@ public class ClimberSubsystem extends SubsystemBase {
         ShuffleboardTab tab = Shuffleboard.getTab("Climber");
 
         // Elevator Data
-        elevatorTargetPositionEntry = tab.add("Target Position", 0)
+        elevatorInitializedEntry = tab.add("Initialized", 0)
                 .withPosition(0, 0)
                 .withSize(1, 1)
                 .getEntry();
 
-        elevatorCurrentPositionEntry = tab.add("Current Position", 0)
+        elevatorTargetPositionEntry = tab.add("Target Position", 0)
                 .withPosition(1, 0)
                 .withSize(1, 1)
                 .getEntry();
+
+        elevatorCurrentPositionEntry = tab.add("Current Position", 0)
+                .withPosition(2, 0)
+                .withSize(1, 1)
+                .getEntry();
+
+        elevatorMotorCurrentEntry = tab.add("Motor Current", 0)
+                .withPosition(3, 0)
+                .withSize(1, 1)
+                .getEntry();
+
 
         // Windmill Data
 
@@ -339,8 +382,10 @@ public class ClimberSubsystem extends SubsystemBase {
     private void updateTelemetry() {
 
         // Elevator
+        elevatorInitializedEntry.forceSetBoolean(elevatorInitialized);
         elevatorTargetPositionEntry.setNumber(elevatorTargetPosition);
         elevatorCurrentPositionEntry.setNumber(elevatorCurrentPosition);
+        elevatorMotorCurrentEntry.setNumber( elevatorMotor.getOutputCurrent());
 
         // Windmill
 
