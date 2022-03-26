@@ -28,6 +28,8 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxPIDController;
 
+import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -83,6 +85,8 @@ public class ClimberSubsystem extends SubsystemBase {
     private CANSparkMax elevatorMotor;
     private RelativeEncoder elevatorEncoder;
     private SparkMaxPIDController elevatorPID;
+    private ProfiledPIDController elevatorProfiledPID;
+    private Constraints elevatorConstraints = new Constraints(1, 1);
     private boolean elevatorInitialized = false;
     private double elevatorTargetPosition = 0.0;
     private double elevatorCurrentPosition = 0.0;
@@ -92,6 +96,8 @@ public class ClimberSubsystem extends SubsystemBase {
     private CANSparkMax windmillMotor2;
     private RelativeEncoder windmillEncoder;
     private SparkMaxPIDController windmillPID;
+    private ProfiledPIDController windmillProfiledPID;
+    private Constraints windmillConstraints = new Constraints(1, 1);
     private boolean windmillInitialized = false;
     private double windmillTargetAngle = 0.0;
     private double windmillCurrentAngle = 0.0;
@@ -135,6 +141,7 @@ public class ClimberSubsystem extends SubsystemBase {
         elevatorEncoder = elevatorMotor.getEncoder();
         elevatorEncoder.setPositionConversionFactor(ELEVATOR_POSITION_CONVERSION_FACTOR);
         elevatorEncoder.setPosition(-1); // Initial encoder position must be < than 0 for init function to work.
+        /*
         elevatorPID = elevatorMotor.getPIDController();
         elevatorPID.setP(kElevatorP);
         elevatorPID.setI(kElevatorI);
@@ -142,6 +149,8 @@ public class ClimberSubsystem extends SubsystemBase {
         elevatorPID.setIZone(kElevatorIz);
         elevatorPID.setFF(kElevatorFF);
         elevatorPID.setOutputRange(kElevatorMinOutput, kElevatorMaxOutput);
+        */
+        elevatorProfiledPID = new ProfiledPIDController(kElevatorP, kElevatorI, kElevatorD, elevatorConstraints);
 
         // Setup the motor controllers for the windmill motors
         windmillMotor1 = new CANSparkMax(windmillMotor1CanId, MotorType.kBrushless);
@@ -159,6 +168,7 @@ public class ClimberSubsystem extends SubsystemBase {
 
         windmillEncoder = windmillMotor1.getEncoder();
         windmillEncoder.setPositionConversionFactor(WINDMILL_POSITION_CONVERSION_FACTOR);
+        /*
         windmillPID = windmillMotor1.getPIDController();
         windmillPID.setP(kWindmillP);
         windmillPID.setI(kWindmillI);
@@ -166,6 +176,8 @@ public class ClimberSubsystem extends SubsystemBase {
         windmillPID.setIZone(kWindmillIz);
         windmillPID.setFF(kWindmillFF);
         windmillPID.setOutputRange(kWindmillMinOutput, kWindmillMaxOutput);
+        */
+        windmillProfiledPID = new ProfiledPIDController(kWindmillP, kWindmillI, kWindmillD, windmillConstraints);
 
         redHook = new ClimberHook(redHookMotorCanId);
         blueHook = new ClimberHook(blueHookMotorCanId);
@@ -226,7 +238,9 @@ public class ClimberSubsystem extends SubsystemBase {
      */
     public void setElevatorPosition(double position) {
         elevatorTargetPosition = ClipToRange(position, ELEVATOR_MIN_POSITION, ELEVATOR_MAX_POSITION);
-        elevatorPID.setReference(elevatorTargetPosition, ControlType.kPosition);
+        // elevatorPID.setReference(elevatorTargetPosition, ControlType.kPosition);
+        double speed = elevatorProfiledPID.calculate(elevatorTargetPosition);
+        elevatorMotor.set(speed);
     }
 
     /**
@@ -257,7 +271,9 @@ public class ClimberSubsystem extends SubsystemBase {
      */
     public void setWindmillAngle(double angle) {
         windmillTargetAngle = ClipToRange(angle, WINDMILL_MIN_ANGLE, WINDMILL_MAX_ANGLE);
-        windmillPID.setReference(windmillTargetAngle, ControlType.kPosition);
+        // windmillPID.setReference(windmillTargetAngle, ControlType.kPosition);
+        double speed = windmillProfiledPID.calculate(windmillTargetAngle);
+        windmillMotor1.set(speed);
     }
 
     /**
@@ -443,6 +459,8 @@ public class ClimberSubsystem extends SubsystemBase {
         private CANSparkMax motor;
         private RelativeEncoder encoder;
         private SparkMaxPIDController pidController;
+        private ProfiledPIDController profiledPID;
+        private Constraints constraints = new Constraints(1, 1);
         private boolean initialized = false;
         private double targetAngle = 0.0;
         private double currentAngle = 0.0;
@@ -456,6 +474,7 @@ public class ClimberSubsystem extends SubsystemBase {
             encoder = motor.getEncoder();
             encoder.setPositionConversionFactor(POSITION_CONVERSION_FACTOR);
             elevatorEncoder.setPosition(-1); // Initial encoder position must be < 0 for init function to work.
+            /*
             pidController = motor.getPIDController();
             pidController.setP(kP);
             pidController.setI(kI);
@@ -463,6 +482,8 @@ public class ClimberSubsystem extends SubsystemBase {
             pidController.setIZone(kIz);
             pidController.setFF(kFF);
             pidController.setOutputRange(kMinOutput, kMaxOutput);
+            */
+            profiledPID = new ProfiledPIDController(kP, kI, kD, constraints);
         }
 
         /**
@@ -502,22 +523,29 @@ public class ClimberSubsystem extends SubsystemBase {
          */
         private void setState(HookState position) {
 
+            double speed = 0;
+
             switch (position) {
                 case Grab:
-                    pidController.setReference(GRAB_ANGLE, ControlType.kPosition);
+                    // pidController.setReference(GRAB_ANGLE, ControlType.kPosition);
+                    speed = profiledPID.calculate(GRAB_ANGLE);
                     break;
 
                 case Release:
-                    pidController.setReference(RELEASE_ANGLE, ControlType.kPosition);
+                    // pidController.setReference(RELEASE_ANGLE, ControlType.kPosition);
+                    speed = profiledPID.calculate(RELEASE_ANGLE);
                     break;
 
                 case Locked:
-                    pidController.setReference(LOCKED_ANGLE, ControlType.kPosition);
+                    // pidController.setReference(LOCKED_ANGLE, ControlType.kPosition);
+                    speed = profiledPID.calculate(LOCKED_ANGLE);
                     break;
 
                 case Unknown:
                     break;
             }
+
+            motor.set(speed);
         }
 
         /**
