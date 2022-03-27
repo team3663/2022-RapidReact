@@ -15,20 +15,22 @@ public class AutoShootCommand extends CommandBase {
     private double currentRange;
     private boolean stagingCargo;
     private Timer timer = new Timer();
+    private double autoTimer;
 
     // Fixed range version, take the range to target as a parameter
-    public AutoShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, double range) {
+    public AutoShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, double range, double autoTimer) {
         this.shooter = shooter;
         this.feeder = feeder;
         this.currentRange = range;
+        this.autoTimer = autoTimer;
 
         addRequirements(shooter, feeder);
     }
 
     // Variable range version, takes a limelight object that is used to determine
     // the range
-    public AutoShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, LimelightSubsystem limelight) {
-        this(shooter, feeder, 0);
+    public AutoShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, LimelightSubsystem limelight, double autoTimer) {
+        this(shooter, feeder, 0, autoTimer);
 
         this.limelight = limelight;
     }
@@ -47,6 +49,7 @@ public class AutoShootCommand extends CommandBase {
         // time through periodic.
         shooter.setRange(currentRange);
         
+        timer.reset();
         timer.start();
     }
 
@@ -55,7 +58,7 @@ public class AutoShootCommand extends CommandBase {
     public void execute() {
         // If we have a limelight then use it to update the current range to target
         if (limelight != null) {
-            currentRange = limelight.getAverageDistance();
+            currentRange = limelight.getDistance();
             shooter.setRange(currentRange);
         }
 
@@ -69,8 +72,11 @@ public class AutoShootCommand extends CommandBase {
         }
 
         // We only get here if cargo staging has completed.
-        if (timer.hasElapsed(1.0)) {
+        if (shooter.ready() && limelight.aligned()) { 
             feeder.setFeedMode(FeedMode.CONTINUOUS);
+        }
+        else {
+            feeder.setFeedMode(FeedMode.STOPPED);
         }
       
     }
@@ -79,7 +85,7 @@ public class AutoShootCommand extends CommandBase {
     @Override
     public void end(boolean interrupted) {
         feeder.setFeedMode(FeedMode.STOPPED);
-        shooter.stop();
+        shooter.idle();
 
         if (limelight != null) {
             limelight.setLEDMode(limelight.LED_OFF);
@@ -90,6 +96,6 @@ public class AutoShootCommand extends CommandBase {
     // Returns true when the command should end.
     @Override
     public boolean isFinished() {
-        return timer.hasElapsed(2);
+        return timer.hasElapsed(autoTimer);
     }
 }
