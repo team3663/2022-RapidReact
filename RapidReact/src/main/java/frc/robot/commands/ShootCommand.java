@@ -113,6 +113,7 @@ public class ShootCommand extends CommandBase {
         // time through periodic.
         shooter.setRange(currentRange);
 
+        timer.start();
         timer.reset();
     }
 

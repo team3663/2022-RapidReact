@@ -283,7 +283,7 @@ public class RobotContainer {
             new InstantCommand(() -> drivetrain.resetPosition()),
             new InstantCommand(() -> shooter.idle()),
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
-            new FollowerCommand(drivetrain, TrajectoryFactory.twoMetersForward),
+            //new FollowerCommand(drivetrain, TrajectoryFactory.twoMetersForward),
             new ShootCommand(shooter, feeder, drivetrain, limelight),
             new AutoIntakeCommand(intake, feeder, IntakeMode.retracted));
     }
@@ -298,16 +298,23 @@ public class RobotContainer {
             new InstantCommand(() -> shooter.idle()),
             new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-0.5, -2, Rotation2d.fromDegrees(-90)))),
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
-            new ShootCommand(shooter, feeder, drivetrain, limelight),
-            new ParallelCommandGroup(
-                new FollowerCommand(drivetrain, TrajectoryFactory.start_ball2_ball3),
-                new InstantCommand(() -> feeder.setFeedMode(FeedMode.PRESHOOT))),
+            //new ShootCommand(shooter, feeder, drivetrain, limelight),
+            //new ParallelCommandGroup(
+            new FollowerCommand(drivetrain, TrajectoryFactory.start_ball2),
             new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
-            new ShootCommand(shooter, feeder, drivetrain, limelight)
-            // new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
-            // new FollowerCommand(drivetrain, TrajectoryFactory.ball3_station_shoot),
-            // new AutoShootCommand(shooter, feeder, limelight),
-            // new AutoIntakeCommand(intake,feeder, IntakeMode.retracted)
+                //new InstantCommand(() -> feeder.setFeedMode(FeedMode.PRESHOOT))),
+            //new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
+            
+            new ShootCommand(shooter, feeder, drivetrain, limelight),
+            new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
+            new FollowerCommand(drivetrain, TrajectoryFactory.start_ball3_test),
+            new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
+            new ShootCommand(shooter, feeder, drivetrain, limelight),
+            new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
+            new FollowerCommand(drivetrain, TrajectoryFactory.ball3_station_shoot),
+            new FollowerCommand(drivetrain, TrajectoryFactory.ball3_shoot_pos),
+            new AutoIntakeCommand(intake,feeder, IntakeMode.retracted),
+            new AutoShootCommand(shooter, feeder, limelight)
           );
     }
 
