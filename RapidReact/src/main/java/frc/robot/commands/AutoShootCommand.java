@@ -72,7 +72,7 @@ public class AutoShootCommand extends CommandBase {
         }
 
         // We only get here if cargo staging has completed.
-        if (shooter.ready() && limelight.aligned()) { 
+        if (shooter.ready() && limelight.aligned() && shooter.available()) { 
             feeder.setFeedMode(FeedMode.CONTINUOUS);
         }
         else {
