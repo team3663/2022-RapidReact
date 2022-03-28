@@ -1,555 +1,445 @@
-/*
-* Climber hardware description
-* 
-* Elevator
-*   - Motor: 1x Neo
-*   - Gearing: 27:1 gearbox
-*   - Winch drum: Diameter 1-3/16 inches (3.73 inch circumference)
-*   = 0.138 inches of travel per motor revolution (7.237 motor revolutions per inch of travel)
-*   - Maximum extension: 17 inches
-*
-* Windmill
-*   - Motors: 2x Neos
-*   - Gearing 100:1 gearboxes -> 20-tooth drive sprocket -> 72-tooth driven sprocket
-*   - Total reduction 360:1
-
-* Hooks 
-*   - Motor: Neo 550
-*   - Gearing: 27:1 gearbox -> 18-tooth sprocket -> 40 tooth sprocket
-*   - Total reduction: 60:1
-*   - 6-degrees of hook rotation per motor revolution (0.1667 motor revolutions per degree of hook rotation)
-*/
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
 
 package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMax.ControlType;
-import com.revrobotics.CANSparkMax.IdleMode;
-import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxPIDController;
+import com.revrobotics.CANSparkMax.IdleMode;
+import com.revrobotics.CANSparkMax.ControlType;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-import static frc.robot.utils.MathUtils.*;
-
 public class ClimberSubsystem extends SubsystemBase {
+  public enum HookPosition {
+    Grab,
+    Release,
+    Lock
+  };
 
-    /**
-     * Defined hook states
-     * 
-     * Grab - Opened to grab the next bar
-     * Locked - Locked to hold onto a bar *
-     * Release - Opened to release the current bar
-     * Unknown - Hook is moving between defined states
-     */
-    public enum HookState {
-        Grab,
-        Release,
-        Locked,
-        Unknown
+  public enum WindmillState {
+    FirstBarClimb,
+    FirstToSecond,
+    SecondToThird,
+    ShiftWeight,
+    Hang
+  };
+
+  public enum HookSet {
+    Red,
+    Blue
+  }
+
+  public HookPosition currentHookPosition;
+  public WindmillState currentWindmillState;
+  public HookSet currentHookSet;
+
+  // Hook Helper class.
+  private class Hook {
+
+    private RelativeEncoder hookPosition;
+    private CANSparkMax hookMotor;
+    private SparkMaxPIDController hookPositionPID;
+
+    // PID values
+    private double hookP = 0.001;
+    private double hookI = 0;
+    private double hookD = 0;
+    private double hookIz = 0;
+    private double hookFF = 0;
+
+    // LimitSwitches
+    public DigitalInput hookLimitSwitch1;
+    public DigitalInput hookLimitSwitch2;
+
+    // Hook Constants
+    private final double MAX_HOOK_ANGLE = 160;
+    private final double MIN_HOOK_ANGLE = 0; 
+    private final double HOOK_UPPER_LIMIT = 95000;
+    private final double HOOK_LOWER_LIMIT = 0;
+    private final double ROTATIONS_PER_DEGREE = (HOOK_UPPER_LIMIT - HOOK_LOWER_LIMIT) / (MAX_HOOK_ANGLE - MIN_HOOK_ANGLE);
+    private final double kHookMinOutput = -1;
+    private final double kHookMaxOutput = 1;
+
+    // positions based on encoders
+    private double grab = -5;
+    private double release = MAX_HOOK_ANGLE - 3;
+    private double lock = -23;
+
+    // Tracking Info
+    public boolean goingHome = true;
+    private double targetAngle  = 0;
+    private double currentAngle = 0;
+
+    // All of these args are in Degreas
+    private Hook(int HookCanId, HookSet hookSet) {
+      switch(hookSet){
+        case Blue:
+          hookMotor.setInverted(true);
+      }
+
+      hookMotor = new CANSparkMax(HookCanId, MotorType.kBrushless);
+      hookPosition = hookMotor.getEncoder();
+      hookPositionPID = hookMotor.getPIDController();
+
+      // Setting the PID Values
+      hookPositionPID.setP(hookP);
+      hookPositionPID.setI(hookI);
+      hookPositionPID.setD(hookD);
+      hookPositionPID.setIZone(hookIz);
+      hookPositionPID.setFF(hookFF);
+      hookPositionPID.setOutputRange(kHookMinOutput, kHookMaxOutput);
+
+      hookMotor.setIdleMode(IdleMode.kBrake);
     }
 
-    // Constants
-    private static final int ELEVATOR_MOTOR_CURRENT_LIMIT = 40;
-    private static final double ELEVATOR_POSITION_CONVERSION_FACTOR = 0.138;
-    private static final double ELEVATOR_MAX_POSITION = 17;
-    private static final double ELEVATOR_MIN_POSITION = 0;
-    private static final double ELEVATOR_MAX_OFFSET = 0.125;
-    private static final double kElevatorP = 0.000153;
-    private static final double kElevatorI = 0.000000;
-    private static final double kElevatorD = 0.000003;
-    private static final double kElevatorIz = 0.000000;
-    private static final double kElevatorFF = 0.00029625;
-    private static final double kElevatorMaxOutput = 1.000000;
-    private static final double kElevatorMinOutput = -0.1;
+    private void homeHook() {
+      if (!goingHome) {
+          return;
+      }
 
-    private static final int WINDMILL_MOTOR_CURRENT_LIMIT = 80;
-    private static final double WINDMILL_POSITION_CONVERSION_FACTOR = 1.0;
-    private static final double WINDMILL_MAX_ANGLE = 360;
-    private static final double WINDMILL_MIN_ANGLE = 0;
-    private static final double WINDMILL_MAX_OFFSET = 2;
-    private static final double kWindmillP = 0.000153;
-    private static final double kWindmillI = 0.000000;
-    private static final double kWindmillD = 0.000003;
-    private static final double kWindmillIz = 0.000000;
-    private static final double kWindmillFF = 0.00029625;
-    private static final double kWindmillMaxOutput = 1.0;
-    private static final double kWindmillMinOutput = -1.0;
+      if (hookMotor.getOutputCurrent() <= 1) { 
+        System.out.println(encoderPositionToAngle(hookPosition.getPosition()));
+        hookMotor.set(-0.2);
+        return;
+      }
 
-    // Elevator related variables
+      goingHome = false;
+      hookMotor.set(0);
+      targetAngle = release;
+      hookPosition.setPosition(angleToEncoderPosition(targetAngle));
+      hookPositionPID.setReference(angleToEncoderPosition(targetAngle), ControlType.kPosition);
+    }
+
+    private double angleToEncoderPosition(double angle) {
+      return (MAX_HOOK_ANGLE - angle) * ROTATIONS_PER_DEGREE;
+    }
+
+    private double encoderPositionToAngle(double position) {
+      return ((HOOK_UPPER_LIMIT - position) / ROTATIONS_PER_DEGREE) + MIN_HOOK_ANGLE;
+    }
+
+    public void setAngle(double angle) {
+      targetAngle = angle;
+      hookPositionPID.setReference(angleToEncoderPosition(targetAngle), ControlType.kPosition);
+    }
+
+    public void setHookPosition(HookPosition position) {
+      switch (position) {
+        case Grab:
+          setAngle(grab);
+          currentHookPosition = HookPosition.Grab;
+          break;
+        case Release:
+          setAngle(release);
+          currentHookPosition = HookPosition.Release;
+          break;
+        case Lock:
+          setAngle(lock);
+          currentHookPosition = HookPosition.Lock;
+          break;
+      }
+    }
+
+    public HookPosition getHookPosition(){
+      return currentHookPosition;
+    }
+  }
+
+  private class Windmill {
+    // Phisical controllers
+    private CANSparkMax windmillMotor;
+    private CANSparkMax windmillFollowerMotor;
+    private RelativeEncoder windmillEncoder;
+
+    private SparkMaxPIDController windmillPIDController;
+
+    private DigitalInput windmillLimitSwitch;
+
+    // Phisical Offsets and speeds
+    private double windmillRotaionZero;
+    private double windmillRotationSpeed = 0.5;
+
+    // Gear Ratios
+    private final double GEAR_RATIO = 4; // 4 to 1
+
+    // Windmill Constants
+    private final double MAX_WINDMILL_ANGLE = 360;
+    private final double MIN_WINDMILL_ANGLE = 0; 
+    private final double WINDMILL_UPPER_LIMIT = 95000;
+    private final double WINDMILL_LOWER_LIMIT = 0;
+    private final double ROTATIONS_PER_DEGREE = (WINDMILL_UPPER_LIMIT - WINDMILL_LOWER_LIMIT) / (MAX_WINDMILL_ANGLE - MIN_WINDMILL_ANGLE);
+    private final double kWindmillMinOutput = -1;
+    private final double kWindmillMaxOutput = 1;
+
+    // Windmill Positions
+    private double currentAngle;
+    private double targetAngle;
+
+    private final double FIRST_BAR_CLIMB = 0;
+    private final double FIRST_TO_SECOND = 80;
+    private final double SHIFT_WEIGHT_ROTATION = currentAngle - 10;
+    private final double SECOND_TO_THIRD = 1000;
+    private final double HANG = 0;
+
+    // PID Values
+    private double windmillP = 0.0000001;
+    private double windmillI = 0.0;
+    private double windmillD = 0.0;
+
+    public Windmill(int WindmillCanId, int WindmillFollowerCanId, int WindmillLimitSwitchId) {
+      // Creating Objects
+      windmillMotor = new CANSparkMax(WindmillCanId, MotorType.kBrushless);
+      windmillFollowerMotor = new CANSparkMax(WindmillFollowerCanId, MotorType.kBrushless);
+
+      // Setting Modes
+      windmillFollowerMotor.follow(windmillMotor, true);
+      windmillFollowerMotor.setIdleMode(IdleMode.kBrake);
+      windmillMotor.setIdleMode(IdleMode.kBrake);
+
+      // Setting Local Varbles
+      windmillPIDController = windmillMotor.getPIDController();
+      windmillEncoder = windmillMotor.getEncoder();
+      windmillEncoder.setPositionConversionFactor(GEAR_RATIO);
+      windmillLimitSwitch = new DigitalInput(WindmillLimitSwitchId);
+
+      // Setting PIDs
+      windmillPIDController.setP(windmillP);
+      windmillPIDController.setI(windmillI);
+      windmillPIDController.setD(windmillD);
+      windmillPIDController.setOutputRange(windmillRotationSpeed, -windmillRotationSpeed);
+    }
+
+    public void homeWindmill() {
+      windmillMotor.set(0.2);
+      if (windmillLimitSwitch.get()) {
+        windmillMotor.set(0);
+        windmillRotaionZero = windmillEncoder.getPosition();
+      }
+    }
+
+    private double angleToEncoderPosition(double angle) {
+      return (MAX_WINDMILL_ANGLE - angle) * ROTATIONS_PER_DEGREE;
+    }
+
+    private double encoderPositionToAngle(double position) {
+      return ((WINDMILL_UPPER_LIMIT - position) / ROTATIONS_PER_DEGREE) + MIN_WINDMILL_ANGLE;
+    }
+
+    public void setAngle(double angle) {
+      targetAngle = angle;
+      windmillPIDController.setReference(angleToEncoderPosition(targetAngle), ControlType.kPosition);
+    }
+
+    public void rotateWindmill(WindmillState position) {
+      switch (position) {
+        case FirstBarClimb:
+          setAngle(FIRST_BAR_CLIMB);
+          currentWindmillState = WindmillState.FirstBarClimb;
+          break;
+        case FirstToSecond:
+          setAngle(FIRST_TO_SECOND);
+          currentWindmillState = WindmillState.FirstToSecond;
+          break;
+        case SecondToThird:
+          setAngle(SECOND_TO_THIRD);
+          currentWindmillState = WindmillState.SecondToThird;
+          break;
+        case ShiftWeight:
+          setAngle(SHIFT_WEIGHT_ROTATION);
+          currentWindmillState = WindmillState.ShiftWeight;
+          break;
+        case Hang:
+          setAngle(HANG);
+          currentWindmillState = WindmillState.Hang;
+          break;
+      }
+    }
+
+    public WindmillState getWindmillState(){
+        return currentWindmillState;
+    }
+  }
+
+  private class Elevator {
+
     private CANSparkMax elevatorMotor;
     private RelativeEncoder elevatorEncoder;
-    private SparkMaxPIDController elevatorPID;
-    private boolean elevatorInitialized = false;
-    private double elevatorTargetPosition = 0.0;
-    private double elevatorCurrentPosition = 0.0;
+    private SparkMaxPIDController elevatorPIDController;
 
-    // Windmill related variables
-    private CANSparkMax windmillMotor1;
-    private CANSparkMax windmillMotor2;
-    private RelativeEncoder windmillEncoder;
-    private SparkMaxPIDController windmillPID;
-    private boolean windmillInitialized = false;
-    private double windmillTargetAngle = 0.0;
-    private double windmillCurrentAngle = 0.0;
+    // Limit Switch
+    private DigitalInput elevatorLimitSwitch;
 
-    private ClimberHook redHook;
-    private ClimberHook blueHook;
+    // Elevator PID
+    private double elevatorP;
+    private double elevatorI;
+    private double elevatorD;
 
-    // Network table entries for Shuffleboard
-    private NetworkTableEntry elevatorInitializedEntry;
-    private NetworkTableEntry elevatorTargetPositionEntry;
-    private NetworkTableEntry elevatorCurrentPositionEntry;
-    private NetworkTableEntry elevatorMotorCurrentEntry;
+    // Gear Ratio
+    private double gearRatio = 1;
 
-    private NetworkTableEntry windmillInitializedEntry;
-    private NetworkTableEntry windmillTargetAngleEntry;
-    private NetworkTableEntry windmillCurrentAngleEntry;
-    private NetworkTableEntry windmillMotor1CurrentEntry;
-    private NetworkTableEntry windmillMotor2CurrentEntry;
+    private double upPower = -0.1;
+    private boolean elevatorUp;
 
-    private NetworkTableEntry redHookInitializedEntry;
-    private NetworkTableEntry redHookTargetAngleEntry;
-    private NetworkTableEntry redHookCurrentAngleEntry;
-    private NetworkTableEntry redHookMotorCurrentEntry;
+    public Elevator(int ElevatorCanId, int ElevatorLimitSwitchId) {
+      elevatorMotor = new CANSparkMax(ElevatorCanId, MotorType.kBrushless);
 
-    private NetworkTableEntry blueHookInitializedEntry;
-    private NetworkTableEntry blueHookTargetAngleEntry;
-    private NetworkTableEntry blueHookCurrentAngleEntry;
-    private NetworkTableEntry blueHookMotorCurrentEntry;
+      elevatorEncoder = elevatorMotor.getEncoder();
+      elevatorPIDController = elevatorMotor.getPIDController();
 
-    /**
-     * Initilalize the climber subsystem
-     */
-    public ClimberSubsystem(int elevatorMotorCanId, int windmillMotor1CanId, int windmillMotor2CanId,
-            int redHookMotorCanId, int blueHookMotorCanId) {
+      elevatorEncoder.setPositionConversionFactor(gearRatio);
 
-        // Setup the elevator motor controller
-        elevatorMotor = new CANSparkMax(windmillMotor1CanId, MotorType.kBrushless);
-        elevatorMotor.restoreFactoryDefaults();
-        elevatorMotor.setIdleMode(IdleMode.kBrake);
-        elevatorMotor.setSmartCurrentLimit(ELEVATOR_MOTOR_CURRENT_LIMIT);
-        elevatorEncoder = elevatorMotor.getEncoder();
-        elevatorEncoder.setPositionConversionFactor(ELEVATOR_POSITION_CONVERSION_FACTOR);
-        elevatorEncoder.setPosition(-1); // Initial encoder position must be < than 0 for init function to work.
-        elevatorPID = elevatorMotor.getPIDController();
-        elevatorPID.setP(kElevatorP);
-        elevatorPID.setI(kElevatorI);
-        elevatorPID.setD(kElevatorD);
-        elevatorPID.setIZone(kElevatorIz);
-        elevatorPID.setFF(kElevatorFF);
-        elevatorPID.setOutputRange(kElevatorMinOutput, kElevatorMaxOutput);
+      elevatorLimitSwitch = new DigitalInput(ElevatorLimitSwitchId);
 
-        // Setup the motor controllers for the windmill motors
-        windmillMotor1 = new CANSparkMax(windmillMotor1CanId, MotorType.kBrushless);
-        windmillMotor1.restoreFactoryDefaults();
-        windmillMotor1.setInverted(true);
-        windmillMotor1.setIdleMode(IdleMode.kBrake);
-        windmillMotor1.setSmartCurrentLimit(WINDMILL_MOTOR_CURRENT_LIMIT);
-        windmillEncoder = windmillMotor1.getEncoder();
+      elevatorMotor.setIdleMode(IdleMode.kBrake);
 
-        windmillMotor2 = new CANSparkMax(windmillMotor2CanId, MotorType.kBrushless);
-        windmillMotor2.restoreFactoryDefaults();
-        windmillMotor2.setIdleMode(IdleMode.kBrake);
-        windmillMotor2.setSmartCurrentLimit(WINDMILL_MOTOR_CURRENT_LIMIT);
-        windmillMotor2.follow(windmillMotor1, true);
-
-        windmillEncoder = windmillMotor1.getEncoder();
-        windmillEncoder.setPositionConversionFactor(WINDMILL_POSITION_CONVERSION_FACTOR);
-        windmillPID = windmillMotor1.getPIDController();
-        windmillPID.setP(kWindmillP);
-        windmillPID.setI(kWindmillI);
-        windmillPID.setD(kWindmillD);
-        windmillPID.setIZone(kWindmillIz);
-        windmillPID.setFF(kWindmillFF);
-        windmillPID.setOutputRange(kWindmillMinOutput, kWindmillMaxOutput);
-
-        redHook = new ClimberHook(redHookMotorCanId);
-        blueHook = new ClimberHook(blueHookMotorCanId);
-
-        initTelemetry();
+      elevatorPIDController.setP(elevatorP);
+      elevatorPIDController.setI(elevatorI);
+      elevatorPIDController.setD(elevatorD);
     }
 
-    @Override
-    public void periodic() {
-
-        // Call the initialization method for each component
-        // these calls become essentially a noop after init completes
-        initElevator();
-        initWindmill();
-        redHook.initialize();
-        blueHook.initialize();
-
-        // Update internal state
-        elevatorCurrentPosition = elevatorEncoder.getPosition();
-        windmillCurrentAngle = windmillEncoder.getPosition();
-        redHook.update();
-        blueHook.update();
-
-        updateTelemetry();
-    }
-
-    // ---------------------------------------------------------------------------
-    // Elevator control methods
-    // ---------------------------------------------------------------------------
-
-    /**
-     * Move the elevator to its home position to establish our zero reference
-     * 
-     * NOTE: For this to work the encoder needs be initialized to a value < zero
-     */
-    private void initElevator() {
-
-        if (elevatorInitialized) {
-            return;
-        }
-
-        // If the elevator has not stopped moving then let it keep running and return
-        if (elevatorEncoder.getPosition() < 0.0) {
-            elevatorEncoder.setPosition(0.0);
-            elevatorMotor.set(-0.05);
-            return;
-        }
-
-        // If we got here then the elevator has stopped and the cables are taut so we
-        // are at our zero position.
-        elevatorInitialized = true;
-        elevatorMotor.set(0);
-        elevatorEncoder.setPosition(ELEVATOR_MIN_POSITION);
-    }
-
-    /**
-     * Set target position of the elevator.
-     * 
-     * @param position - Desired height of the elevator in inches.
-     */
-    public void setElevatorPosition(double position) {
-        elevatorTargetPosition = ClipToRange(position, ELEVATOR_MIN_POSITION, ELEVATOR_MAX_POSITION);
-        elevatorPID.setReference(elevatorTargetPosition, ControlType.kPosition);
-    }
-
-    /**
-     * Check to see if the elevator has reached the target position.
-     * 
-     * @return - True if elevator has reached the target position.
-     */
-    public boolean elevatorAtTarget() {
-        return WithinDelta(elevatorCurrentPosition, elevatorTargetPosition, ELEVATOR_MAX_OFFSET);
-    }
-
-    // ---------------------------------------------------------------------------
-    // Windmill control methods
-    // ---------------------------------------------------------------------------
-
-    /**
-     * Move the windmill to its home position to establish our zero reference
-     */
-    private void initWindmill() {
-
-        windmillInitialized = true;
-    }
-
-    /**
-     * Set target angle for windmill to rotate to.
-     * 
-     * @param angle - Target angle.
-     */
-    public void setWindmillAngle(double angle) {
-        windmillTargetAngle = ClipToRange(angle, WINDMILL_MIN_ANGLE, WINDMILL_MAX_ANGLE);
-        windmillPID.setReference(windmillTargetAngle, ControlType.kPosition);
-
-    }
-
-    /**
-     * Check to see if the windwill has reached the current target angle.
-     * 
-     * @return - True if the windmill is within the target angle range.
-     */
-    public boolean windmillAtTarget() {
-        return WithinDelta(windmillCurrentAngle, windmillTargetAngle, WINDMILL_MAX_OFFSET);
-    }
-
-    // ---------------------------------------------------------------------------
-    // Hook control methods
-    // ---------------------------------------------------------------------------
-
-    public void setRedHookState(HookState state) {
-        redHook.setState(state);
-    }
-
-    public HookState getRedHookState() {
-        return redHook.getState();
-    }
-
-    public boolean redHookAtTarget() {
-        return redHook.atTarget();
-    }
-
-    public void setBlueHookState(HookState state) {
-        blueHook.setState(state);
-    }
-
-    public HookState getBlueHookState() {
-        return blueHook.getState();
-    }
-
-    public boolean blueHookAtTarget() {
-        return blueHook.atTarget();
-    }
-
-    // ---------------------------------------------------------------------------
-    // Telemetry
-    // ---------------------------------------------------------------------------
-
-    private void initTelemetry() {
-        ShuffleboardTab tab = Shuffleboard.getTab("Climber");
-
-        // Elevator Data
-        elevatorInitializedEntry = tab.add("Initialized", 0)
-                .withPosition(0, 0)
-                .withSize(1, 1)
-                .getEntry();
-
-        elevatorTargetPositionEntry = tab.add("Target Position", 0)
-                .withPosition(1, 0)
-                .withSize(1, 1)
-                .getEntry();
-
-        elevatorCurrentPositionEntry = tab.add("Current Position", 0)
-                .withPosition(2, 0)
-                .withSize(1, 1)
-                .getEntry();
-
-        elevatorMotorCurrentEntry = tab.add("Motor Amps", 0)
-                .withPosition(3, 0)
-                .withSize(1, 1)
-                .getEntry();
-
-        // Windmill Data
-        windmillInitializedEntry = tab.add("Initialized", 0)
-                .withPosition(0, 1)
-                .withSize(1, 1)
-                .getEntry();
-
-        windmillTargetAngleEntry = tab.add("Target Angle", 0)
-                .withPosition(1, 1)
-                .withSize(1, 1)
-                .getEntry();
-
-        windmillCurrentAngleEntry = tab.add("Current Angle", 0)
-                .withPosition(2, 1)
-                .withSize(1, 1)
-                .getEntry();
-
-        windmillMotor1CurrentEntry = tab.add("Motor1 Amps", 0)
-                .withPosition(3, 1)
-                .withSize(1, 1)
-                .getEntry();
-
-        windmillMotor2CurrentEntry = tab.add("Motor2 Amps", 0)
-                .withPosition(4, 1)
-                .withSize(1, 1)
-                .getEntry();
-
-        // Red Hook Data
-        redHookInitializedEntry = tab.add("Initialized", 0)
-                .withPosition(0, 2)
-                .withSize(1, 1)
-                .getEntry();
-
-        redHookTargetAngleEntry = tab.add("Target Angle", 0)
-                .withPosition(1, 2)
-                .withSize(1, 1)
-                .getEntry();
-
-        redHookCurrentAngleEntry = tab.add("Current Angle", 0)
-                .withPosition(2, 2)
-                .withSize(1, 1)
-                .getEntry();
-
-        redHookMotorCurrentEntry = tab.add("Motor Amps", 0)
-                .withPosition(3, 2)
-                .withSize(1, 1)
-                .getEntry();
-
-        // Blue Hook Data
-        blueHookInitializedEntry = tab.add("Initialized", 0)
-                .withPosition(0, 3)
-                .withSize(1, 1)
-                .getEntry();
-
-        blueHookTargetAngleEntry = tab.add("Target Angle", 0)
-                .withPosition(1, 3)
-                .withSize(1, 1)
-                .getEntry();
-
-        blueHookCurrentAngleEntry = tab.add("Current Angle", 0)
-                .withPosition(2, 3)
-                .withSize(1, 1)
-                .getEntry();
-
-        blueHookMotorCurrentEntry = tab.add("Motor Amps", 0)
-                .withPosition(3, 3)
-                .withSize(1, 1)
-                .getEntry();
-    }
-
-    private void updateTelemetry() {
-
-        // Elevator
-        elevatorInitializedEntry.forceSetBoolean(elevatorInitialized);
-        elevatorTargetPositionEntry.setNumber(elevatorTargetPosition);
-        elevatorCurrentPositionEntry.setNumber(elevatorCurrentPosition);
-        elevatorMotorCurrentEntry.setNumber(elevatorMotor.getOutputCurrent());
-
-        // Windmill
-        windmillInitializedEntry.forceSetBoolean(windmillInitialized);
-        windmillTargetAngleEntry.setNumber(windmillTargetAngle);
-        windmillCurrentAngleEntry.setNumber(windmillCurrentAngle);
-        windmillMotor1CurrentEntry.setNumber(windmillMotor1.getOutputCurrent());
-        windmillMotor2CurrentEntry.setNumber(windmillMotor2.getOutputCurrent());
-
-        // Hooks
-        redHookInitializedEntry.forceSetBoolean(redHook.initialized);
-        redHookTargetAngleEntry.setNumber(redHook.targetAngle);
-        redHookCurrentAngleEntry.setNumber(redHook.currentAngle);
-        redHookMotorCurrentEntry.setNumber(redHook.motor.getOutputCurrent());
-
-        blueHookInitializedEntry.forceSetBoolean(blueHook.initialized);
-        blueHookTargetAngleEntry.setNumber(blueHook.targetAngle);
-        blueHookCurrentAngleEntry.setNumber(blueHook.currentAngle);
-        blueHookMotorCurrentEntry.setNumber(blueHook.motor.getOutputCurrent());
-    }
-
-    /**
-     * Nested class that encapsulates the climbing hooks
-     */
-    private class ClimberHook {
-        private static final int MOTOR_CURRENT_LIMIT = 15;
-        private static final double POSITION_CONVERSION_FACTOR = 6.0;
-        private static final double MIN_ANGLE = 0;
-        private static final double MAX_ANGLE_OFFSET = 2;
-        private static final double GRAB_ANGLE = 0;
-        private static final double LOCKED_ANGLE = 0;
-        private static final double RELEASE_ANGLE = 0;
-        private static final double kP = 0.1;
-        private static final double kI = 1e-4;
-        private static final double kD = 1;
-        private static final double kIz = 0;
-        private static final double kFF = 0;
-        private static final double kMaxOutput = 1.0;
-        private static final double kMinOutput = -1.0;
-
-        private CANSparkMax motor;
-        private RelativeEncoder encoder;
-        private SparkMaxPIDController pidController;
-        private boolean initialized = false;
-        private double targetAngle = 0.0;
-        private double currentAngle = 0.0;
-
-        private ClimberHook(int motorCanId) {
-
-            motor = new CANSparkMax(motorCanId, MotorType.kBrushless);
-            motor.restoreFactoryDefaults();
-            motor.setIdleMode(IdleMode.kBrake);
-            motor.setSmartCurrentLimit(MOTOR_CURRENT_LIMIT);
-            encoder = motor.getEncoder();
-            encoder.setPositionConversionFactor(POSITION_CONVERSION_FACTOR);
-            elevatorEncoder.setPosition(-1); // Initial encoder position must be < 0 for init function to work.
-            pidController = motor.getPIDController();
-            pidController.setP(kP);
-            pidController.setI(kI);
-            pidController.setD(kD);
-            pidController.setIZone(kIz);
-            pidController.setFF(kFF);
-            pidController.setOutputRange(kMinOutput, kMaxOutput);
-        }
-
-        /**
-         * Move the hook to its home position to establish our zero reference
-         * 
-         * NOTE: For this to work the encoder needs be initialized to a value < zero
-         */
-        private void initialize() {
-            if (initialized) {
-                return;
-            }
-
-            // If the hook has not stopped moving then let it keep running and return
-            if (encoder.getPosition() < 0.0) {
-                encoder.setPosition(0.0);
-                motor.set(-0.05);
-                return;
-            }
-
-            // If we got here then the hook has reached its hard limit and we
-            // are at our zero position.
-            initialized = true;
-            motor.set(0);
-            encoder.setPosition(MIN_ANGLE);
-        }
-
-        /**
-         * Perform periodic update of hooks internal state, called by subsystem periodic
-         * method
-         */
-        private void update() {
-            currentAngle = encoder.getPosition();
-        }
-
-        /**
-         * Set the position of the climbing hook
-         * 
-         * @param position
-         */
-        private void setState(HookState position) {
-
-            double speed = 0;
-
-            switch (position) {
-                case Grab:
-                    pidController.setReference(GRAB_ANGLE, ControlType.kPosition);
-                    break;
-
-                case Release:
-                    pidController.setReference(RELEASE_ANGLE, ControlType.kPosition);
-                    break;
-
-                case Locked:
-                    pidController.setReference(LOCKED_ANGLE, ControlType.kPosition);
-                    break;
-
-                case Unknown:
-                    break;
-            }
-
-            motor.set(speed);
-        }
-
-        /**
-         * Get the current state of the climbing hook
-         * 
-         * @return - HookState enum telling what state the hook is currently in.
-         */
-        private HookState getState() {
-
-            if (WithinDelta(currentAngle, GRAB_ANGLE, MAX_ANGLE_OFFSET)) {
-                return HookState.Grab;
-            } else if (WithinDelta(currentAngle, RELEASE_ANGLE, MAX_ANGLE_OFFSET)) {
-                return HookState.Release;
-            } else if (WithinDelta(currentAngle, LOCKED_ANGLE, MAX_ANGLE_OFFSET)) {
-                return HookState.Locked;
-            } else {
-                return HookState.Unknown;
-            }
-        }
-
-        private boolean atTarget() {
-            return WithinDelta(currentAngle, targetAngle, MAX_ANGLE_OFFSET);
+    public void extendElevator(){
+        if(!elevatorLimitSwitch.get()){
+            elevatorMotor.set(upPower);
+        } else {
+            elevatorMotor.set(0);
+            elevatorUp = true;
         }
     }
+
+    public boolean elevatorExtended(){
+        return elevatorUp;
+    }
+  }
+
+  private Hook hookRed;
+  private Hook hookBlue;
+  private Windmill windmill;
+  private Elevator elevator;
+
+  // Shuffleboard Entrys
+  private NetworkTableEntry currentHookABAngleEntry;
+  private NetworkTableEntry targetHookABAngleEntry;
+  private NetworkTableEntry currentHookXYAngleEntry;
+  private NetworkTableEntry targetHookXYAngleEntry;
+
+
+  public ClimberSubsystem(int ElevatorCanId, int WindmillCanId, int WindmillFollowerCanId, int HookABCanId, int HookXYCanId,
+      int ElevatorLimitSwitchId, int WindmillLimitSwitchId) {
+
+    hookRed = new Hook(HookABCanId, HookSet.Red);
+    hookBlue = new Hook(HookXYCanId, HookSet.Blue);
+    windmill = new Windmill(WindmillCanId, WindmillFollowerCanId, WindmillLimitSwitchId);
+    elevator = new Elevator(ElevatorCanId, ElevatorLimitSwitchId);
+
+    initTelemetry();
+  }
+
+  //public Climber Methods
+ 
+  // PUBLIC HOOK METHODS
+  public HookPosition getRedHookPosition(){
+    return hookRed.getHookPosition();
+  }
+
+  public HookPosition getBlueHookPosition(){
+    return hookBlue.getHookPosition();
+  }
+
+  public void setRedHookPosition(HookPosition position){
+    hookRed.setHookPosition(position);
+  }
+
+  public void setBlueHookPosition(HookPosition position){
+    hookBlue.setHookPosition(position);
+  }
+
+  // PUBLIC WINDMILL METHODS
+  public void setWindmillAngle(WindmillState position){
+      windmill.rotateWindmill(position);
+  }
+
+  public WindmillState getWindmillPosition(){
+      return windmill.getWindmillState();
+  }
+
+  // PUBLIC ELEVATOR METHODS
+  public void elevatorUp(){
+    elevator.extendElevator();
+  }
+
+  public boolean getElevatorExtended(){
+    return elevator.elevatorExtended();
+  }
+
+  public void initializeZeros(){
+    hookRed.homeHook();
+    hookBlue.homeHook();
+    // windmill.homeWindmill();
+  }
+  
+  // TESTING 
+  public void homeHook(){
+      hookRed.homeHook();
+  }
+
+  // END TESTING
+
+  @Override
+  public void periodic() {
+    // This method will be called once per scheduler run
+    // initializeZeros();
+
+    hookRed.homeHook();
+
+    hookRed.currentAngle = hookRed.encoderPositionToAngle(hookRed.hookPosition.getPosition());
+
+    updateTelemetry();
+  }
+
+  private void initTelemetry() {
+    ShuffleboardTab tab = Shuffleboard.getTab("Climber"); 
+
+    // ELEVATOR
+
+    // WINDMILL
+
+    // HOOKS
+    currentHookABAngleEntry = tab.add("Current Angle", 0)
+            .withPosition(5, 2)
+            .withSize(1, 1)
+            .getEntry();
+
+    targetHookABAngleEntry = tab.add("Target Angle", 0)
+            .withPosition(6, 2)
+            .withSize(1, 1)
+            .getEntry();
+    
+    currentHookXYAngleEntry = tab.add("Current Angle", 0)
+            .withPosition(7, 2)
+            .withSize(1, 1)
+            .getEntry();
+
+    targetHookXYAngleEntry = tab.add("Target Angle", 0)
+            .withPosition(8, 2)
+            .withSize(1, 1)
+            .getEntry();
+  }
+
+  private void updateTelemetry() {
+    currentHookABAngleEntry.setDouble(hookRed.MAX_HOOK_ANGLE - hookRed.currentAngle);
+    currentHookXYAngleEntry.setDouble(hookBlue.MAX_HOOK_ANGLE - hookBlue.currentAngle);
+    targetHookABAngleEntry.setDouble(hookRed.targetAngle);
+    targetHookXYAngleEntry.setDouble(hookBlue.targetAngle);
 }
+
+}
+
+//targetPosition to simplify end for the commands
