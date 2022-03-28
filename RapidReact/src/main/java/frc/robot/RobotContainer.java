@@ -38,7 +38,7 @@ import frc.robot.utils.SwerveModuleConfig;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
-import frc.robot.subsystems.ClimberSubsystem.HookState;
+import frc.robot.subsystems.ClimberSubsystem.HookPosition;
 import frc.robot.subsystems.FeederSubsystem.FeedMode;
 
 import static frc.robot.Constants.*;
@@ -97,6 +97,8 @@ public class RobotContainer {
                 HOOD_LIMITSWITCH_DIO, ranger);
         intake = new IntakeSubsystem(INTAKE_MOTOR_CAN_ID, BOOM_RETRACT_SOLENOID_CHAN, BOOM_EXTEND_SOLENOID_CHAN,
                 ARM_RETRACT_SOLENOID_CHAN, ARM_EXTEND_SOLENOID_CHAN);
+        climber = new ClimberSubsystem(ELEVATOR_CAN_ID, WINDMILL_1_CAN_ID, WINDMILL_2_CAN_ID, 
+                RED_HOOK_CAN_ID, BLUE_HOOK_CAN_ID, ELEVATOR_LIMITSWITCH_DIO, WINDMILL_SENSOR_DIO);
 
         // Setup our server drivetrain subsystem
         SwerveModuleConfig fl = new SwerveModuleConfig(FRONT_LEFT_MODULE_DRIVE_MOTOR, FRONT_LEFT_MODULE_STEER_MOTOR,
@@ -144,25 +146,25 @@ public class RobotContainer {
         double elevatorPosition = 12;
 
         deployClimberCommand = new SequentialCommandGroup(
-            new ExtendElevatorCommand(climber, elevatorPosition),
-            new SwitchRedHookCommand(climber, HookState.Grab),
-            new SwitchBlueHookCommand(climber, HookState.Grab)
+            new ExtendElevatorCommand(climber),
+            new SwitchRedHookCommand(climber, HookPosition.Grab),
+            new SwitchBlueHookCommand(climber, HookPosition.Grab)
         );
         
         // Create climb command
         double bar2ClimbAngle = 120;
         double bar3ClimbAngle = 300;
 
-        climbCommand = new SequentialCommandGroup(
-            new SwitchRedHookCommand(climber, HookState.Locked),
-            new RotateWindmillCommand(climber, bar2ClimbAngle),
-            new SwitchBlueHookCommand(climber, HookState.Locked),
-            new SwitchRedHookCommand(climber, HookState.Release),
-            new SwitchRedHookCommand(climber, HookState.Grab),
-            new RotateWindmillCommand(climber, bar3ClimbAngle), 
-            new SwitchRedHookCommand(climber, HookState.Locked),
-            new SwitchBlueHookCommand(climber, HookState.Release)     
-        );
+        // climbCommand = new SequentialCommandGroup(
+        //     new SwitchRedHookCommand(climber, HookState.Locked),
+        //     new RotateWindmillCommand(climber, bar2ClimbAngle),
+        //     new SwitchBlueHookCommand(climber, HookState.Locked),
+        //     new SwitchRedHookCommand(climber, HookState.Release),
+        //     new SwitchRedHookCommand(climber, HookState.Grab),
+        //     new RotateWindmillCommand(climber, bar3ClimbAngle), 
+        //     new SwitchRedHookCommand(climber, HookState.Locked),
+        //     new SwitchBlueHookCommand(climber, HookState.Release)     
+        // );
     }
 
     /**
@@ -171,80 +173,94 @@ public class RobotContainer {
     private void configureButtonBindings() {
         
         // Reset the gyroscope on the Pigeon.
-        new JoystickButton(driveController, Button.kStart.value)
-                .whenPressed(new InstantCommand(() -> drivetrain.resetGyroscope()));
+        // new JoystickButton(driveController, Button.kStart.value)
+        //         .whenPressed(new InstantCommand(() -> drivetrain.resetGyroscope()));
 
-        // Schedule the Shoot command to fire a cargo
-        /*
-        new Trigger(() -> driveController.getLeftTriggerAxis() > 0.8).whileActiveOnce(
-                new ParallelCommandGroup(new ShootCommand(shooter, feeder, driveControllerHelper::rumble, () -> driveController.getRightTriggerAxis() > 0.8, limelight),
-                new AutoAlignWithHubCommand(limelight, drivetrain, 
-                () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
-                () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity)));
+        // // Schedule the Shoot command to fire a cargo
+        // /*
+        // new Trigger(() -> driveController.getLeftTriggerAxis() > 0.8).whileActiveOnce(
+        //         new ParallelCommandGroup(new ShootCommand(shooter, feeder, driveControllerHelper::rumble, () -> driveController.getRightTriggerAxis() > 0.8, limelight),
+        //         new AutoAlignWithHubCommand(limelight, drivetrain, 
+        //         () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
+        //         () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity)));
 
-        new JoystickButton(driveController, Button.kA.value).whenHeld(
-                new ShootCommand(shooter, feeder, driveControllerHelper::rumble, () -> driveController.getRightTriggerAxis() > 0.8, 0));
+        // new JoystickButton(driveController, Button.kA.value).whenHeld(
+        //         new ShootCommand(shooter, feeder, driveControllerHelper::rumble, () -> driveController.getRightTriggerAxis() > 0.8, 0));
         
-        new JoystickButton(driveController, Button.kB.value).whenHeld(
-            new ParallelCommandGroup(new ShootCommand(shooter, feeder, driveControllerHelper::rumble, () -> true, limelight),
-                new AutoAlignWithHubCommand(limelight, drivetrain, 
-                () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
-                () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity)));
-        */
+        // new JoystickButton(driveController, Button.kB.value).whenHeld(
+        //     new ParallelCommandGroup(new ShootCommand(shooter, feeder, driveControllerHelper::rumble, () -> true, limelight),
+        //         new AutoAlignWithHubCommand(limelight, drivetrain, 
+        //         () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
+        //         () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity)));
+        // */
 
-        new Trigger(() -> driveController.getLeftTriggerAxis() > 0.8).whileActiveOnce(
-            new ShootCommand(shooter, feeder, drivetrain, limelight,
-                            driveControllerHelper::rumble, () -> driveController.getRightTriggerAxis() > 0.8,
-                            () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
-                            () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity));
+        // new Trigger(() -> driveController.getLeftTriggerAxis() > 0.8).whileActiveOnce(
+        //     new ShootCommand(shooter, feeder, drivetrain, limelight,
+        //                     driveControllerHelper::rumble, () -> driveController.getRightTriggerAxis() > 0.8,
+        //                     () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
+        //                     () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity));
 
-        new JoystickButton(driveController, Button.kA.value).whenHeld(
-            new ShootCommand(shooter, feeder, drivetrain, limelight,
-                            driveControllerHelper::rumble, () -> driveController.getRightTriggerAxis() > 0.8,
-                            () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
-                            () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity,
-                            0));
+        // new JoystickButton(driveController, Button.kA.value).whenHeld(
+        //     new ShootCommand(shooter, feeder, drivetrain, limelight,
+        //                     driveControllerHelper::rumble, () -> driveController.getRightTriggerAxis() > 0.8,
+        //                     () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
+        //                     () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity,
+        //                     0));
         
-        new JoystickButton(driveController, Button.kB.value).whenHeld(
-            new ShootCommand(shooter, feeder, drivetrain, limelight,
-                            driveControllerHelper::rumble, () -> true, 
-                            () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
-                            () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity));
+        // new JoystickButton(driveController, Button.kB.value).whenHeld(
+        //     new ShootCommand(shooter, feeder, drivetrain, limelight,
+        //                     driveControllerHelper::rumble, () -> true, 
+        //                     () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
+        //                     () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity));
 
-        // Schedule the Intake command to pick-up cargo
-        new JoystickButton(driveController, Button.kRightBumper.value)
-                .whenHeld(new IntakeCommand(intake, feeder, (() -> driveController.getLeftBumper())));
+        // // Schedule the Intake command to pick-up cargo
+        // new JoystickButton(driveController, Button.kRightBumper.value)
+        //         .whenHeld(new IntakeCommand(intake, feeder, (() -> driveController.getLeftBumper())));
 
-        // climb
-        new JoystickButton(driveController, Button.kX.value)
+        // // climb
+        new JoystickButton(driveController, Button.kBack.value)
             .whenHeld(deployClimberCommand);
 
-        new JoystickButton(driveController, Button.kY.value).whenHeld(climbCommand);
+        new JoystickButton(driveController, Button.kA.value)
+            .whenPressed(new InstantCommand(() -> climber.homeHook()));
 
-        // operator controls
-        new JoystickButton(operatorController, Button.kA.value).whenPressed(
-                    new InstantCommand(() -> feeder.setFeedMode(FeedMode.REVERSE_CONTINUOUS)));
+        new JoystickButton(driveController, Button.kB.value)
+            .whenHeld(new SwitchRedHookCommand(climber, HookPosition.Release));
+
+        new JoystickButton(driveController, Button.kY.value)
+            .whenHeld(new SwitchRedHookCommand(climber, HookPosition.Lock));
+
+        new JoystickButton(driveController, Button.kX.value)
+            .whenHeld(new SwitchRedHookCommand(climber, HookPosition.Grab));
+
+        // new JoystickButton(driveController, Button.kY.value).whenHeld(climbCommand);
+
+        // // operator controls
+        // new JoystickButton(operatorController, Button.kA.value).whenPressed(
+        //             new InstantCommand(() -> feeder.setFeedMode(FeedMode.REVERSE_CONTINUOUS)));
                 
-        new JoystickButton(operatorController, Button.kA.value).whenReleased(
-                    new InstantCommand(() -> feeder.setFeedMode(FeedMode.STOPPED)));
+        // new JoystickButton(operatorController, Button.kA.value).whenReleased(
+        //             new InstantCommand(() -> feeder.setFeedMode(FeedMode.STOPPED)));
 
-        new JoystickButton(operatorController, Button.kB.value).whenPressed(
-            new InstantCommand(() -> feeder.setFeedMode(FeedMode.PRESHOOT)));
+        // new JoystickButton(operatorController, Button.kB.value).whenPressed(
+        //     new InstantCommand(() -> feeder.setFeedMode(FeedMode.PRESHOOT)));
         
-        new JoystickButton(operatorController, Button.kB.value).whenReleased(
-            new InstantCommand(() -> feeder.setFeedMode(FeedMode.STOPPED)));
+        // new JoystickButton(operatorController, Button.kB.value).whenReleased(
+        //     new InstantCommand(() -> feeder.setFeedMode(FeedMode.STOPPED)));
         
-        new JoystickButton(operatorController, Button.kRightBumper.value).whenPressed(
-            new InstantCommand(() -> intake.operatorBallIn()));
+        // new JoystickButton(operatorController, Button.kRightBumper.value).whenPressed(
+        //     new InstantCommand(() -> intake.operatorBallIn()));
         
-        new JoystickButton(operatorController, Button.kRightBumper.value).whenReleased(
-            new InstantCommand(() -> intake.stopMotor()));
+        // new JoystickButton(operatorController, Button.kRightBumper.value).whenReleased(
+        //     new InstantCommand(() -> intake.stopMotor()));
         
-        new JoystickButton(operatorController, Button.kLeftBumper.value).whenPressed(
-            new InstantCommand(() -> intake.operatorBallOut()));
+        // new JoystickButton(operatorController, Button.kLeftBumper.value).whenPressed(
+        //     new InstantCommand(() -> intake.operatorBallOut()));
 
-        new JoystickButton(operatorController, Button.kLeftBumper.value).whenReleased(
-            new InstantCommand(() -> intake.stopMotor()));
+        // new JoystickButton(operatorController, Button.kLeftBumper.value).whenReleased(
+        //     new InstantCommand(() -> intake.stopMotor()));
+
+
     }
 
     /**

@@ -6,21 +6,22 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.ClimberSubsystem;
+import frc.robot.subsystems.ClimberSubsystem.WindmillState;
 
 public class RotateWindmillCommand extends CommandBase {
 
 	private ClimberSubsystem climber;
-	private double windmillAngle;
+	private WindmillState position;
 
-	public RotateWindmillCommand(ClimberSubsystem climber, double windmillAngle) {
+	public RotateWindmillCommand(ClimberSubsystem climber, WindmillState position) {
 		this.climber = climber;
-		this.windmillAngle = windmillAngle;
+		this.position = position;
 		addRequirements(climber);
 	}
 
 	@Override
 	public void initialize() {
-		climber.setWindmillAngle(windmillAngle);
+		climber.setWindmillAngle(position);
 	}
 
 	@Override
@@ -31,6 +32,6 @@ public class RotateWindmillCommand extends CommandBase {
 
 	@Override
 	public boolean isFinished() {
-		return climber.windmillAtTarget();
+		return climber.getWindmillPosition() == position;
 	}
 }

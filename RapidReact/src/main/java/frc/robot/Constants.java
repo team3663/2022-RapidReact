@@ -83,6 +83,8 @@ public final class Constants {
 	public static final int FEEDER_ENTRY_SENSOR_DIO = 1;
 	public static final int FEEDER_EXIT_SENSOR_DIO = 2;
 	public static final int HOOD_LIMITSWITCH_DIO = 3;
+	public static final int ELEVATOR_LIMITSWITCH_DIO = 4;
+	public static final int WINDMILL_SENSOR_DIO = 5;
 
 	// Analog IO ports
 

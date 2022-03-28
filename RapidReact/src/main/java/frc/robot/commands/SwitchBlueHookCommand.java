@@ -2,14 +2,14 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.ClimberSubsystem;
-import frc.robot.subsystems.ClimberSubsystem.HookState;
+import frc.robot.subsystems.ClimberSubsystem.HookPosition;
 
 public class SwitchBlueHookCommand extends CommandBase {
 
 	private ClimberSubsystem climber;
-	private HookState hookPosition;
+	private HookPosition hookPosition;
 
-	public SwitchBlueHookCommand(ClimberSubsystem climber, HookState hookPosition) {
+	public SwitchBlueHookCommand(ClimberSubsystem climber, HookPosition hookPosition) {
 		this.climber = climber;
 		this.hookPosition = hookPosition;
 
@@ -18,7 +18,7 @@ public class SwitchBlueHookCommand extends CommandBase {
 
 	@Override
   	public void initialize() {
-    	climber.setBlueHookState(hookPosition);
+    	climber.setBlueHookPosition(hookPosition);
   	}
 
 	@Override
@@ -31,6 +31,6 @@ public class SwitchBlueHookCommand extends CommandBase {
 
 	@Override
 	public boolean isFinished() {
-		return climber.getBlueHookState() == hookPosition;
+		return climber.getBlueHookPosition() == hookPosition;
 	}
 }

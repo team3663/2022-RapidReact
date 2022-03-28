@@ -6,18 +6,16 @@ import frc.robot.subsystems.ClimberSubsystem;
 public class ExtendElevatorCommand extends CommandBase {
 
 	private ClimberSubsystem climber;
-	private double elevatorPosition;
 
-	public ExtendElevatorCommand(ClimberSubsystem climber, double elevatorPosition) {
+	public ExtendElevatorCommand(ClimberSubsystem climber) {
 		this.climber = climber;
-		this.elevatorPosition = elevatorPosition;
 
 		addRequirements(climber);
 	}
 
 	@Override
 	public void initialize() {
-		climber.setElevatorPosition(elevatorPosition);
+		climber.elevatorUp();
 	}
 
 	@Override
@@ -28,6 +26,6 @@ public class ExtendElevatorCommand extends CommandBase {
 
 	@Override
 	public boolean isFinished() {
-		return climber.elevatorAtTarget();
+		return climber.getElevatorExtended();
 	}
 }
