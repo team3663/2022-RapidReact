@@ -13,6 +13,7 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -100,6 +101,10 @@ public class ClimberSubsystem extends SubsystemBase {
     hookPositionPID.setOutputRange(kHookMinOutput, kHookMaxOutput);
 
       hookMotor.setIdleMode(IdleMode.kBrake);
+      switch(hookSet){
+        case Blue:
+          hookMotor.setInverted(true);
+      }
     }
 
     private void homeHook() {
@@ -107,9 +112,11 @@ public class ClimberSubsystem extends SubsystemBase {
           return;
       }
 
-      if (hookMotor.getOutputCurrent() <= 1) { 
+      if (hookPosition.getVelocity() < Math.abs(.1)) {
+        
+
         System.out.println(encoderPositionToAngle(hookPosition.getPosition()));
-        hookMotor.set(-0.2);
+        hookMotor.set(-0.05);
         return;
       }
 
@@ -333,10 +340,10 @@ public class ClimberSubsystem extends SubsystemBase {
   private Elevator elevator;
 
   // Shuffleboard Entrys
-  private NetworkTableEntry currentHookABAngleEntry;
-  private NetworkTableEntry targetHookABAngleEntry;
-  private NetworkTableEntry currentHookXYAngleEntry;
-  private NetworkTableEntry targetHookXYAngleEntry;
+  private NetworkTableEntry redHookCurrentAngleEntry;
+  private NetworkTableEntry redHookTargetAngleEntry;
+  private NetworkTableEntry blueHookCurrentAngleEntry;
+  private NetworkTableEntry blueHookTargetAngleEntry;
 
 
   public ClimberSubsystem(int ElevatorCanId, int WindmillCanId, int WindmillFollowerCanId, int HookABCanId, int HookXYCanId,
@@ -420,32 +427,32 @@ public class ClimberSubsystem extends SubsystemBase {
     // WINDMILL
 
     // HOOKS
-    currentHookABAngleEntry = tab.add("Current Angle", 0)
+    redHookCurrentAngleEntry = tab.add("Red Hook Current Angle", 0)
             .withPosition(5, 2)
             .withSize(1, 1)
             .getEntry();
 
-    targetHookABAngleEntry = tab.add("Target Angle", 0)
+    redHookTargetAngleEntry = tab.add("Red Hook Target Angle", 0)
             .withPosition(6, 2)
             .withSize(1, 1)
             .getEntry();
     
-    currentHookXYAngleEntry = tab.add("Current Angle", 0)
+    blueHookCurrentAngleEntry = tab.add("Blue Hook Current Angle", 0)
             .withPosition(7, 2)
             .withSize(1, 1)
             .getEntry();
 
-    targetHookXYAngleEntry = tab.add("Target Angle", 0)
+    blueHookTargetAngleEntry = tab.add("Blue Hook Target Angle", 0)
             .withPosition(8, 2)
             .withSize(1, 1)
             .getEntry();
   }
 
   private void updateTelemetry() {
-    currentHookABAngleEntry.setDouble(hookRed.MAX_HOOK_ANGLE - hookRed.currentAngle);
-    currentHookXYAngleEntry.setDouble(hookBlue.MAX_HOOK_ANGLE - hookBlue.currentAngle);
-    targetHookABAngleEntry.setDouble(hookRed.targetAngle);
-    targetHookXYAngleEntry.setDouble(hookBlue.targetAngle);
+    redHookCurrentAngleEntry.setDouble(hookRed.MAX_HOOK_ANGLE - hookRed.currentAngle);
+    blueHookCurrentAngleEntry.setDouble(hookBlue.MAX_HOOK_ANGLE - hookBlue.currentAngle);
+    redHookTargetAngleEntry.setDouble(hookRed.targetAngle);
+    blueHookTargetAngleEntry.setDouble(hookBlue.targetAngle);
 }
 
 }
