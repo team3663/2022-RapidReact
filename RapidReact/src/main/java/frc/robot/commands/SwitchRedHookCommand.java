@@ -12,8 +12,6 @@ public class SwitchRedHookCommand extends CommandBase {
 	public SwitchRedHookCommand(ClimberSubsystem climber, HookPosition hookPosition) {
 		this.climber = climber;
 		this.hookPosition = hookPosition;
-
-		addRequirements(climber);
 	}
 
 	@Override
@@ -31,6 +29,6 @@ public class SwitchRedHookCommand extends CommandBase {
 
 	@Override
 	public boolean isFinished() {
-		return climber.getRedHookPosition() == hookPosition;
+		return climber.isRedHookAtPosition();
 	}
 }

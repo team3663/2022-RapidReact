@@ -13,6 +13,7 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -29,7 +30,8 @@ public class ClimberSubsystem extends SubsystemBase {
     FirstBarClimb,
     FirstToSecond,
     SecondToThird,
-    ShiftWeight,
+    ShiftWeightOffFirst,
+    ShiftWeightOffSecond,
     Hang
   };
 
@@ -50,7 +52,7 @@ public class ClimberSubsystem extends SubsystemBase {
     private SparkMaxPIDController hookPositionPID;
 
     // PID values
-    private double hookP = 0.001;
+    private double hookP = 0.1;
     private double hookI = 0;
     private double hookD = 0;
     private double hookIz = 0;
@@ -63,87 +65,71 @@ public class ClimberSubsystem extends SubsystemBase {
     // Hook Constants
     private final double MAX_HOOK_ANGLE = 160;
     private final double MIN_HOOK_ANGLE = 0; 
-    private final double HOOK_UPPER_LIMIT = 95000;
-    private final double HOOK_LOWER_LIMIT = 0;
-    private final double ROTATIONS_PER_DEGREE = (HOOK_UPPER_LIMIT - HOOK_LOWER_LIMIT) / (MAX_HOOK_ANGLE - MIN_HOOK_ANGLE);
+    private final double ROTATIONS_PER_DEGREE = (570.0 / 1.0) * (1.0 / 360.0);
     private final double kHookMinOutput = -1;
     private final double kHookMaxOutput = 1;
 
     // positions based on encoders
     private double grab = MAX_HOOK_ANGLE - 3;
-    private double release = -5;
-    private double lock = -23;
+    private double release = 0;
+    private double lock = -20;
 
     // Tracking Info
     public boolean goingHome = true;
     private double targetAngle  = 0;
     private double currentAngle = 0;
+    private Timer hookTimer;
 
     // All of these args are in Degreas
     private Hook(int HookCanId, HookSet hookSet) {
+      hookMotor = new CANSparkMax(HookCanId, MotorType.kBrushless);
+      hookPosition = hookMotor.getEncoder();
+      hookPositionPID = hookMotor.getPIDController();
       
-    
-    hookMotor = new CANSparkMax(HookCanId, MotorType.kBrushless);
-    hookPosition = hookMotor.getEncoder();
-    hookPositionPID = hookMotor.getPIDController();
-    
-    switch(hookSet){
-        case Blue:
-          hookMotor.setInverted(true);
-      }
+      hookPosition.setPositionConversionFactor(ROTATIONS_PER_DEGREE);
 
-    // Setting the PID Values
-    hookPositionPID.setP(hookP);
-    hookPositionPID.setI(hookI);
-    hookPositionPID.setD(hookD);
-    hookPositionPID.setIZone(hookIz);
-    hookPositionPID.setFF(hookFF);
-    hookPositionPID.setOutputRange(kHookMinOutput, kHookMaxOutput);
+      hookMotor.setInverted(false);
+
+      hookTimer = new Timer();
+
+      // Setting the PID Values
+      hookPositionPID.setP(hookP);
+      hookPositionPID.setI(hookI);
+      hookPositionPID.setD(hookD);
+      hookPositionPID.setIZone(hookIz);
+      hookPositionPID.setFF(hookFF);
+      hookPositionPID.setOutputRange(kHookMinOutput, kHookMaxOutput);
+
 
       hookMotor.setIdleMode(IdleMode.kBrake);
-      switch(hookSet){
-        case Blue:
-          hookMotor.setInverted(true);
-      }
     }
 
     private void homeHook() {
+      hookTimer.start();
+
       if (!goingHome) {
           return;
       }
 
-      if (hookPosition.getVelocity() < Math.abs(.1)) {
-        
-
-        System.out.println(encoderPositionToAngle(hookPosition.getPosition()));
-        hookMotor.set(-0.05);
+      if (Math.abs(hookPosition.getVelocity()) > 0.01 || hookTimer.get() < 0.25) {
+        hookMotor.set(0.1);
         return;
       }
 
-    //   if (hookMotor.getEncoder().getVelocity() > 0) { 
-    //     System.out.println(encoderPositionToAngle(hookPosition.getPosition()));
-    //     hookMotor.set(-0.2);
-    //     return;
-    //   }
-
       goingHome = false;
+      hookTimer.stop();
       hookMotor.set(0);
       targetAngle = release;
-      hookPosition.setPosition(angleToEncoderPosition(targetAngle));
-      hookPositionPID.setReference(angleToEncoderPosition(targetAngle), ControlType.kPosition);
-    }
-
-    private double angleToEncoderPosition(double angle) {
-      return (MAX_HOOK_ANGLE - angle) * ROTATIONS_PER_DEGREE;
-    }
-
-    private double encoderPositionToAngle(double position) {
-      return ((HOOK_UPPER_LIMIT - position) / ROTATIONS_PER_DEGREE) + MIN_HOOK_ANGLE;
+      hookPosition.setPosition(MAX_HOOK_ANGLE);
     }
 
     public void setAngle(double angle) {
       targetAngle = angle;
-      hookPositionPID.setReference(angleToEncoderPosition(targetAngle), ControlType.kPosition);
+      hookPositionPID.setReference(targetAngle, ControlType.kPosition);
+    }
+
+    public double getAngle(){
+      return hookPosition.getPosition();
     }
 
     public void setHookPosition(HookPosition position) {
@@ -166,6 +152,10 @@ public class ClimberSubsystem extends SubsystemBase {
     public HookPosition getHookPosition(){
       return currentHookPosition;
     }
+
+    public boolean isAtTargetPosition() {
+      return  Math.abs(targetAngle - getAngle()) < 2;
+    }
   }
 
   private class Windmill {
@@ -173,7 +163,6 @@ public class ClimberSubsystem extends SubsystemBase {
     private CANSparkMax windmillMotor;
     private CANSparkMax windmillFollowerMotor;
     private RelativeEncoder windmillEncoder;
-
     private SparkMaxPIDController windmillPIDController;
 
     private DigitalInput windmillLimitSwitch;
@@ -182,15 +171,10 @@ public class ClimberSubsystem extends SubsystemBase {
     private double windmillRotaionZero;
     private double windmillRotationSpeed = 0.5;
 
-    // Gear Ratios
-    private final double GEAR_RATIO = 4; // 4 to 1
-
     // Windmill Constants
-    private final double MAX_WINDMILL_ANGLE = 360;
-    private final double MIN_WINDMILL_ANGLE = 0; 
-    private final double WINDMILL_UPPER_LIMIT = 95000;
-    private final double WINDMILL_LOWER_LIMIT = 0;
-    private final double ROTATIONS_PER_DEGREE = (WINDMILL_UPPER_LIMIT - WINDMILL_LOWER_LIMIT) / (MAX_WINDMILL_ANGLE - MIN_WINDMILL_ANGLE);
+    private final double MAX_WINDMILL_ANGLE = 500;
+    private final double MIN_WINDMILL_ANGLE = 0;
+    private final double ROTATIONS_PER_DEGREE = (400 / 1.0) * (1.0 / 360.0) * (360.0 / 500.0);
     private final double kWindmillMinOutput = -1;
     private final double kWindmillMaxOutput = 1;
 
@@ -198,14 +182,14 @@ public class ClimberSubsystem extends SubsystemBase {
     private double currentAngle;
     private double targetAngle;
 
-    private final double FIRST_BAR_CLIMB = 0;
+    private final double FIRST_BAR_CLIMB = 40;
     private final double FIRST_TO_SECOND = 80;
-    private final double SHIFT_WEIGHT_ROTATION = currentAngle - 10;
-    private final double SECOND_TO_THIRD = 1000;
-    private final double HANG = 0;
+    private final double SHIFT_WEIGHT_OFFSET = -30;
+    private final double SECOND_TO_THIRD = 300;
+    private final double HANG = 360;
 
     // PID Values
-    private double windmillP = 0.0000001;
+    private double windmillP = 0.1;
     private double windmillI = 0.0;
     private double windmillD = 0.0;
 
@@ -216,41 +200,41 @@ public class ClimberSubsystem extends SubsystemBase {
 
       // Setting Modes
       windmillFollowerMotor.follow(windmillMotor, true);
-      windmillFollowerMotor.setIdleMode(IdleMode.kBrake);
-      windmillMotor.setIdleMode(IdleMode.kBrake);
+      windmillFollowerMotor.setIdleMode(IdleMode.kCoast);
+      windmillMotor.setIdleMode(IdleMode.kCoast);
 
       // Setting Local Varbles
       windmillPIDController = windmillMotor.getPIDController();
       windmillEncoder = windmillMotor.getEncoder();
-      windmillEncoder.setPositionConversionFactor(GEAR_RATIO);
+
+      windmillEncoder.setPositionConversionFactor(ROTATIONS_PER_DEGREE);
+
       windmillLimitSwitch = new DigitalInput(WindmillLimitSwitchId);
 
       // Setting PIDs
       windmillPIDController.setP(windmillP);
       windmillPIDController.setI(windmillI);
       windmillPIDController.setD(windmillD);
-      windmillPIDController.setOutputRange(windmillRotationSpeed, -windmillRotationSpeed);
+      windmillPIDController.setOutputRange(-windmillRotationSpeed, windmillRotationSpeed);
+
+      windmillEncoder.setPosition(0);
     }
 
-    public void homeWindmill() {
-      windmillMotor.set(0.2);
-      if (windmillLimitSwitch.get()) {
-        windmillMotor.set(0);
-        windmillRotaionZero = windmillEncoder.getPosition();
-      }
-    }
-
-    private double angleToEncoderPosition(double angle) {
-      return (MAX_WINDMILL_ANGLE - angle) * ROTATIONS_PER_DEGREE;
-    }
-
-    private double encoderPositionToAngle(double position) {
-      return ((WINDMILL_UPPER_LIMIT - position) / ROTATIONS_PER_DEGREE) + MIN_WINDMILL_ANGLE;
-    }
+    // public void homeWindmill() {
+    //   windmillMotor.set(0.2);
+    //   if (windmillLimitSwitch.get()) {
+    //     windmillMotor.set(0);
+    //     windmillRotaionZero = windmillEncoder.getPosition();
+    //   }
+    // }
 
     public void setAngle(double angle) {
       targetAngle = angle;
-      windmillPIDController.setReference(angleToEncoderPosition(targetAngle), ControlType.kPosition);
+      windmillPIDController.setReference(targetAngle, ControlType.kPosition);
+    }
+
+    public double getAngle(){
+      return windmillEncoder.getPosition();
     }
 
     public void rotateWindmill(WindmillState position) {
@@ -263,13 +247,17 @@ public class ClimberSubsystem extends SubsystemBase {
           setAngle(FIRST_TO_SECOND);
           currentWindmillState = WindmillState.FirstToSecond;
           break;
+        case ShiftWeightOffFirst:
+          setAngle(FIRST_TO_SECOND + SHIFT_WEIGHT_OFFSET);
+          currentWindmillState = WindmillState.ShiftWeightOffFirst;
+          break;
         case SecondToThird:
           setAngle(SECOND_TO_THIRD);
           currentWindmillState = WindmillState.SecondToThird;
           break;
-        case ShiftWeight:
-          setAngle(SHIFT_WEIGHT_ROTATION);
-          currentWindmillState = WindmillState.ShiftWeight;
+        case ShiftWeightOffSecond:
+          setAngle(SECOND_TO_THIRD + SHIFT_WEIGHT_OFFSET);
+          currentWindmillState = WindmillState.ShiftWeightOffSecond;
           break;
         case Hang:
           setAngle(HANG);
@@ -278,8 +266,8 @@ public class ClimberSubsystem extends SubsystemBase {
       }
     }
 
-    public WindmillState getWindmillState(){
-        return currentWindmillState;
+    public boolean isAtTargetPosition() {
+      return  Math.abs(targetAngle - getAngle()) < 3;
     }
   }
 
@@ -344,6 +332,11 @@ public class ClimberSubsystem extends SubsystemBase {
   private NetworkTableEntry redHookTargetAngleEntry;
   private NetworkTableEntry blueHookCurrentAngleEntry;
   private NetworkTableEntry blueHookTargetAngleEntry;
+  private NetworkTableEntry redHookHomed;
+  private NetworkTableEntry blueHookHomed;
+
+  private NetworkTableEntry windmillCurrentAngleEntry;
+  private NetworkTableEntry windmillTargetAngleEntry;
 
 
   public ClimberSubsystem(int ElevatorCanId, int WindmillCanId, int WindmillFollowerCanId, int HookABCanId, int HookXYCanId,
@@ -360,12 +353,12 @@ public class ClimberSubsystem extends SubsystemBase {
   //public Climber Methods
  
   // PUBLIC HOOK METHODS
-  public HookPosition getRedHookPosition(){
-    return hookRed.getHookPosition();
+  public boolean isRedHookAtPosition() {
+    return hookRed.isAtTargetPosition();
   }
 
-  public HookPosition getBlueHookPosition(){
-    return hookBlue.getHookPosition();
+  public boolean isBlueHookAtPosition() {
+    return hookBlue.isAtTargetPosition();
   }
 
   public void setRedHookPosition(HookPosition position){
@@ -381,8 +374,12 @@ public class ClimberSubsystem extends SubsystemBase {
       windmill.rotateWindmill(position);
   }
 
-  public WindmillState getWindmillPosition(){
-      return windmill.getWindmillState();
+  public boolean isAtWindmillPosition(){
+      return windmill.isAtTargetPosition();
+  }
+
+  public void moveWindmill(double speed){
+    windmill.windmillMotor.set(speed);
   }
 
   // PUBLIC ELEVATOR METHODS
@@ -394,27 +391,18 @@ public class ClimberSubsystem extends SubsystemBase {
     return elevator.elevatorExtended();
   }
 
-  public void initializeZeros(){
-    hookRed.homeHook();
-    hookBlue.homeHook();
-    // windmill.homeWindmill();
-  }
-  
-  // TESTING 
-  public void homeHook(){
-      hookRed.homeHook();
-  }
-
-  // END TESTING
-
+ 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    // initializeZeros();
 
-    hookRed.homeHook();
-
-    hookRed.currentAngle = hookRed.encoderPositionToAngle(hookRed.hookPosition.getPosition());
+    if (DriverStation.isEnabled()) {
+      hookRed.homeHook();
+      hookBlue.homeHook();
+    } else {
+      hookRed.hookTimer.stop();
+      hookBlue.hookTimer.stop();
+    }
 
     updateTelemetry();
   }
@@ -427,6 +415,16 @@ public class ClimberSubsystem extends SubsystemBase {
     // WINDMILL
 
     // HOOKS
+    redHookHomed = tab.add("Red Hook Zeroed", false)
+            .withPosition(1, 2)
+            .withSize(1, 1)
+            .getEntry();
+
+    blueHookHomed = tab.add("Blue Hook Zeroed", false)
+            .withPosition(2, 2)
+            .withSize(1, 1)
+            .getEntry();
+    
     redHookCurrentAngleEntry = tab.add("Red Hook Current Angle", 0)
             .withPosition(5, 2)
             .withSize(1, 1)
@@ -446,15 +444,29 @@ public class ClimberSubsystem extends SubsystemBase {
             .withPosition(8, 2)
             .withSize(1, 1)
             .getEntry();
+
+    windmillTargetAngleEntry = tab.add("Windmill Target Angle", 0)
+            .withPosition(5, 1)
+            .withSize(1, 1)
+            .getEntry();
+
+    windmillCurrentAngleEntry = tab.add("Windmill current Angle", 0)
+            .withPosition(6, 1)
+            .withSize(1, 1)
+            .getEntry();
   }
 
   private void updateTelemetry() {
-    redHookCurrentAngleEntry.setDouble(hookRed.MAX_HOOK_ANGLE - hookRed.currentAngle);
-    blueHookCurrentAngleEntry.setDouble(hookBlue.MAX_HOOK_ANGLE - hookBlue.currentAngle);
+    redHookCurrentAngleEntry.setDouble(hookRed.getAngle());
+    blueHookCurrentAngleEntry.setDouble(hookBlue.getAngle());
     redHookTargetAngleEntry.setDouble(hookRed.targetAngle);
     blueHookTargetAngleEntry.setDouble(hookBlue.targetAngle);
-}
+    redHookHomed.setBoolean(!hookRed.goingHome);
+    blueHookHomed.setBoolean(!hookBlue.goingHome);
 
+    windmillCurrentAngleEntry.setDouble(windmill.getAngle());
+    windmillTargetAngleEntry.setDouble(windmill.targetAngle);
+}
 }
 
 //targetPosition to simplify end for the commands

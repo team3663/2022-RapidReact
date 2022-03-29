@@ -32,6 +32,6 @@ public class RotateWindmillCommand extends CommandBase {
 
 	@Override
 	public boolean isFinished() {
-		return climber.getWindmillPosition() == position;
+		return climber.isAtWindmillPosition();
 	}
 }

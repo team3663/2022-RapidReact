@@ -12,8 +12,6 @@ public class SwitchBlueHookCommand extends CommandBase {
 	public SwitchBlueHookCommand(ClimberSubsystem climber, HookPosition hookPosition) {
 		this.climber = climber;
 		this.hookPosition = hookPosition;
-
-		addRequirements(climber);
 	}
 
 	@Override
@@ -31,6 +29,6 @@ public class SwitchBlueHookCommand extends CommandBase {
 
 	@Override
 	public boolean isFinished() {
-		return climber.getBlueHookPosition() == hookPosition;
+		return climber.isBlueHookAtPosition();
 	}
 }

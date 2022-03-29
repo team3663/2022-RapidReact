@@ -20,6 +20,7 @@ import frc.robot.commands.DefaultDriveCommand;
 import frc.robot.commands.DefaultShooterCommand;
 import frc.robot.commands.ExtendElevatorCommand;
 import frc.robot.commands.IntakeCommand;
+import frc.robot.commands.MoveWindmillCommand;
 import frc.robot.commands.RotateWindmillCommand;
 import frc.robot.commands.ShootCommand;
 import frc.robot.commands.SwitchBlueHookCommand;
@@ -39,6 +40,7 @@ import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.ClimberSubsystem.HookPosition;
+import frc.robot.subsystems.ClimberSubsystem.WindmillState;
 import frc.robot.subsystems.FeederSubsystem.FeedMode;
 
 import static frc.robot.Constants.*;
@@ -218,23 +220,47 @@ public class RobotContainer {
         //         .whenHeld(new IntakeCommand(intake, feeder, (() -> driveController.getLeftBumper())));
 
         // // climb
-        new JoystickButton(driveController, Button.kBack.value)
-            .whenHeld(deployClimberCommand);
+        // new JoystickButton(driveController, Button.kBack.value)
+        //     .whenHeld(deployClimberCommand);
 
-        new JoystickButton(driveController, Button.kStart.value)
-            .whenPressed(new ExtendElevatorCommand(climber));
+        // new JoystickButton(driveController, Button.kStart.value)
+        //     .whenPressed(new ExtendElevatorCommand(climber));
 
+        // new JoystickButton(driveController, Button.kB.value)
+        //     .whenPressed(new SwitchRedHookCommand(climber, HookPosition.Release)
+        //     .alongWith(new SwitchBlueHookCommand(climber, HookPosition.Release)));
+
+        // new JoystickButton(driveController, Button.kY.value)
+        //     .whenPressed(new SwitchRedHookCommand(climber, HookPosition.Lock)
+        //     .alongWith(new SwitchBlueHookCommand(climber, HookPosition.Lock)));
+
+        // new JoystickButton(driveController, Button.kX.value)
+        //     .whenPressed(new SwitchRedHookCommand(climber, HookPosition.Grab)
+        //     .alongWith(new SwitchBlueHookCommand(climber, HookPosition.Grab)));
+
+        // new JoystickButton(driveController, Button.kA.value)
+        //     .whileHeld(new MoveWindmillCommand(climber, 0.5));
+
+        // new JoystickButton(driveController, Button.kB.value)
+        //     .whileHeld(new MoveWindmillCommand(climber, -0.5));
         new JoystickButton(driveController, Button.kA.value)
-            .whenPressed(new InstantCommand(() -> climber.homeHook()));
-
-        new JoystickButton(driveController, Button.kB.value)
-            .whenHeld(new SwitchRedHookCommand(climber, HookPosition.Release));
-
-        new JoystickButton(driveController, Button.kY.value)
-            .whenHeld(new SwitchRedHookCommand(climber, HookPosition.Lock));
+            .whileHeld(new RotateWindmillCommand(climber, WindmillState.FirstBarClimb));
 
         new JoystickButton(driveController, Button.kX.value)
-            .whenHeld(new SwitchRedHookCommand(climber, HookPosition.Grab));
+            .whileHeld(new RotateWindmillCommand(climber, WindmillState.ShiftWeightOffFirst));
+
+        new JoystickButton(driveController, Button.kB.value)
+            .whileHeld(new RotateWindmillCommand(climber, WindmillState.FirstToSecond));
+            
+        new JoystickButton(driveController, Button.kStart.value)
+            .whileHeld(new RotateWindmillCommand(climber, WindmillState.ShiftWeightOffSecond));
+
+        new JoystickButton(driveController, Button.kY.value)
+            .whileHeld(new RotateWindmillCommand(climber, WindmillState.SecondToThird));
+
+        new JoystickButton(driveController, Button.kBack.value)
+            .whileHeld(new RotateWindmillCommand(climber, WindmillState.Hang));
+
 
         // new JoystickButton(driveController, Button.kY.value).whenHeld(climbCommand);
 
