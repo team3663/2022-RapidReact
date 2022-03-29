@@ -69,8 +69,8 @@ public class ClimberSubsystem extends SubsystemBase {
     private final double kHookMaxOutput = 1;
 
     // positions based on encoders
-    private double grab = -5;
-    private double release = MAX_HOOK_ANGLE - 3;
+    private double grab = MAX_HOOK_ANGLE - 3;
+    private double release = -5;
     private double lock = -23;
 
     // Tracking Info
@@ -80,22 +80,24 @@ public class ClimberSubsystem extends SubsystemBase {
 
     // All of these args are in Degreas
     private Hook(int HookCanId, HookSet hookSet) {
-      switch(hookSet){
+      
+    
+    hookMotor = new CANSparkMax(HookCanId, MotorType.kBrushless);
+    hookPosition = hookMotor.getEncoder();
+    hookPositionPID = hookMotor.getPIDController();
+    
+    switch(hookSet){
         case Blue:
           hookMotor.setInverted(true);
       }
 
-      hookMotor = new CANSparkMax(HookCanId, MotorType.kBrushless);
-      hookPosition = hookMotor.getEncoder();
-      hookPositionPID = hookMotor.getPIDController();
-
-      // Setting the PID Values
-      hookPositionPID.setP(hookP);
-      hookPositionPID.setI(hookI);
-      hookPositionPID.setD(hookD);
-      hookPositionPID.setIZone(hookIz);
-      hookPositionPID.setFF(hookFF);
-      hookPositionPID.setOutputRange(kHookMinOutput, kHookMaxOutput);
+    // Setting the PID Values
+    hookPositionPID.setP(hookP);
+    hookPositionPID.setI(hookI);
+    hookPositionPID.setD(hookD);
+    hookPositionPID.setIZone(hookIz);
+    hookPositionPID.setFF(hookFF);
+    hookPositionPID.setOutputRange(kHookMinOutput, kHookMaxOutput);
 
       hookMotor.setIdleMode(IdleMode.kBrake);
     }
@@ -110,6 +112,12 @@ public class ClimberSubsystem extends SubsystemBase {
         hookMotor.set(-0.2);
         return;
       }
+
+    //   if (hookMotor.getEncoder().getVelocity() > 0) { 
+    //     System.out.println(encoderPositionToAngle(hookPosition.getPosition()));
+    //     hookMotor.set(-0.2);
+    //     return;
+    //   }
 
       goingHome = false;
       hookMotor.set(0);

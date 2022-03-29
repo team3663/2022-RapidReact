@@ -70,8 +70,8 @@ public final class Constants {
 	public static final int ELEVATOR_CAN_ID = 30;
 	public static final int WINDMILL_1_CAN_ID = 31;
 	public static final int WINDMILL_2_CAN_ID = 32;
-	public static final int RED_HOOK_CAN_ID = 33;
-	public static final int BLUE_HOOK_CAN_ID = 34;
+	public static final int RED_HOOK_CAN_ID = 34;
+	public static final int BLUE_HOOK_CAN_ID = 33;
 
 	// Solenoid Channels
 	public static final int ARM_RETRACT_SOLENOID_CHAN = 0;

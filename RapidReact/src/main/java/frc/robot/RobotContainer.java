@@ -221,6 +221,9 @@ public class RobotContainer {
         new JoystickButton(driveController, Button.kBack.value)
             .whenHeld(deployClimberCommand);
 
+        new JoystickButton(driveController, Button.kStart.value)
+            .whenPressed(new ExtendElevatorCommand(climber));
+
         new JoystickButton(driveController, Button.kA.value)
             .whenPressed(new InstantCommand(() -> climber.homeHook()));
 
