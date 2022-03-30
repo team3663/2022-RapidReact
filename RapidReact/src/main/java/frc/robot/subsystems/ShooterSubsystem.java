@@ -12,6 +12,7 @@ import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 
 import frc.robot.utils.FiringSolution;
 import frc.robot.utils.Ranger;
@@ -124,6 +125,10 @@ public class ShooterSubsystem extends SubsystemBase {
         shooterMotor2 = new CANSparkMax(shooterMotor2CANID, MotorType.kBrushless);
         shooterMotor2.setIdleMode(IdleMode.kCoast);
         shooterMotor2.follow(shooterMotor1, true);
+        shooterMotor2.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 500);
+        shooterMotor2.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 500);
+        shooterMotor2.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 65535);
+        shooterMotor2.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 65535);
 
         hoodMotor = new CANSparkMax(hoodMotorCANID, MotorType.kBrushless);
         hoodMotor.setIdleMode(IdleMode.kBrake);

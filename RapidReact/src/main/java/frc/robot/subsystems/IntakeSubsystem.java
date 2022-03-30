@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 
 public class IntakeSubsystem extends SubsystemBase {
 
@@ -58,6 +59,10 @@ public class IntakeSubsystem extends SubsystemBase {
     intakeMotor = new CANSparkMax(motor1CANId, MotorType.kBrushless);
     intakeMotor.setIdleMode(IdleMode.kCoast);
     intakeMotor.setSmartCurrentLimit(MOTOR_CURRENT_LIMIT);
+    intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 500);
+    intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 500);
+    intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 65535);
+    intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 65535);
 
     boomIntakeSolenoid = new DoubleSolenoid(PneumaticsModuleType.REVPH, boomExtendSolenoidChan,
         boomRetractSolenoidChan);
