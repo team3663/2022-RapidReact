@@ -469,4 +469,6 @@ public class ClimberSubsystem extends SubsystemBase {
 }
 }
 
-//targetPosition to simplify end for the commands
+//gear ratios 
+//command group 
+//parrellel movement of hooks and windmill
