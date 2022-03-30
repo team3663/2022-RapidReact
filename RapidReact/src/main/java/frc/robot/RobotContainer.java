@@ -19,6 +19,7 @@ import frc.robot.commands.AutoShootCommand;
 import frc.robot.commands.DefaultDriveCommand;
 import frc.robot.commands.DefaultShooterCommand;
 import frc.robot.commands.ExtendElevatorCommand;
+import frc.robot.commands.HomeElevatorCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.MoveWindmillCommand;
 import frc.robot.commands.RotateWindmillCommand;
@@ -100,7 +101,7 @@ public class RobotContainer {
         intake = new IntakeSubsystem(INTAKE_MOTOR_CAN_ID, BOOM_RETRACT_SOLENOID_CHAN, BOOM_EXTEND_SOLENOID_CHAN,
                 ARM_RETRACT_SOLENOID_CHAN, ARM_EXTEND_SOLENOID_CHAN);
         climber = new ClimberSubsystem(ELEVATOR_CAN_ID, WINDMILL_1_CAN_ID, WINDMILL_2_CAN_ID, 
-                RED_HOOK_CAN_ID, BLUE_HOOK_CAN_ID, ELEVATOR_LIMITSWITCH_DIO, WINDMILL_SENSOR_DIO);
+                RED_HOOK_CAN_ID, BLUE_HOOK_CAN_ID, WINDMILL_SENSOR_DIO);
 
         // Setup our server drivetrain subsystem
         SwerveModuleConfig fl = new SwerveModuleConfig(FRONT_LEFT_MODULE_DRIVE_MOTOR, FRONT_LEFT_MODULE_STEER_MOTOR,
@@ -148,7 +149,7 @@ public class RobotContainer {
         double elevatorPosition = 12;
 
         deployClimberCommand = new SequentialCommandGroup(
-            new ExtendElevatorCommand(climber),
+            // new ExtendElevatorCommand(climber),
             new SwitchRedHookCommand(climber, HookPosition.Grab),
             new SwitchBlueHookCommand(climber, HookPosition.Grab)
         );
@@ -175,8 +176,8 @@ public class RobotContainer {
     private void configureButtonBindings() {
         
         // Reset the gyroscope on the Pigeon.
-        // new JoystickButton(driveController, Button.kStart.value)
-        //         .whenPressed(new InstantCommand(() -> drivetrain.resetGyroscope()));
+        new JoystickButton(driveController, Button.kStart.value)
+                .whenPressed(new InstantCommand(() -> drivetrain.resetGyroscope()));
 
         // // Schedule the Shoot command to fire a cargo
         // /*
@@ -226,40 +227,53 @@ public class RobotContainer {
         // new JoystickButton(driveController, Button.kStart.value)
         //     .whenPressed(new ExtendElevatorCommand(climber));
 
-        // new JoystickButton(driveController, Button.kB.value)
-        //     .whenPressed(new SwitchRedHookCommand(climber, HookPosition.Release)
-        //     .alongWith(new SwitchBlueHookCommand(climber, HookPosition.Release)));
+        new JoystickButton(driveController, Button.kB.value)
+            .whenPressed(new SwitchRedHookCommand(climber, HookPosition.Release)
+            .alongWith(new SwitchBlueHookCommand(climber, HookPosition.Release)));
 
-        // new JoystickButton(driveController, Button.kY.value)
-        //     .whenPressed(new SwitchRedHookCommand(climber, HookPosition.Lock)
-        //     .alongWith(new SwitchBlueHookCommand(climber, HookPosition.Lock)));
+        new JoystickButton(driveController, Button.kY.value)
+            .whenPressed(new SwitchRedHookCommand(climber, HookPosition.Lock)
+            .alongWith(new SwitchBlueHookCommand(climber, HookPosition.Lock)));
 
-        // new JoystickButton(driveController, Button.kX.value)
-        //     .whenPressed(new SwitchRedHookCommand(climber, HookPosition.Grab)
-        //     .alongWith(new SwitchBlueHookCommand(climber, HookPosition.Grab)));
+        new JoystickButton(driveController, Button.kX.value)
+            .whenPressed(new SwitchRedHookCommand(climber, HookPosition.Grab)
+            .alongWith(new SwitchBlueHookCommand(climber, HookPosition.Grab)));
 
         // new JoystickButton(driveController, Button.kA.value)
         //     .whileHeld(new MoveWindmillCommand(climber, 0.5));
 
         // new JoystickButton(driveController, Button.kB.value)
         //     .whileHeld(new MoveWindmillCommand(climber, -0.5));
-        new JoystickButton(driveController, Button.kA.value)
-            .whileHeld(new RotateWindmillCommand(climber, WindmillState.FirstBarClimb));
 
-        new JoystickButton(driveController, Button.kX.value)
-            .whileHeld(new RotateWindmillCommand(climber, WindmillState.ShiftWeightOffFirst));
+        // new JoystickButton(driveController, Button.kA.value)
+        //     .whileHeld(new RotateWindmillCommand(climber, WindmillState.FirstBarClimb));
 
-        new JoystickButton(driveController, Button.kB.value)
-            .whileHeld(new RotateWindmillCommand(climber, WindmillState.FirstToSecond));
+        // new JoystickButton(driveController, Button.kX.value)
+        //     .whileHeld(new RotateWindmillCommand(climber, WindmillState.ShiftWeightOffFirst));
+
+        // new JoystickButton(driveController, Button.kB.value)
+        //     .whileHeld(new RotateWindmillCommand(climber, WindmillState.FirstToSecond));
             
-        new JoystickButton(driveController, Button.kStart.value)
-            .whileHeld(new RotateWindmillCommand(climber, WindmillState.ShiftWeightOffSecond));
+        // new JoystickButton(driveController, Button.kStart.value)
+        //     .whileHeld(new RotateWindmillCommand(climber, WindmillState.ShiftWeightOffSecond));
 
-        new JoystickButton(driveController, Button.kY.value)
-            .whileHeld(new RotateWindmillCommand(climber, WindmillState.SecondToThird));
+        // new JoystickButton(driveController, Button.kY.value)
+        //     .whileHeld(new RotateWindmillCommand(climber, WindmillState.SecondToThird));
+
+        // new JoystickButton(driveController, Button.kBack.value)
+        //     .whileHeld(new RotateWindmillCommand(climber, WindmillState.Hang));
+
+        // new JoystickButton(driveController, Button.kLeftBumper.value)
+        //     .whenPressed(new HomeElevatorCommand(climber));
+
+        new JoystickButton(driveController, Button.kRightBumper.value)
+            .whileHeld(new ExtendElevatorCommand(climber, 0.1));
+
+        new JoystickButton(driveController, Button.kLeftBumper.value)
+            .whileHeld(new ExtendElevatorCommand(climber, -0.1));
 
         new JoystickButton(driveController, Button.kBack.value)
-            .whileHeld(new RotateWindmillCommand(climber, WindmillState.Hang));
+            .whenPressed(new HomeElevatorCommand(climber));
 
 
         // new JoystickButton(driveController, Button.kY.value).whenHeld(climbCommand);

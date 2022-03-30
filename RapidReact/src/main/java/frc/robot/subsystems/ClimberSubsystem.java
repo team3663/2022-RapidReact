@@ -65,14 +65,14 @@ public class ClimberSubsystem extends SubsystemBase {
     // Hook Constants
     private final double MAX_HOOK_ANGLE = 160;
     private final double MIN_HOOK_ANGLE = 0; 
-    private final double ROTATIONS_PER_DEGREE = (570.0 / 1.0) * (1.0 / 360.0);
+    private final double ROTATIONS_PER_DEGREE = (270.0 / 1.0) * (1.0 / 360.0);
     private final double kHookMinOutput = -1;
     private final double kHookMaxOutput = 1;
 
     // positions based on encoders
     private double grab = MAX_HOOK_ANGLE - 3;
-    private double release = 0;
-    private double lock = -20;
+    private double release = -20;
+    private double lock = -35;
 
     // Tracking Info
     public boolean goingHome = true;
@@ -101,7 +101,7 @@ public class ClimberSubsystem extends SubsystemBase {
       hookPositionPID.setOutputRange(kHookMinOutput, kHookMaxOutput);
 
 
-      hookMotor.setIdleMode(IdleMode.kBrake);
+      hookMotor.setIdleMode(IdleMode.kCoast);
     }
 
     private void homeHook() {
@@ -271,14 +271,11 @@ public class ClimberSubsystem extends SubsystemBase {
     }
   }
 
-  private class Elevator {
+  public class Elevator {
 
     private CANSparkMax elevatorMotor;
     private RelativeEncoder elevatorEncoder;
     private SparkMaxPIDController elevatorPIDController;
-
-    // Limit Switch
-    private DigitalInput elevatorLimitSwitch;
 
     // Elevator PID
     private double elevatorP;
@@ -288,18 +285,14 @@ public class ClimberSubsystem extends SubsystemBase {
     // Gear Ratio
     private double gearRatio = 1;
 
-    private double upPower = -0.1;
-    private boolean elevatorUp;
-
-    public Elevator(int ElevatorCanId, int ElevatorLimitSwitchId) {
+    public Elevator(int ElevatorCanId) {
       elevatorMotor = new CANSparkMax(ElevatorCanId, MotorType.kBrushless);
 
       elevatorEncoder = elevatorMotor.getEncoder();
       elevatorPIDController = elevatorMotor.getPIDController();
 
       elevatorEncoder.setPositionConversionFactor(gearRatio);
-
-      elevatorLimitSwitch = new DigitalInput(ElevatorLimitSwitchId);
+      elevatorMotor.setInverted(false);
 
       elevatorMotor.setIdleMode(IdleMode.kBrake);
 
@@ -308,24 +301,31 @@ public class ClimberSubsystem extends SubsystemBase {
       elevatorPIDController.setD(elevatorD);
     }
 
-    public void extendElevator(){
-        if(!elevatorLimitSwitch.get()){
-            elevatorMotor.set(upPower);
-        } else {
-            elevatorMotor.set(0);
-            elevatorUp = true;
-        }
+    public void zeroEncoder(){
+      elevatorEncoder.setPosition(0);
     }
 
-    public boolean elevatorExtended(){
-        return elevatorUp;
+    public double getVelocity(){
+      return elevatorEncoder.getVelocity();
+    }
+
+    public void extendElevator(double speed){
+      elevatorMotor.set(speed);
+    }
+
+    public double getHeight(){
+      return elevatorEncoder.getPosition();
+    }
+
+    public void setTargetHeight(double height){
+      elevatorPIDController.setReference(height, ControlType.kPosition);
     }
   }
 
-  private Hook hookRed;
-  private Hook hookBlue;
-  private Windmill windmill;
-  private Elevator elevator;
+  public Hook hookRed;
+  public Hook hookBlue;
+  public Windmill windmill;
+  public Elevator elevator;
 
   // Shuffleboard Entrys
   private NetworkTableEntry redHookCurrentAngleEntry;
@@ -338,14 +338,16 @@ public class ClimberSubsystem extends SubsystemBase {
   private NetworkTableEntry windmillCurrentAngleEntry;
   private NetworkTableEntry windmillTargetAngleEntry;
 
+  private NetworkTableEntry elevatorCurrentAngleEntry;
+
 
   public ClimberSubsystem(int ElevatorCanId, int WindmillCanId, int WindmillFollowerCanId, int HookABCanId, int HookXYCanId,
-      int ElevatorLimitSwitchId, int WindmillLimitSwitchId) {
+      int WindmillLimitSwitchId) {
 
     hookRed = new Hook(HookABCanId, HookSet.Red);
     hookBlue = new Hook(HookXYCanId, HookSet.Blue);
     windmill = new Windmill(WindmillCanId, WindmillFollowerCanId, WindmillLimitSwitchId);
-    elevator = new Elevator(ElevatorCanId, ElevatorLimitSwitchId);
+    elevator = new Elevator(ElevatorCanId);
 
     initTelemetry();
   }
@@ -382,15 +384,6 @@ public class ClimberSubsystem extends SubsystemBase {
     windmill.windmillMotor.set(speed);
   }
 
-  // PUBLIC ELEVATOR METHODS
-  public void elevatorUp(){
-    elevator.extendElevator();
-  }
-
-  public boolean getElevatorExtended(){
-    return elevator.elevatorExtended();
-  }
-
  
   @Override
   public void periodic() {
@@ -411,6 +404,10 @@ public class ClimberSubsystem extends SubsystemBase {
     ShuffleboardTab tab = Shuffleboard.getTab("Climber"); 
 
     // ELEVATOR
+    elevatorCurrentAngleEntry = tab.add("Elevator Position", 0)
+            .withPosition(1, 5)
+            .withSize(1, 1)
+            .getEntry();
 
     // WINDMILL
 
@@ -466,6 +463,8 @@ public class ClimberSubsystem extends SubsystemBase {
 
     windmillCurrentAngleEntry.setDouble(windmill.getAngle());
     windmillTargetAngleEntry.setDouble(windmill.targetAngle);
+
+    elevatorCurrentAngleEntry.setDouble(elevator.getHeight());
 }
 }
 

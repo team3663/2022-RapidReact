@@ -6,26 +6,25 @@ import frc.robot.subsystems.ClimberSubsystem;
 public class ExtendElevatorCommand extends CommandBase {
 
 	private ClimberSubsystem climber;
+	private double speed;
 
-	public ExtendElevatorCommand(ClimberSubsystem climber) {
+	public ExtendElevatorCommand(ClimberSubsystem climber, double speed) {
 		this.climber = climber;
+		this.speed = speed;
 
 		addRequirements(climber);
 	}
 
 	@Override
 	public void initialize() {
-		climber.elevatorUp();
+		climber.elevator.extendElevator(speed);
 	}
 
 	@Override
 	public void execute() {}
 
 	@Override
-	public void end(boolean interrupted) {}
-
-	@Override
-	public boolean isFinished() {
-		return climber.getElevatorExtended();
+	public void end(boolean interrupted) {
+		climber.elevator.extendElevator(0);
 	}
 }
