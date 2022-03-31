@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -90,6 +91,8 @@ public class ShooterSubsystem extends SubsystemBase {
 
     public boolean aligned = false;
 
+    private Timer hoodTimer;
+
     private NetworkTableEntry currentSpeedEntry;
     private NetworkTableEntry targetSpeedEntry;
     private NetworkTableEntry shooterEncoderEntry;
@@ -135,6 +138,8 @@ public class ShooterSubsystem extends SubsystemBase {
         hoodMotor.setSmartCurrentLimit(15);
         hoodEncoder = hoodMotor.getEncoder();
         hoodLimit = new DigitalInput(hoodLimitDio);
+
+        hoodTimer = new Timer();
 
         shooterPidController = shooterMotor1.getPIDController();
         shooterPidController.setP(kShooterP);
@@ -292,6 +297,8 @@ public class ShooterSubsystem extends SubsystemBase {
      */
     private void parkHood() {
 
+        hoodTimer.start();
+
         // If we are not in the process of parking the hood then just bail out now.
         // parkingHood is initialized to true so we will always fall through this
         // check on the first call.
@@ -299,14 +306,16 @@ public class ShooterSubsystem extends SubsystemBase {
             return;
         }
 
+        
         // if the hood is not at the limit then set power to start lowering it and return.
-        if (hoodMotor.getOutputCurrent() <= 1) {
+        if (Math.abs(hoodEncoder.getVelocity()) > 0.1 || hoodTimer.get() < 0.25) {
             hoodMotor.set(-0.05);
             return;
         }
 
         // Hood has reached limit, clear parking flag, stop motor and zero encoder.
         parkingHood = false;
+        hoodTimer.stop();
         hoodMotor.set(0);
         hoodEncoder.setPosition(-0.25);
         setAngle(MAX_HOOD_ANGLE);

@@ -16,19 +16,11 @@ public class SwitchBlueHookCommand extends CommandBase {
 
 	@Override
   	public void initialize() {
-    	climber.setBlueHookPosition(hookPosition);
+    	climber.hookBlue.setHookPosition(hookPosition);
   	}
 
 	@Override
-	public void execute() {
-	}
-
-	@Override
-	public void end(boolean interrupted) {
-	}
-
-	@Override
 	public boolean isFinished() {
-		return climber.isBlueHookAtPosition();
+		return climber.hookBlue.isAtTargetPosition();
 	}
 }

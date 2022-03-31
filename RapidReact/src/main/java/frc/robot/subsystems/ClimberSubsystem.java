@@ -27,6 +27,7 @@ public class ClimberSubsystem extends SubsystemBase {
   };
 
   public enum WindmillState {
+    Home,
     FirstBarClimb,
     FirstToSecond,
     SecondToThird,
@@ -45,7 +46,7 @@ public class ClimberSubsystem extends SubsystemBase {
   public HookSet currentHookSet;
 
   // Hook Helper class.
-  private class Hook {
+  public class Hook {
 
     private RelativeEncoder hookPosition;
     private CANSparkMax hookMotor;
@@ -66,8 +67,8 @@ public class ClimberSubsystem extends SubsystemBase {
     private final double MAX_HOOK_ANGLE = 160;
     private final double MIN_HOOK_ANGLE = 0; 
     private final double ROTATIONS_PER_DEGREE = (270.0 / 1.0) * (1.0 / 360.0);
-    private final double kHookMinOutput = -1;
-    private final double kHookMaxOutput = 1;
+    private final double kHookMinOutput = -0.25;
+    private final double kHookMaxOutput = 0.25;
 
     // positions based on encoders
     private double grab = MAX_HOOK_ANGLE - 3;
@@ -101,7 +102,7 @@ public class ClimberSubsystem extends SubsystemBase {
       hookPositionPID.setOutputRange(kHookMinOutput, kHookMaxOutput);
 
 
-      hookMotor.setIdleMode(IdleMode.kCoast);
+      hookMotor.setIdleMode(IdleMode.kBrake);
     }
 
     private void homeHook() {
@@ -158,7 +159,7 @@ public class ClimberSubsystem extends SubsystemBase {
     }
   }
 
-  private class Windmill {
+  public class Windmill {
     // Phisical controllers
     private CANSparkMax windmillMotor;
     private CANSparkMax windmillFollowerMotor;
@@ -182,10 +183,11 @@ public class ClimberSubsystem extends SubsystemBase {
     private double currentAngle;
     private double targetAngle;
 
-    private final double FIRST_BAR_CLIMB = 40;
-    private final double FIRST_TO_SECOND = 80;
+    private final double HOME = 0;
+    private final double FIRST_BAR_CLIMB = 100;
+    private final double FIRST_TO_SECOND = 155;
     private final double SHIFT_WEIGHT_OFFSET = -30;
-    private final double SECOND_TO_THIRD = 300;
+    private final double SECOND_TO_THIRD = FIRST_TO_SECOND + 180;
     private final double HANG = 360;
 
     // PID Values
@@ -200,8 +202,8 @@ public class ClimberSubsystem extends SubsystemBase {
 
       // Setting Modes
       windmillFollowerMotor.follow(windmillMotor, true);
-      windmillFollowerMotor.setIdleMode(IdleMode.kCoast);
-      windmillMotor.setIdleMode(IdleMode.kCoast);
+      windmillFollowerMotor.setIdleMode(IdleMode.kBrake);
+      windmillMotor.setIdleMode(IdleMode.kBrake);
 
       // Setting Local Varbles
       windmillPIDController = windmillMotor.getPIDController();
@@ -220,14 +222,6 @@ public class ClimberSubsystem extends SubsystemBase {
       windmillEncoder.setPosition(0);
     }
 
-    // public void homeWindmill() {
-    //   windmillMotor.set(0.2);
-    //   if (windmillLimitSwitch.get()) {
-    //     windmillMotor.set(0);
-    //     windmillRotaionZero = windmillEncoder.getPosition();
-    //   }
-    // }
-
     public void setAngle(double angle) {
       targetAngle = angle;
       windmillPIDController.setReference(targetAngle, ControlType.kPosition);
@@ -237,8 +231,20 @@ public class ClimberSubsystem extends SubsystemBase {
       return windmillEncoder.getPosition();
     }
 
+    public double getTargetAngle(){
+      return targetAngle;
+    }
+
+    public void setWindmillOutput(double speed){
+      windmillMotor.set(speed);
+    }
+
     public void rotateWindmill(WindmillState position) {
       switch (position) {
+        case Home:
+          setAngle(HOME);
+          currentWindmillState = WindmillState.Home;
+          break;
         case FirstBarClimb:
           setAngle(FIRST_BAR_CLIMB);
           currentWindmillState = WindmillState.FirstBarClimb;
@@ -278,7 +284,7 @@ public class ClimberSubsystem extends SubsystemBase {
     private SparkMaxPIDController elevatorPIDController;
 
     // Elevator PID
-    private double elevatorP;
+    private double elevatorP = 0.01;
     private double elevatorI;
     private double elevatorD;
 
@@ -352,39 +358,6 @@ public class ClimberSubsystem extends SubsystemBase {
     initTelemetry();
   }
 
-  //public Climber Methods
- 
-  // PUBLIC HOOK METHODS
-  public boolean isRedHookAtPosition() {
-    return hookRed.isAtTargetPosition();
-  }
-
-  public boolean isBlueHookAtPosition() {
-    return hookBlue.isAtTargetPosition();
-  }
-
-  public void setRedHookPosition(HookPosition position){
-    hookRed.setHookPosition(position);
-  }
-
-  public void setBlueHookPosition(HookPosition position){
-    hookBlue.setHookPosition(position);
-  }
-
-  // PUBLIC WINDMILL METHODS
-  public void setWindmillAngle(WindmillState position){
-      windmill.rotateWindmill(position);
-  }
-
-  public boolean isAtWindmillPosition(){
-      return windmill.isAtTargetPosition();
-  }
-
-  public void moveWindmill(double speed){
-    windmill.windmillMotor.set(speed);
-  }
-
- 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
