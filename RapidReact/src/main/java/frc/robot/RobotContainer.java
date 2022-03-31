@@ -125,6 +125,7 @@ public class RobotContainer {
         registerAutoCommand("Taxi Only", this::createTaxiOnlyCommand);
         registerAutoCommand("One Ball", this::createOneBallCommand);
         registerAutoCommand("Two Ball", this::createTwoBallCommand);
+        registerAutoCommand("Three Ball", this::createThreeBallCommand);
         registerAutoCommand("Five Ball", () -> fiveBallAutoCommand);
         registerAutoCommand("TUNE", this::createTuneAutoCommand);
 
