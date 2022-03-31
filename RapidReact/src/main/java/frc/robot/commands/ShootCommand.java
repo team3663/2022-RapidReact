@@ -151,7 +151,7 @@ public class ShootCommand extends CommandBase {
 
         // We only get here if cargo staging has completed.
         // Use the state of the trigger to decided whether to run or stop the feeder.
-        if (/*shooter.ready() &&*/  trigger.getAsBoolean()){// && tController.atSetpoint()) { 
+        if (shooter.ready() &&  trigger.getAsBoolean()){// && tController.atSetpoint()) { 
              feeder.setFeedMode(FeedMode.CONTINUOUS);
         }
         if (trigger.getAsBoolean() && tController.atSetpoint()) { 

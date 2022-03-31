@@ -34,8 +34,8 @@ public class FeederSubsystem extends SubsystemBase {
     private final double KD = 0.0009;
 
     private final int FEED_RPM_STOPPED = 0;
-    private final int FEED_RPM_SHOOT = 4500; // how fast the feeder should be running when we are shooting
-    private final int FEED_RPM_PRESHOOT = 1500; // how fast the feeder should be running when we are prepping shoot
+    private final int FEED_RPM_SHOOT = 2000; // how fast the feeder should be running when we are shooting
+    private final int FEED_RPM_PRESHOOT = 1000; // how fast the feeder should be running when we are prepping shoot
     private final int FEED_RPM_INTAKE = 2000; // how fast the feeder should be running when indexing the balls
     private final int FEED_RPM_REVERSE_CONTINUOUS = -2500;
 
@@ -279,8 +279,10 @@ public class FeederSubsystem extends SubsystemBase {
 
         @Override
         protected void init(FeederSubsystem feeder) {
-            targetPosition = feedEncoder.getPosition() + REV_PER_FULL_FEED;
-            feeder.feedPID.setReference(FEED_RPM_PRESHOOT, ControlType.kVelocity);
+            if(!feeder.ballInExit()) {
+                targetPosition = feedEncoder.getPosition() + REV_PER_FULL_FEED;
+                feeder.feedPID.setReference(FEED_RPM_PRESHOOT, ControlType.kVelocity);
+            }
         }
 
         @Override

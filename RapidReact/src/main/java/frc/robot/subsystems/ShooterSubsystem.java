@@ -135,7 +135,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
         hoodMotor = new CANSparkMax(hoodMotorCANID, MotorType.kBrushless);
         hoodMotor.setIdleMode(IdleMode.kBrake);
-        hoodMotor.setSmartCurrentLimit(15);
+        hoodMotor.setSmartCurrentLimit(40);
         hoodEncoder = hoodMotor.getEncoder();
         hoodLimit = new DigitalInput(hoodLimitDio);
 
