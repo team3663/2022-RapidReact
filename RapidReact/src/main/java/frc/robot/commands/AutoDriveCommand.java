@@ -53,7 +53,7 @@ public class AutoDriveCommand extends CommandBase {
     translationXSpeed = translationXController.calculate(currentX);
     //rotationSpeed = rotationController.calculate(currentAngle);
 
-    drivetrainSubsystem.drive(ChassisSpeeds.fromFieldRelativeSpeeds(translationXSpeed, 0, 0, drivetrainSubsystem.getGyroscopeRotation()));
+    drivetrainSubsystem.drive(ChassisSpeeds.fromFieldRelativeSpeeds(translationXSpeed, 0, 0, drivetrainSubsystem.getPose().getRotation()));
   }
 
   @Override

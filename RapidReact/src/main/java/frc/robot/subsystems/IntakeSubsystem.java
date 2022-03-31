@@ -30,7 +30,7 @@ public class IntakeSubsystem extends SubsystemBase {
   private final DoubleSolenoid armIntakeSolenoid;
   private boolean boomIsOut;
   private boolean armIsOut;
-  private final int MOTOR_CURRENT_LIMIT = 25;
+  private final int MOTOR_CURRENT_LIMIT = 40;
   private double startTime = 0;
   private final double DELAYTIME = 0.5;
 

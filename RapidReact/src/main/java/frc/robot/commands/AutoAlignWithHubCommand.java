@@ -13,53 +13,72 @@ import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.LimelightSubsystem;
 
 public class AutoAlignWithHubCommand extends CommandBase {
-  private DrivetrainSubsystem drivetrain;
-  private LimelightSubsystem limelight;
+	private DrivetrainSubsystem drivetrain;
+	private LimelightSubsystem limelight;
 
-  private PIDController rotationPidController = new PIDController(0.12, 0, 0);
+	private PIDController tController = new PIDController(0.12, 0, 0);
 
-  private double currentOffset;
-  private double speed;
+	private double currentOffset;
+	private double speed;
 
-  private DoubleSupplier translationXSupplier;
-  private DoubleSupplier translationYSupplier;
+	private DoubleSupplier translationXSupplier;
+	private DoubleSupplier translationYSupplier;
 
-  // during tele
-  public AutoAlignWithHubCommand(LimelightSubsystem limelight, DrivetrainSubsystem drivetrain,
-                                  DoubleSupplier translationXSupplier,
-                                  DoubleSupplier translationYSupplier) {
-    this.limelight = limelight;
-    this.drivetrain = drivetrain;
+	private boolean auto;
 
-    this.translationXSupplier = translationXSupplier;
-    this.translationYSupplier = translationYSupplier;
+	// during tele
+	public AutoAlignWithHubCommand(LimelightSubsystem limelight, DrivetrainSubsystem drivetrain,
+			DoubleSupplier translationXSupplier,
+			DoubleSupplier translationYSupplier) {
+		this.limelight = limelight;
+		this.drivetrain = drivetrain;
 
-    rotationPidController.setSetpoint(0);
+		this.translationXSupplier = translationXSupplier;
+		this.translationYSupplier = translationYSupplier;
 
-    addRequirements(drivetrain);
-  }
+		tController.setSetpoint(0);
+		tController.setTolerance(3);
 
-  @Override
-  public void initialize() {
-  }
+		addRequirements(drivetrain);
+	}
 
-  @Override
-  public void execute() {
-    currentOffset = limelight.getXOffset();
-    speed = rotationPidController.calculate(currentOffset);
+	// during auto
+	public AutoAlignWithHubCommand(LimelightSubsystem limelight, DrivetrainSubsystem drivetrain) {
+		this.limelight = limelight;
+		this.drivetrain = drivetrain;
 
-    drivetrain.drive(ChassisSpeeds.fromFieldRelativeSpeeds(translationXSupplier.getAsDouble(),
-                                                            translationYSupplier.getAsDouble(),
-                                                            speed, drivetrain.getGyroscopeRotation()));
-  }
+		this.translationXSupplier = () -> 0;
+		this.translationYSupplier = () -> 0;
 
-  @Override
-  public void end(boolean interrupted) {}
+		tController.setSetpoint(0);
+		tController.setTolerance(3);
 
-  @Override
+		addRequirements(drivetrain);
+	}
+
+	@Override
+	public void initialize() {
+	}
+
+	@Override
+	public void execute() {
+		currentOffset = limelight.getXOffset();
+		speed = tController.calculate(currentOffset);
+
+		drivetrain.drive(ChassisSpeeds.fromFieldRelativeSpeeds(translationXSupplier.getAsDouble(),
+				translationYSupplier.getAsDouble(),
+				speed, drivetrain.getPose().getRotation()));
+	}
+
+	@Override
+	public void end(boolean interrupted) {
+	}
+
+	@Override
   public boolean isFinished() {
+	  if (auto && tController.atSetpoint()) {
+		  return true;
+	  }
       return false;
-
-    // return (Math.abs(speed) < 0.01) || (Math.abs(currentOffset) < 0.01); 
   }
 }
