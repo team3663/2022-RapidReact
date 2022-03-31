@@ -73,15 +73,9 @@ public class TrajectoryFactory {
         sampleDistance);
 
     public static Trajectory ball3_station_shoot = new Trajectory(
-<<<<<<< HEAD
         new SplinePathBuilder(new Vector2(-3.38, -1.56), new Rotation2(-7.2,-2.2, true), Rotation2.fromDegrees(-114.96093749999997))
             .hermite(new Vector2(-7.5, -2.6), new Rotation2(-7.2,-2.2, true),Rotation2.fromDegrees(-147))
     //        .hermite(new Vector2(-3.38, -1.56), new Rotation2(1, 1, true), Rotation2.fromDegrees(-155))
-=======
-        new SplinePathBuilder(new Vector2(-3.5, -2.2), new Rotation2(-4.5, -1.67, true), Rotation2.fromDegrees(-114.96093749999997))
-            .hermite(new Vector2(-7.323, -2.514), new Rotation2(-4.5, -1.67, true),Rotation2.fromDegrees(-137.216796875))
-            .hermite(new Vector2(-4.5, -1.67), Rotation2.ZERO, Rotation2.fromDegrees(-153.8720703125))
->>>>>>> 0d00d1feb13a9be99cf4413bb481d7eab906619f
             .build(),
         fast,
         sampleDistance);

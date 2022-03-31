@@ -28,11 +28,11 @@ import frc.robot.subsystems.DriverVisionSubsystem;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.FeederSubsystem;
 import frc.robot.utils.XboxControllerHelper;
-import frc.robot.utils.trajectory.TrajectoryFactory;
 import frc.robot.utils.Ranger;
 import frc.robot.utils.SimpleRanger;
 import frc.robot.utils.SwerveDriveConfig;
 import frc.robot.utils.SwerveModuleConfig;
+import frc.robot.utils.trajectory.TrajectoryFactory;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
@@ -289,15 +289,10 @@ public class RobotContainer {
             new InstantCommand(() -> drivetrain.resetPosition()),
             new InstantCommand(() -> shooter.idle()),
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
-<<<<<<< HEAD
-            //new FollowerCommand(drivetrain, TrajectoryFactory.twoMetersForward),
-            new ShootCommand(shooter, feeder, drivetrain, limelight),
-=======
             new FollowerCommand(drivetrain, TrajectoryFactory.twoMetersForward),
             new ParallelCommandGroup(
                 new AutoAlignWithHubCommand(limelight, drivetrain),
                 new AutoShootCommand(shooter, feeder, limelight, 2)),
->>>>>>> 0d00d1feb13a9be99cf4413bb481d7eab906619f
             new AutoIntakeCommand(intake, feeder, IntakeMode.retracted));
     }
 
@@ -312,7 +307,6 @@ public class RobotContainer {
             new InstantCommand(() -> shooter.idle()),
             new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-0.5, -2, Rotation2d.fromDegrees(-90)))),
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
-<<<<<<< HEAD
             //new ShootCommand(shooter, feeder, drivetrain, limelight),
             //new ParallelCommandGroup(
             new FollowerCommand(drivetrain, TrajectoryFactory.start_ball2),
@@ -320,35 +314,17 @@ public class RobotContainer {
                 //new InstantCommand(() -> feeder.setFeedMode(FeedMode.PRESHOOT))),
             //new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
             
-            new ShootCommand(shooter, feeder, drivetrain, limelight),
+            //new ShootCommand(shooter, feeder, drivetrain, limelight),
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
             new FollowerCommand(drivetrain, TrajectoryFactory.start_ball3_test),
             new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
-            new ShootCommand(shooter, feeder, drivetrain, limelight),
+            //new ShootCommand(shooter, feeder, drivetrain, limelight),
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
             new FollowerCommand(drivetrain, TrajectoryFactory.ball3_station_shoot),
             new FollowerCommand(drivetrain, TrajectoryFactory.ball3_shoot_pos),
-            new AutoIntakeCommand(intake,feeder, IntakeMode.retracted),
-            new AutoShootCommand(shooter, feeder, limelight)
+            new AutoIntakeCommand(intake,feeder, IntakeMode.retracted)
+            //new AutoShootCommand(shooter, feeder, limelight)
           );
-=======
-            new ParallelCommandGroup(
-                new AutoAlignWithHubCommand(limelight, drivetrain),
-                new AutoShootCommand(shooter, feeder, limelight, 1)),
-            new ParallelCommandGroup(
-                new FollowerCommand(drivetrain, TrajectoryFactory.start_ball2_ball3),
-                new InstantCommand(() -> feeder.setFeedMode(FeedMode.PRESHOOT))),
-            new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
-            new ParallelCommandGroup(
-                new AutoAlignWithHubCommand(limelight, drivetrain),
-                new AutoShootCommand(shooter, feeder, limelight, 2)),
-            new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
-            new FollowerCommand(drivetrain, TrajectoryFactory.ball3_station_shoot),
-            new ParallelCommandGroup(
-                new AutoAlignWithHubCommand(limelight, drivetrain),
-                new AutoShootCommand(shooter, feeder, limelight, 2)),
-            new AutoIntakeCommand(intake, feeder, IntakeMode.retracted));
->>>>>>> 0d00d1feb13a9be99cf4413bb481d7eab906619f
     }
 
     public Command createTuneAutoCommand() {
