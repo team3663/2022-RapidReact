@@ -25,9 +25,10 @@ public class ShootCommand extends CommandBase {
     private DoubleSupplier translationXSupplier;
     private DoubleSupplier translationYSupplier;
 
-    private PIDController tController = new PIDController(0.12, 0, 0);
+    private PIDController tController = new PIDController(0.055, 0, 0.005);
 
     private double currentRange;
+    private double staticConst = .34;
     private boolean stagingCargo;
 
     private boolean fixedRange;
@@ -49,7 +50,7 @@ public class ShootCommand extends CommandBase {
         this.translationYSupplier = translationYSupplier;
         
         this.tController.setSetpoint(0);
-        this.tController.setTolerance(3);
+        this.tController.setTolerance(2);
 
         this.currentRange = range;
         this.fixedRange = true;
@@ -93,7 +94,7 @@ public class ShootCommand extends CommandBase {
         double speed = tController.calculate(currentOffset);
         drivetrain.drive(ChassisSpeeds.fromFieldRelativeSpeeds(translationXSupplier.getAsDouble(),
                                                             translationYSupplier.getAsDouble(),
-                                                            speed, drivetrain.getPose().getRotation()));
+                                                            speed + Math.copySign(staticConst, tController.getPositionError()), drivetrain.getPose().getRotation()));
         
         if (tController.atSetpoint()) {
             shooter.aligned = true;
@@ -119,7 +120,10 @@ public class ShootCommand extends CommandBase {
 
         // We only get here if cargo staging has completed.
         // Use the state of the trigger to decided whether to run or stop the feeder.
-        if (shooter.ready() && trigger.getAsBoolean() && tController.atSetpoint()) { 
+        if (/*shooter.ready() &&*/  trigger.getAsBoolean()){// && tController.atSetpoint()) { 
+             feeder.setFeedMode(FeedMode.CONTINUOUS);
+        }
+        if (trigger.getAsBoolean() && tController.atSetpoint()) { 
             feeder.setFeedMode(FeedMode.CONTINUOUS);
         }
         else {

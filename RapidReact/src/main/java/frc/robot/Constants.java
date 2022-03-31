@@ -24,7 +24,7 @@ public final class Constants {
   public static final double BACK_RIGHT_MODULE_STEER_OFFSET = -Math.toRadians(94.482421875);//310.60546875
 
   // Limelight
-  public static final double CAMERA_ANGLE = 36;
+  public static final double CAMERA_ANGLE = 34;
   public static final double CAMERA_HEIGHT = 0.5842;
   public static final double TARGET_HEIGHT = 2.6414;
 

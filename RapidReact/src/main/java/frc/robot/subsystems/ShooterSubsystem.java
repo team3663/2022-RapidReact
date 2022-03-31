@@ -2,6 +2,8 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -26,7 +28,7 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     // Subsystem Constants
-    private static final int IDLE_CURRENT = 13; 
+    private static final int IDLE_CURRENT = 10; 
     private static final int MAX_CURRENT = 60;
     private double highestCurrent = 0;
 
@@ -46,13 +48,15 @@ public class ShooterSubsystem extends SubsystemBase {
     private static final double angleIncrement = 1;
 
     // Shooter PID coefficients constants
-    private static final double kShooterP = 0.000153;
+    private static final double kShooterP = 0.0001;
+    // private static final double kShooterP = 0.000750;
     private static final double kShooterI = 0.000000;
-    private static final double kShooterD = 0.000003;
+    private static final double kShooterD = 0.000000;
     private static final double kShooterIz = 0.000000;
-    private static final double kShooterFF = 0.00029625;
+    private static final double kShooterFF = 0.000290;
     private static final double kShooterMaxOutput = 1.000000;
     private static final double kShooterMinOutput = 0.000000;
+
 
     // Hood PID coefficients
     private static final double kHoodP = 0.1;
@@ -89,6 +93,8 @@ public class ShooterSubsystem extends SubsystemBase {
 
     public boolean aligned = false;
 
+    private Timer hoodTimer;
+
     private NetworkTableEntry currentSpeedEntry;
     private NetworkTableEntry targetSpeedEntry;
     private NetworkTableEntry shooterEncoderEntry;
@@ -110,6 +116,8 @@ public class ShooterSubsystem extends SubsystemBase {
     /** Creates a new instance of the Shooter subsystem. */
     public ShooterSubsystem(int shooterMotor1CANID, int shooterMotor2CANID, int hoodMotorCANID, int hoodLimitDio,
             Ranger ranger) {
+
+        hoodTimer = new Timer();
 
         this.ranger = ranger;
         IDLE_RPM = ranger.getFiringSolution("lob").speed;
@@ -158,7 +166,10 @@ public class ShooterSubsystem extends SubsystemBase {
 
         currentAngle = encoderPositionToAngle(hoodEncoder.getPosition());
 
-        parkHood();
+
+        if(DriverStation.isEnabled()){
+            parkHood();
+        }
 
         // If we are in the process of stopping the shooter motors then slowly ramp the
         // target speed down so the momentum of the flywheels doesn't damage the drive belts.
@@ -287,20 +298,25 @@ public class ShooterSubsystem extends SubsystemBase {
      */
     private void parkHood() {
 
+        hoodTimer.start();
         // If we are not in the process of parking the hood then just bail out now.
         // parkingHood is initialized to true so we will always fall through this
         // check on the first call.
         if (!parkingHood) {
+            System.out.println("--------------------parked");
             return;
         }
 
         // if the hood is not at the limit then set power to start lowering it and return.
-        if (hoodMotor.getOutputCurrent() <= 1) {
-            hoodMotor.set(-0.05);
+        if (Math.abs(hoodEncoder.getVelocity()) > 100 || hoodTimer.get() < 0.25) {
+            hoodMotor.set(-0.1);
+            System.out.println("-------------WE MADE IT AYYAAYAAA");
             return;
         }
 
         // Hood has reached limit, clear parking flag, stop motor and zero encoder.
+        
+        System.out.println("-------------NO BUENO ;( ---------");
         parkingHood = false;
         hoodMotor.set(0);
         hoodEncoder.setPosition(-0.25);
