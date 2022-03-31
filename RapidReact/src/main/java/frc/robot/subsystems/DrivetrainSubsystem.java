@@ -165,6 +165,10 @@ public class DrivetrainSubsystem extends SubsystemBase {
         odometry.resetPosition(new Pose2d(), pigeon.getRotation2d());
     }
 
+    public void invertRotation() {
+            odometry.resetPosition(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(180)), pigeon.getRotation2d());
+    }
+
     public Pose2d getPose() {
         return robotPosition;
     }
