@@ -6,6 +6,7 @@ import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.FeederSubsystem;
@@ -32,6 +33,9 @@ public class ShootCommand extends CommandBase {
     private boolean stagingCargo;
 
     private boolean fixedRange;
+    private boolean auto;
+    
+    private Timer timer = new Timer();
 
     // Fixed range version, take the range to target as a parameter
     public ShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, DrivetrainSubsystem drivetrain, LimelightSubsystem limelight,
@@ -54,6 +58,7 @@ public class ShootCommand extends CommandBase {
 
         this.currentRange = range;
         this.fixedRange = true;
+        this.auto = false;
 
         addRequirements(shooter, feeder, drivetrain, limelight);
     }
@@ -66,6 +71,26 @@ public class ShootCommand extends CommandBase {
         this(shooter, feeder, drivetrain, limelight, shootReadyNotifier, trigger, translationXSupplier, translationYSupplier, 0);
 
         this.fixedRange = false;
+        this.auto = false;
+    }
+
+    public ShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, DrivetrainSubsystem drivetrain, LimelightSubsystem limelight) {
+        this.shooter = shooter;
+        this.feeder = feeder;
+        this.drivetrain = drivetrain;
+        this.limelight = limelight;
+
+        this.shootReadyNotifier = null;
+        this.trigger = () -> true;
+
+        this.translationXSupplier = () -> 0;
+        this.translationYSupplier = () -> 0;
+        
+        this.tController.setSetpoint(0);
+
+        this.currentRange = 0;
+        this.fixedRange = false;
+        this.auto = true;
     }
 
     // Called when the command is initially scheduled.
@@ -83,6 +108,12 @@ public class ShootCommand extends CommandBase {
         // Initialze the shooter range, if we have a limelight it will get updated each
         // time through periodic.
         shooter.setRange(currentRange);
+
+        timer.reset();
+        
+        if (!auto) {
+            drivetrain.invertRotation();
+        }
     }
 
     // Called every time the scheduler runs while the command is scheduled.
@@ -96,9 +127,7 @@ public class ShootCommand extends CommandBase {
                                                             translationYSupplier.getAsDouble(),
                                                             speed + Math.copySign(staticConst, tController.getPositionError()), drivetrain.getPose().getRotation()));
         
-        if (tController.atSetpoint()) {
-            shooter.aligned = true;
-        }
+        shooter.aligned = tController.atSetpoint();
 
         // If we have a limelight then use it to update the current range to target
         if (!fixedRange) {
@@ -116,7 +145,9 @@ public class ShootCommand extends CommandBase {
         }
 
         // Call our shoot ready notifier to let it know whether or not the shooter subsystem is ready to fire.
-        shootReadyNotifier.accept(shooter.ready());
+        if (!auto) {
+            shootReadyNotifier.accept(shooter.ready());
+        }
 
         // We only get here if cargo staging has completed.
         // Use the state of the trigger to decided whether to run or stop the feeder.
@@ -137,7 +168,10 @@ public class ShootCommand extends CommandBase {
     public void end(boolean interrupted) {
         feeder.setFeedMode(FeedMode.STOPPED);
         shooter.idle();
-        shootReadyNotifier.accept(false);
+
+        if (!auto) {
+            shootReadyNotifier.accept(false);
+        }
 
         if (!fixedRange) {
             limelight.setLEDMode(limelight.LED_OFF);
@@ -148,6 +182,9 @@ public class ShootCommand extends CommandBase {
     // Returns true when the command should end.
     @Override
     public boolean isFinished() {
+        if (auto && timer.hasElapsed(2)) {
+            return true;
+        }
         return false;
     }
 }
