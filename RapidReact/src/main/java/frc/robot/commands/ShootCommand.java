@@ -4,9 +4,6 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
 
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.FeederSubsystem;
@@ -22,20 +19,11 @@ public class ShootCommand extends CommandBase {
 
     private Consumer<Boolean> shootReadyNotifier;
     private BooleanSupplier trigger;
-    private DoubleSupplier translationXSupplier;
-    private DoubleSupplier translationYSupplier;
-
-    private PIDController tController = new PIDController(0.055, 0, 0.005);
 
     private double currentRange;
-    private double staticConst = .34;
     private boolean stagingCargo;
 
     private boolean fixedRange;
-    private boolean auto;
-    
-    private Timer timer = new Timer();
-    private DrivetrainSubsystem drivetrain;
 
     // Fixed range version, take the range to target as a parameter
     public ShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, LimelightSubsystem limelight,
@@ -48,15 +36,8 @@ public class ShootCommand extends CommandBase {
         this.shootReadyNotifier = shootReadyNotifier;
         this.trigger = trigger;
 
-        this.translationXSupplier = translationXSupplier;
-        this.translationYSupplier = translationYSupplier;
-        
-        this.tController.setSetpoint(0);
-        this.tController.setTolerance(2);
-
         this.currentRange = range;
         this.fixedRange = true;
-        this.auto = false;
 
         addRequirements(shooter, feeder, limelight);
     }
@@ -69,26 +50,6 @@ public class ShootCommand extends CommandBase {
         this(shooter, feeder, limelight, shootReadyNotifier, trigger, 0);
 
         this.fixedRange = false;
-        this.auto = false;
-    }
-
-    public ShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, DrivetrainSubsystem drivetrain, LimelightSubsystem limelight) {
-        this.shooter = shooter;
-        this.feeder = feeder;
-        this.drivetrain = drivetrain;
-        this.limelight = limelight;
-
-        this.shootReadyNotifier = null;
-        this.trigger = () -> true;
-
-        this.translationXSupplier = () -> 0;
-        this.translationYSupplier = () -> 0;
-        
-        this.tController.setSetpoint(0);
-
-        this.currentRange = 0;
-        this.fixedRange = false;
-        this.auto = true;
     }
 
     // Called when the command is initially scheduled.
@@ -113,15 +74,6 @@ public class ShootCommand extends CommandBase {
     @Override
     public void execute() {
 
-        // align with hub
-        double currentOffset = limelight.getXOffset();
-        double speed = tController.calculate(currentOffset);
-        drivetrain.drive(ChassisSpeeds.fromFieldRelativeSpeeds(translationXSupplier.getAsDouble(),
-                                                            translationYSupplier.getAsDouble(),
-                                                            speed + Math.copySign(staticConst, tController.getPositionError()), drivetrain.getPose().getRotation()));
-        
-        shooter.aligned = tController.atSetpoint();
-
         // If we have a limelight then use it to update the current range to target
         if (!fixedRange) {
             currentRange = limelight.getDistance();
@@ -138,16 +90,11 @@ public class ShootCommand extends CommandBase {
         }
 
         // Call our shoot ready notifier to let it know whether or not the shooter subsystem is ready to fire.
-        if (!auto) {
-            shootReadyNotifier.accept(shooter.ready());
-        }
+        shootReadyNotifier.accept(shooter.ready());
 
         // We only get here if cargo staging has completed.
         // Use the state of the trigger to decided whether to run or stop the feeder.
-        if (shooter.ready() &&  trigger.getAsBoolean()){// && tController.atSetpoint()) { 
-             feeder.setFeedMode(FeedMode.CONTINUOUS);
-        }
-        if (trigger.getAsBoolean() && tController.atSetpoint()) { 
+        if (shooter.ready() && trigger.getAsBoolean() && limelight.aligned()) { 
             feeder.setFeedMode(FeedMode.CONTINUOUS);
         }
         else {
@@ -161,9 +108,7 @@ public class ShootCommand extends CommandBase {
         feeder.setFeedMode(FeedMode.STOPPED);
         shooter.idle();
 
-        if (!auto) {
-            shootReadyNotifier.accept(false);
-        }
+        shootReadyNotifier.accept(false);
 
         if (!fixedRange) {
             limelight.setLEDMode(limelight.LED_OFF);
@@ -174,9 +119,6 @@ public class ShootCommand extends CommandBase {
     // Returns true when the command should end.
     @Override
     public boolean isFinished() {
-        if (auto && timer.hasElapsed(2)) {
-            return true;
-        }
         return false;
     }
 }
