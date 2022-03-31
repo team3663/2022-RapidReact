@@ -2,10 +2,8 @@ package frc.robot.commands;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
-import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.FeederSubsystem;
 import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
@@ -44,9 +42,8 @@ public class ShootCommand extends CommandBase {
 
     // Variable range version, takes a limelight object that is used to determine
     // the range
-    public ShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, DrivetrainSubsystem drivetrain, LimelightSubsystem limelight,
-                        Consumer<Boolean> shootReadyNotifier, BooleanSupplier trigger,
-                        DoubleSupplier translationXSupplier, DoubleSupplier translationYSupplier) {
+    public ShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, LimelightSubsystem limelight,
+                        Consumer<Boolean> shootReadyNotifier, BooleanSupplier trigger) {
         this(shooter, feeder, limelight, shootReadyNotifier, trigger, 0);
 
         this.fixedRange = false;
@@ -79,6 +76,9 @@ public class ShootCommand extends CommandBase {
             currentRange = limelight.getDistance();
             shooter.setRange(currentRange);
         }
+
+        // shuffleboard aligned
+        shooter.aligned = limelight.aligned();
 
         // We bail out here if we are staging cargo and the feeder has not stopped yet.
         if (stagingCargo) {
