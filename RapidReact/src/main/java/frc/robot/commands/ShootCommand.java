@@ -126,9 +126,7 @@ public class ShootCommand extends CommandBase {
                                                             translationYSupplier.getAsDouble(),
                                                             speed, drivetrain.getPose().getRotation()));
         
-        if (tController.atSetpoint()) {
-            shooter.aligned = true;
-        }
+        shooter.aligned = tController.atSetpoint();
 
         // If we have a limelight then use it to update the current range to target
         if (!fixedRange) {
