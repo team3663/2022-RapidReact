@@ -65,7 +65,6 @@ public class ClimberSubsystem extends SubsystemBase {
 
     // Hook Constants
     private final double MAX_HOOK_ANGLE = 160;
-    private final double MIN_HOOK_ANGLE = 0; 
     private final double ROTATIONS_PER_DEGREE = (270.0 / 1.0) * (1.0 / 360.0);
     private final double kHookMinOutput = -0.25;
     private final double kHookMaxOutput = 0.25;
@@ -78,7 +77,6 @@ public class ClimberSubsystem extends SubsystemBase {
     // Tracking Info
     public boolean goingHome = true;
     private double targetAngle  = 0;
-    private double currentAngle = 0;
     private Timer hookTimer;
 
     // All of these args are in Degreas
@@ -166,21 +164,13 @@ public class ClimberSubsystem extends SubsystemBase {
     private RelativeEncoder windmillEncoder;
     private SparkMaxPIDController windmillPIDController;
 
-    private DigitalInput windmillLimitSwitch;
-
     // Phisical Offsets and speeds
-    private double windmillRotaionZero;
     private double windmillRotationSpeed = 0.5;
 
     // Windmill Constants
-    private final double MAX_WINDMILL_ANGLE = 500;
-    private final double MIN_WINDMILL_ANGLE = 0;
     private final double ROTATIONS_PER_DEGREE = (400 / 1.0) * (1.0 / 360.0) * (360.0 / 500.0);
-    private final double kWindmillMinOutput = -1;
-    private final double kWindmillMaxOutput = 1;
 
     // Windmill Positions
-    private double currentAngle;
     private double targetAngle;
 
     private final double HOME = 0;
@@ -210,8 +200,6 @@ public class ClimberSubsystem extends SubsystemBase {
       windmillEncoder = windmillMotor.getEncoder();
 
       windmillEncoder.setPositionConversionFactor(ROTATIONS_PER_DEGREE);
-
-      windmillLimitSwitch = new DigitalInput(WindmillLimitSwitchId);
 
       // Setting PIDs
       windmillPIDController.setP(windmillP);
