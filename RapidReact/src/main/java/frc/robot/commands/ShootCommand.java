@@ -68,12 +68,6 @@ public class ShootCommand extends CommandBase {
         // Initialze the shooter range, if we have a limelight it will get updated each
         // time through periodic.
         shooter.setRange(currentRange);
-<<<<<<< HEAD
-
-        timer.start();
-        timer.reset();
-=======
->>>>>>> 0d00d1feb13a9be99cf4413bb481d7eab906619f
     }
 
     // Called every time the scheduler runs while the command is scheduled.
