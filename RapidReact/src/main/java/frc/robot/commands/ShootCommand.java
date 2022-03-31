@@ -19,7 +19,6 @@ public class ShootCommand extends CommandBase {
     private ShooterSubsystem shooter;
     private FeederSubsystem feeder;
     private LimelightSubsystem limelight;
-    private DrivetrainSubsystem drivetrain;
 
     private Consumer<Boolean> shootReadyNotifier;
     private BooleanSupplier trigger;
@@ -36,16 +35,15 @@ public class ShootCommand extends CommandBase {
     private boolean auto;
     
     private Timer timer = new Timer();
+    private DrivetrainSubsystem drivetrain;
 
     // Fixed range version, take the range to target as a parameter
-    public ShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, DrivetrainSubsystem drivetrain, LimelightSubsystem limelight,
+    public ShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, LimelightSubsystem limelight,
                         Consumer<Boolean> shootReadyNotifier, BooleanSupplier trigger,
-                        DoubleSupplier translationXSupplier, DoubleSupplier translationYSupplier,
                         double range) {
         this.shooter = shooter;
         this.feeder = feeder;
         this.limelight = limelight;
-        this.drivetrain = drivetrain;
 
         this.shootReadyNotifier = shootReadyNotifier;
         this.trigger = trigger;
@@ -60,7 +58,7 @@ public class ShootCommand extends CommandBase {
         this.fixedRange = true;
         this.auto = false;
 
-        addRequirements(shooter, feeder, drivetrain, limelight);
+        addRequirements(shooter, feeder, limelight);
     }
 
     // Variable range version, takes a limelight object that is used to determine
@@ -68,7 +66,7 @@ public class ShootCommand extends CommandBase {
     public ShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, DrivetrainSubsystem drivetrain, LimelightSubsystem limelight,
                         Consumer<Boolean> shootReadyNotifier, BooleanSupplier trigger,
                         DoubleSupplier translationXSupplier, DoubleSupplier translationYSupplier) {
-        this(shooter, feeder, drivetrain, limelight, shootReadyNotifier, trigger, translationXSupplier, translationYSupplier, 0);
+        this(shooter, feeder, limelight, shootReadyNotifier, trigger, 0);
 
         this.fixedRange = false;
         this.auto = false;
@@ -98,6 +96,7 @@ public class ShootCommand extends CommandBase {
     public void initialize() {
         shooter.shoot();
         feeder.setFeedMode(FeedMode.PRESHOOT);
+        
         stagingCargo = true;
         shootReadyNotifier.accept(false);
 
@@ -160,7 +159,6 @@ public class ShootCommand extends CommandBase {
         else {
             feeder.setFeedMode(FeedMode.STOPPED);
         }
-      
     }
 
     // Called once the command ends or is interrupted.

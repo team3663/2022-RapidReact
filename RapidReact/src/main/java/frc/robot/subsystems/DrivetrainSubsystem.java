@@ -43,6 +43,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
     private Pose2d robotPosition;
     private ChassisSpeeds chassisSpeeds = new ChassisSpeeds(0.0, 0.0, 0.0);
+    private ChassisSpeeds velocity;
 
     private NetworkTableEntry poseXEntry;
     private NetworkTableEntry poseYEntry;
@@ -169,6 +170,10 @@ public class DrivetrainSubsystem extends SubsystemBase {
             odometry.resetPosition(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(180)), pigeon.getRotation2d());
     }
 
+    public void setAutoInitPose(Pose2d pose) {
+            odometry.resetPosition(pose, pigeon.getRotation2d());
+    }
+
     public Pose2d getPose() {
         return robotPosition;
     }
@@ -185,6 +190,18 @@ public class DrivetrainSubsystem extends SubsystemBase {
         this.chassisSpeeds = chassisSpeeds;
     }
 
+    public ChassisSpeeds getVelocity() {
+            return velocity;
+    }
+
+    public double getMaxVelocity() {
+            return maxVelocity;
+    }
+
+    public double getMaxAngularVelocity() {
+            return maxAngularVelocity;
+    }
+
     public SwerveDriveKinematics getKinematics() {
             return kinematics;
     }
@@ -198,27 +215,44 @@ public class DrivetrainSubsystem extends SubsystemBase {
                 states[2].angle.getRadians());
         backRightModule.set(states[3].speedMetersPerSecond / maxVelocity * MAX_VOLTAGE,
                 states[3].angle.getRadians());
-        
-        robotPosition = odometry.update(getGyroscopeRotation(), states);
     }
 
-    @Override
-    public void periodic() {
-        SwerveModuleState[] states = kinematics.toSwerveModuleStates(chassisSpeeds);
-        SwerveDriveKinematics.desaturateWheelSpeeds(states, maxVelocity);
-        setModuleStates(states);
+        @Override
+        public void periodic() {
+                SwerveModuleState[] states = kinematics.toSwerveModuleStates(chassisSpeeds);
+                SwerveDriveKinematics.desaturateWheelSpeeds(states, maxVelocity);
 
-        driveSignalYEntry.setDouble(chassisSpeeds.vyMetersPerSecond);
-        driveSignalXEntry.setDouble(chassisSpeeds.vxMetersPerSecond);
-        driveSignalRotationEntry.setDouble(chassisSpeeds.omegaRadiansPerSecond);
-        poseXEntry.setDouble(getPose().getTranslation().getX());
-        poseYEntry.setDouble(getPose().getTranslation().getY());
-        poseAbsoluteAngleEntry.setDouble(getPose().getRotation().getDegrees());
+                SwerveModuleState currentFrontLeft = new SwerveModuleState(frontLeftModule.getDriveVelocity(),
+                                new Rotation2d(frontLeftModule.getSteerAngle()));
+                SwerveModuleState currentFrontRight = new SwerveModuleState(frontRightModule.getDriveVelocity(),
+                                new Rotation2d(frontRightModule.getSteerAngle()));
+                SwerveModuleState currentBackLeft = new SwerveModuleState(backLeftModule.getDriveVelocity(),
+                                new Rotation2d(backLeftModule.getSteerAngle()));
+                SwerveModuleState currentBackRight = new SwerveModuleState(backRightModule.getDriveVelocity(),
+                                new Rotation2d(backRightModule.getSteerAngle()));
 
- //       Block cargo = pixy.getLargestBlock();
- //       cargoAreaEntry.setDouble(pixy.getArea(cargo));
- //       cargoXEntry.setDouble(pixy.getX(cargo));
+                SwerveModuleState[] currentStates = new SwerveModuleState[4];
+                currentStates[0] = currentFrontLeft;
+                currentStates[1] = currentFrontRight;
+                currentStates[2] = currentBackLeft;
+                currentStates[3] = currentBackRight;
 
-        // pose angle entry (for trajectory following tuning)
-    }
+                robotPosition = odometry.update(getGyroscopeRotation(), currentStates);
+                velocity = kinematics.toChassisSpeeds(currentStates);
+
+                setModuleStates(states);
+
+                driveSignalYEntry.setDouble(chassisSpeeds.vyMetersPerSecond);
+                driveSignalXEntry.setDouble(chassisSpeeds.vxMetersPerSecond);
+                driveSignalRotationEntry.setDouble(chassisSpeeds.omegaRadiansPerSecond);
+                poseXEntry.setDouble(getPose().getTranslation().getX());
+                poseYEntry.setDouble(getPose().getTranslation().getY());
+                poseAbsoluteAngleEntry.setDouble(getPose().getRotation().getDegrees());
+
+                // Block cargo = pixy.getLargestBlock();
+                // cargoAreaEntry.setDouble(pixy.getArea(cargo));
+                // cargoXEntry.setDouble(pixy.getX(cargo));
+
+                // pose angle entry (for trajectory following tuning)
+        }
 }

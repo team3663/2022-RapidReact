@@ -116,3 +116,4 @@ public class SimpleRanger implements Ranger {
         return y;
     }
 }
+

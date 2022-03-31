@@ -53,7 +53,8 @@ repositories {
 
 dependencies {
     implementation 'pw.otake.pseudoresonance:pixy2-java-api:1.4.1'
-
+    implementation project(":common")
+    
     implementation wpi.java.deps.wpilib()
     implementation wpi.java.vendor.java()
 

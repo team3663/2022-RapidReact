@@ -14,6 +14,7 @@ import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 
 import frc.robot.utils.FiringSolution;
 import frc.robot.utils.Ranger;
@@ -49,7 +50,6 @@ public class ShooterSubsystem extends SubsystemBase {
 
     // Shooter PID coefficients constants
     private static final double kShooterP = 0.0001;
-    // private static final double kShooterP = 0.000750;
     private static final double kShooterI = 0.000000;
     private static final double kShooterD = 0.000000;
     private static final double kShooterIz = 0.000000;
@@ -132,12 +132,18 @@ public class ShooterSubsystem extends SubsystemBase {
         shooterMotor2 = new CANSparkMax(shooterMotor2CANID, MotorType.kBrushless);
         shooterMotor2.setIdleMode(IdleMode.kCoast);
         shooterMotor2.follow(shooterMotor1, true);
+        shooterMotor2.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 500);
+        shooterMotor2.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 500);
+        shooterMotor2.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 65535);
+        shooterMotor2.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 65535);
 
         hoodMotor = new CANSparkMax(hoodMotorCANID, MotorType.kBrushless);
         hoodMotor.setIdleMode(IdleMode.kBrake);
         hoodMotor.setSmartCurrentLimit(40);
         hoodEncoder = hoodMotor.getEncoder();
         hoodLimit = new DigitalInput(hoodLimitDio);
+
+        hoodTimer = new Timer();
 
         shooterPidController = shooterMotor1.getPIDController();
         shooterPidController.setP(kShooterP);
@@ -303,21 +309,20 @@ public class ShooterSubsystem extends SubsystemBase {
         // parkingHood is initialized to true so we will always fall through this
         // check on the first call.
         if (!parkingHood) {
-            System.out.println("--------------------parked");
             return;
         }
 
+        
         // if the hood is not at the limit then set power to start lowering it and return.
         if (Math.abs(hoodEncoder.getVelocity()) > 100 || hoodTimer.get() < 0.25) {
             hoodMotor.set(-0.1);
-            System.out.println("-------------WE MADE IT AYYAAYAAA");
             return;
         }
 
         // Hood has reached limit, clear parking flag, stop motor and zero encoder.
         
-        System.out.println("-------------NO BUENO ;( ---------");
         parkingHood = false;
+        hoodTimer.stop();
         hoodMotor.set(0);
         hoodEncoder.setPosition(-0.25);
         setAngle(MAX_HOOD_ANGLE);

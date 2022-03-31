@@ -9,36 +9,50 @@ import frc.robot.subsystems.FeederSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.FeederSubsystem.FeedMode;
 
+
+
 public class AutoIntakeCommand extends CommandBase {
+  public enum IntakeMode {
+    extended,
+    retracted
+  };
+  
   private IntakeSubsystem intake;
   private FeederSubsystem feeder;
+  private IntakeMode currentMode;
   
-  public AutoIntakeCommand(IntakeSubsystem intake, FeederSubsystem feeder) {
+  public AutoIntakeCommand(IntakeSubsystem intake, FeederSubsystem feeder, IntakeMode mode) {
     this.intake = intake;
     this.feeder = feeder;
-
+    currentMode = mode;
     addRequirements(intake, feeder);
   }
 
   @Override
   public void initialize() {
-    intake.extend();
-    feeder.setFeedMode(FeedMode.INTAKE);
+    if(currentMode == IntakeMode.extended){
+      intake.extend();
+      feeder.setFeedMode(FeedMode.INTAKE);
+    }
+    if(currentMode == IntakeMode.retracted){
+      intake.retract();
+      feeder.setFeedMode(FeedMode.STOPPED);
+    }
   }
 
   @Override
   public void execute() {
+    if(currentMode == IntakeMode.extended){
       intake.spinBallIn();
+    }
   }
 
   @Override
   public void end(boolean interrupted) {
-    intake.retract();
-    feeder.setFeedMode(FeedMode.STOPPED);
   }
 
   @Override
   public boolean isFinished() {
-    return (feeder.isIdle());
+    return true;
   }
 }
