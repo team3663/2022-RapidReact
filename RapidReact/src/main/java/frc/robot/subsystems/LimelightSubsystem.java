@@ -5,6 +5,7 @@ import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.utils.MathUtils;
 
 /**
  * @see http://docs.limelightvision.io/en/latest/getting_started.html#basic-programming 
@@ -38,6 +39,8 @@ public class LimelightSubsystem extends SubsystemBase {
   private int distanceBufferSize = 10;
   private int distanceBufferIndex = 0;
   private double distanceBuffer[] = new double[distanceBufferSize];
+
+  private double tolerance = 0;
 
   //vision network table
   private NetworkTable visionTable;
@@ -130,6 +133,13 @@ public class LimelightSubsystem extends SubsystemBase {
   //vertical offset from crosshair to target (-20.5 degrees to 20.5 degrees)
   public double getYOffset() {
     return ty.getDouble(-1);
+  }
+
+  public void setTolerance(double tolerance) {
+    this.tolerance = tolerance;
+  }
+  public boolean aligned() {
+    return MathUtils.WithinRange(getXOffset(), -tolerance, tolerance);
   }
 
   //returns the rotation (-90 degrees to 0 degrees)
