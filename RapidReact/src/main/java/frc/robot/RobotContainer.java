@@ -190,24 +190,31 @@ public class RobotContainer {
         */
 
         new Trigger(() -> driveController.getLeftTriggerAxis() > 0.8).whileActiveOnce(
-            new ShootCommand(shooter, feeder, drivetrain, limelight,
-                            driveControllerHelper::rumble, () -> driveController.getRightTriggerAxis() > 0.8,
-                            () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
-                            () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity));
+            new ParallelCommandGroup(
+                new AutoAlignWithHubCommand(limelight, drivetrain,
+                                            () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
+                                            () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity),
+                new ShootCommand(shooter, feeder, limelight,
+                                driveControllerHelper::rumble,
+                                () -> driveController.getRightTriggerAxis() > 0.8)));
 
         new JoystickButton(driveController, Button.kA.value).whenHeld(
             new ParallelCommandGroup(
                 new AutoAlignWithHubCommand(limelight, drivetrain),
                 new ShootCommand(shooter, feeder, limelight,
-                                driveControllerHelper::rumble, () -> driveController.getRightTriggerAxis() > 0.8,
+                                driveControllerHelper::rumble,
+                                () -> driveController.getRightTriggerAxis() > 0.8,
                                 0)));
         
         new JoystickButton(driveController, Button.kB.value).whenHeld(
-            new ShootCommand(shooter, feeder, drivetrain, limelight,
-                            driveControllerHelper::rumble, () -> true, 
-                            () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
-                            () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity));
-
+            new ParallelCommandGroup(
+                new AutoAlignWithHubCommand(limelight, drivetrain,
+                                            () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
+                                            () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity),
+                new ShootCommand(shooter, feeder, limelight,
+                                driveControllerHelper::rumble,
+                                () -> true)));
+            
         // Schedule the Intake command to pick-up cargo
         new JoystickButton(driveController, Button.kRightBumper.value)
                 .whenHeld(new IntakeCommand(intake, feeder, (() -> driveController.getLeftBumper())));

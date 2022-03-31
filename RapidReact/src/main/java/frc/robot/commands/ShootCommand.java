@@ -44,9 +44,8 @@ public class ShootCommand extends CommandBase {
 
     // Variable range version, takes a limelight object that is used to determine
     // the range
-    public ShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, DrivetrainSubsystem drivetrain, LimelightSubsystem limelight,
-                        Consumer<Boolean> shootReadyNotifier, BooleanSupplier trigger,
-                        DoubleSupplier translationXSupplier, DoubleSupplier translationYSupplier) {
+    public ShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, LimelightSubsystem limelight,
+                        Consumer<Boolean> shootReadyNotifier, BooleanSupplier trigger) {
         this(shooter, feeder, limelight, shootReadyNotifier, trigger, 0);
 
         this.fixedRange = false;
