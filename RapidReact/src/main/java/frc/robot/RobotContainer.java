@@ -21,7 +21,6 @@ import frc.robot.commands.DefaultShooterCommand;
 import frc.robot.commands.FollowerCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.ShootCommand;
-import frc.robot.commands.WaitShooterAvailableCommand;
 import frc.robot.commands.AutoIntakeCommand.IntakeMode;
 import frc.robot.drivers.Pigeon;
 import frc.robot.subsystems.DriverVisionSubsystem;
@@ -315,7 +314,7 @@ public class RobotContainer {
             // new ShootCommand(shooter, feeder, drivetrain, limelight),
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
             new FollowerCommand(drivetrain, TrajectoryFactory.start_ball3_test),
-            new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
+            new AutoIntakeCommand(intake, feeder, IntakeMode.retracted)
             // new ShootCommand(shooter, feeder, drivetrain, limelight)
           );
     }
