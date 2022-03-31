@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.commands.AutoAlignWithHubCommand;
@@ -20,6 +21,7 @@ import frc.robot.commands.DefaultDriveCommand;
 import frc.robot.commands.DefaultShooterCommand;
 import frc.robot.commands.ExtendElevatorCommand;
 import frc.robot.commands.HomeElevatorCommand;
+import frc.robot.commands.IncrementWindmillAngle;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.MoveWindmillCommand;
 import frc.robot.commands.RotateWindmillCommand;
@@ -75,7 +77,7 @@ public class RobotContainer {
     // Commands
     private DefaultDriveCommand drive;
     private Command deployClimberCommand;
-    private Command climbCommand;
+    private Command climbTo;
 
     // Autonomous command creation
     private final HashMap<String, Supplier<Command>> commandCreators = new HashMap<String, Supplier<Command>>();
@@ -149,10 +151,11 @@ public class RobotContainer {
         double elevatorPosition = 12;
 
         deployClimberCommand = new SequentialCommandGroup(
-            // new ExtendElevatorCommand(climber),
+            new HomeElevatorCommand(climber),
             new SwitchRedHookCommand(climber, HookPosition.Grab),
             new SwitchBlueHookCommand(climber, HookPosition.Grab)
         );
+
         
         // Create climb command
         double bar2ClimbAngle = 120;
@@ -224,20 +227,10 @@ public class RobotContainer {
         // new JoystickButton(driveController, Button.kBack.value)
         //     .whenHeld(deployClimberCommand);
 
+        // TESTING KEYBINDS ----------------------------
+
         // new JoystickButton(driveController, Button.kStart.value)
         //     .whenPressed(new ExtendElevatorCommand(climber));
-
-        new JoystickButton(driveController, Button.kB.value)
-            .whenPressed(new SwitchRedHookCommand(climber, HookPosition.Release)
-            .alongWith(new SwitchBlueHookCommand(climber, HookPosition.Release)));
-
-        new JoystickButton(driveController, Button.kY.value)
-            .whenPressed(new SwitchRedHookCommand(climber, HookPosition.Lock)
-            .alongWith(new SwitchBlueHookCommand(climber, HookPosition.Lock)));
-
-        new JoystickButton(driveController, Button.kX.value)
-            .whenPressed(new SwitchRedHookCommand(climber, HookPosition.Grab)
-            .alongWith(new SwitchBlueHookCommand(climber, HookPosition.Grab)));
 
         // new JoystickButton(driveController, Button.kA.value)
         //     .whileHeld(new MoveWindmillCommand(climber, 0.5));
@@ -266,14 +259,43 @@ public class RobotContainer {
         // new JoystickButton(driveController, Button.kLeftBumper.value)
         //     .whenPressed(new HomeElevatorCommand(climber));
 
-        new JoystickButton(driveController, Button.kRightBumper.value)
-            .whileHeld(new ExtendElevatorCommand(climber, 0.1));
+        new JoystickButton(operatorController, Button.kA.value)
+            .whenPressed(new SwitchRedHookCommand(climber, HookPosition.Grab));
 
-        new JoystickButton(driveController, Button.kLeftBumper.value)
+        new JoystickButton(operatorController, Button.kB.value)
+            .whenPressed(new SwitchRedHookCommand(climber, HookPosition.Release));
+
+        new JoystickButton(operatorController, Button.kX.value)
+            .whenPressed(new SwitchBlueHookCommand(climber, HookPosition.Grab));
+
+        new JoystickButton(operatorController, Button.kY.value)
+            .whenPressed(new SwitchBlueHookCommand(climber, HookPosition.Release));
+
+        new POVButton(operatorController, 90).whenPressed(new SwitchBlueHookCommand(climber, HookPosition.Lock));
+
+        new POVButton(operatorController, 270).whenPressed(new SwitchRedHookCommand(climber, HookPosition.Lock));
+
+        new JoystickButton(operatorController, Button.kRightBumper.value)
+            .whileHeld(new MoveWindmillCommand(climber, -0.2));
+
+        new JoystickButton(operatorController, Button.kLeftBumper.value)
             .whileHeld(new ExtendElevatorCommand(climber, -0.1));
 
-        new JoystickButton(driveController, Button.kBack.value)
-            .whenPressed(new HomeElevatorCommand(climber));
+        new JoystickButton(operatorController, Button.kBack.value).whenPressed(deployClimberCommand);
+
+        new JoystickButton(operatorController, Button.kStart.value)
+            .whenPressed(new RotateWindmillCommand(climber, WindmillState.FirstToSecond));
+
+        new POVButton(operatorController, 0).whenPressed(new IncrementWindmillAngle(climber, 5));
+
+        new POVButton(operatorController, 180).whenPressed(new IncrementWindmillAngle(climber, -5));
+
+        new POVButton(driveController, 0).whenPressed(new RotateWindmillCommand(climber, WindmillState.Home));
+        new POVButton(driveController, 90).whenPressed(new RotateWindmillCommand(climber, WindmillState.ShiftWeightOffFirst));
+        new POVButton(driveController, 180).whenPressed(new RotateWindmillCommand(climber, WindmillState.SecondToThird));
+        new POVButton(driveController, 270).whenPressed(new RotateWindmillCommand(climber, WindmillState.Hang));
+
+        // ENDING TESTING ----------------------------
 
 
         // new JoystickButton(driveController, Button.kY.value).whenHeld(climbCommand);
