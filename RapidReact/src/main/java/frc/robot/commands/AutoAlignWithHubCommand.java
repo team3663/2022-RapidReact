@@ -16,13 +16,15 @@ public class AutoAlignWithHubCommand extends CommandBase {
 	private DrivetrainSubsystem drivetrain;
 	private LimelightSubsystem limelight;
 
-	private PIDController tController = new PIDController(0.12, 0, 0);
+	private PIDController tController = new PIDController(0.055, 0, 0.005);
 
 	private double currentOffset;
 	private double speed;
 
 	private DoubleSupplier translationXSupplier;
 	private DoubleSupplier translationYSupplier;
+	
+    private double staticConst = .34;
 
 	private boolean auto;
 
@@ -37,7 +39,6 @@ public class AutoAlignWithHubCommand extends CommandBase {
 		this.translationYSupplier = translationYSupplier;
 
 		tController.setSetpoint(0);
-		tController.setTolerance(3);
 
 		addRequirements(drivetrain);
 	}
@@ -67,7 +68,8 @@ public class AutoAlignWithHubCommand extends CommandBase {
 
 		drivetrain.drive(ChassisSpeeds.fromFieldRelativeSpeeds(translationXSupplier.getAsDouble(),
 				translationYSupplier.getAsDouble(),
-				speed, drivetrain.getPose().getRotation()));
+				speed + Math.copySign(staticConst, tController.getPositionError()),
+				drivetrain.getPose().getRotation()));
 	}
 
 	@Override
