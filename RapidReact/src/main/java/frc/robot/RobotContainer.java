@@ -201,9 +201,7 @@ public class RobotContainer {
         // Reset the gyroscope on the Pigeon.
         new JoystickButton(driveController, Button.kStart.value)
                 .whenPressed(new InstantCommand(() -> drivetrain.resetPosition()));
-        new JoystickButton(driveController, Button.kStart.value)
-                .whenPressed(new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-0.5, -2, Rotation2d.fromDegrees(-90)))));
-
+        
         // Schedule the Shoot command to fire a cargo
         /*
         new Trigger(() -> driveController.getLeftTriggerAxis() > 0.8).whileActiveOnce(

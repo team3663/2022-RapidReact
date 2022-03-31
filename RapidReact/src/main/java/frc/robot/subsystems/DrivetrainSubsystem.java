@@ -80,7 +80,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
                 new Translation2d(-trackWidth / 2.0, -wheelbase / 2.0) // BR
         );
 
-        odometry = new SwerveDriveOdometry(kinematics, new Rotation2d(), new Pose2d());
+        odometry = new SwerveDriveOdometry(kinematics, getGyroscopeRotation(), new Pose2d());
 
         // Create our swerve module objects.
         /*
@@ -159,11 +159,11 @@ public class DrivetrainSubsystem extends SubsystemBase {
         driveSignalXEntry = driveSignalContainer.add("Drive Signal Forward", 0.0).getEntry();
         driveSignalRotationEntry = driveSignalContainer.add("Drive Signal Rotation", 0.0).getEntry();
 
-        resetGyroscope();
+        //resetGyroscope();
     }
 
     public void resetPosition() {
-        odometry.resetPosition(new Pose2d(0,0, Rotation2d.fromDegrees(-90)), pigeon.getRotation2d());
+        odometry.resetPosition(new Pose2d(), getGyroscopeRotation());
     }
 
     public void invertRotation() {
@@ -171,7 +171,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     }
 
     public void setAutoInitPose(Pose2d pose) {
-            odometry.resetPosition(pose, pigeon.getRotation2d());
+            odometry.resetPosition(pose, getGyroscopeRotation());
     }
 
     public Pose2d getPose() {

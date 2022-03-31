@@ -94,7 +94,7 @@ public class ShootCommand extends CommandBase {
 
         // We only get here if cargo staging has completed.
         // Use the state of the trigger to decided whether to run or stop the feeder.
-        if (shooter.ready() && trigger.getAsBoolean() && limelight.aligned()) { 
+        if (trigger.getAsBoolean()) {// && limelight.aligned() shooter.ready() && ) { 
             feeder.setFeedMode(FeedMode.CONTINUOUS);
         }
         else {
