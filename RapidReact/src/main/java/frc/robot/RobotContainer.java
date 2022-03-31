@@ -136,6 +136,7 @@ public class RobotContainer {
         registerAutoCommand("Taxi Only", this::createTaxiOnlyCommand);
         registerAutoCommand("One Ball", this::createOneBallCommand);
         registerAutoCommand("Two Ball", this::createTwoBallCommand);
+        registerAutoCommand("Three Ball", this::createThreeBallCommand);
         registerAutoCommand("Five Ball", () -> fiveBallAutoCommand);
         registerAutoCommand("TUNE", this::createTuneAutoCommand);
 
@@ -324,14 +325,36 @@ public class RobotContainer {
     }
 
     /**
+     * Create our 3-ball autonomous command.
+     * 
+     * @return Command to perform 5 ball autonomous
+     */
+    private Command createThreeBallCommand() {
+        return new SequentialCommandGroup(new InstantCommand(() -> shooter.idle()),
+            new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-0.5, -2, Rotation2d.fromDegrees(-90)))),
+            new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
+            //new ShootCommand(shooter, feeder, drivetrain, limelight),
+            //new ParallelCommandGroup(
+            new FollowerCommand(drivetrain, TrajectoryFactory.start_ball2),
+            new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
+                //new InstantCommand(() -> feeder.setFeedMode(FeedMode.PRESHOOT))),
+            //new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
+
+            // new ShootCommand(shooter, feeder, drivetrain, limelight),
+            new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
+            new FollowerCommand(drivetrain, TrajectoryFactory.start_ball3_test),
+            new AutoIntakeCommand(intake, feeder, IntakeMode.retracted)
+            // new ShootCommand(shooter, feeder, drivetrain, limelight)
+          );
+    }
+
+    /**
      * Create our 5-ball autonomous command.
      * 
      * @return Command to perform 5 ball autonomous
      */
     private Command createFiveBallCommand() {
-        return new SequentialCommandGroup(
-            new WaitShooterAvailableCommand(shooter),
-            new InstantCommand(() -> shooter.idle()),
+        return new SequentialCommandGroup(new InstantCommand(() -> shooter.idle()),
             new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-0.5, -2, Rotation2d.fromDegrees(-90)))),
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
             //new ShootCommand(shooter, feeder, drivetrain, limelight),

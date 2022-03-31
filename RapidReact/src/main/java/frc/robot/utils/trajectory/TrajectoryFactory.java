@@ -4,17 +4,13 @@ import org.frcteam2910.common.control.SplinePathBuilder;
 import org.frcteam2910.common.control.Trajectory;
 import org.frcteam2910.common.control.TrajectoryConstraint;
 
-import javax.swing.RootPaneContainer;
-
 import org.frcteam2910.common.control.CentripetalAccelerationConstraint;
 import org.frcteam2910.common.control.MaxAccelerationConstraint;
 import org.frcteam2910.common.control.MaxVelocityConstraint;
-import org.frcteam2910.common.control.Path;
 import org.frcteam2910.common.control.SimplePathBuilder;
 import org.frcteam2910.common.math.Rotation2;
 import org.frcteam2910.common.math.Vector2;
 
-import edu.wpi.first.math.spline.Spline;
 
 public class TrajectoryFactory {
 
