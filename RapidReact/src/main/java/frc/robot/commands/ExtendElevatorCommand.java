@@ -21,10 +21,8 @@ public class ExtendElevatorCommand extends CommandBase {
 	}
 
 	@Override
-	public void execute() {}
-
-	@Override
 	public void end(boolean interrupted) {
 		climber.elevator.extendElevator(0);
+		climber.windmill.setHomeStatus(false);
 	}
 }

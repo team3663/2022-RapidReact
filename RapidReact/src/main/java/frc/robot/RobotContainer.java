@@ -174,22 +174,22 @@ public class RobotContainer {
 
         climbCommand = new SequentialCommandGroup(
             new RotateWindmillCommand(climber, WindmillState.FirstToSecond),
-            new WaitForSecondsCommand(0.5),
+            new WaitForSecondsCommand(0.25),
             new SwitchBlueHookCommand(climber, HookPosition.Lock),
-            new WaitForSecondsCommand(2),
+            new WaitForSecondsCommand(0.5),
             new RotateWindmillCommand(climber, WindmillState.ShiftWeightOffFirst),
-            new WaitForSecondsCommand(0.5),
+            new WaitForSecondsCommand(0.25),
             new SwitchRedHookCommand(climber, HookPosition.Release),
-            new WaitForSecondsCommand(0.5),
+            new WaitForSecondsCommand(0.25),
             climbSecondToThirdCommmand,
-            new WaitForSecondsCommand(0.5)
-            // new SwitchRedHookCommand(climber, HookPosition.Lock)
-            // new WaitForSecondsCommand(0.5)
-            // new RotateWindmillCommand(climber, WindmillState.ShiftWeightOffSecond)
-            // new WaitForSecondsCommand(0.5)
-            // new SwitchBlueHookCommand(climber, HookPosition.Release)
-            // new WaitForSecondsCommand(0.5)
-            // new RotateWindmillCommand(climber, WindmillState.HangFromThird)
+            new WaitForSecondsCommand(0.5),
+            new SwitchRedHookCommand(climber, HookPosition.Lock),
+            new WaitForSecondsCommand(0.25),
+            new RotateWindmillCommand(climber, WindmillState.ShiftWeightOffSecond),
+            new WaitForSecondsCommand(0.25),
+            new SwitchBlueHookCommand(climber, HookPosition.Release),
+            new WaitForSecondsCommand(0.25),
+            new RotateWindmillCommand(climber, WindmillState.HangFromThird)
         );
     }
 

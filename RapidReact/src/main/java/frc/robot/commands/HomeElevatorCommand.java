@@ -33,6 +33,7 @@ public class HomeElevatorCommand extends CommandBase {
   public void end(boolean interrupted) {
     climber.elevator.zeroEncoder();
     climber.elevator.setTargetHeight(0);
+    climber.windmill.setHomeStatus(true);
   }
 
   // Returns true when the command should end.
