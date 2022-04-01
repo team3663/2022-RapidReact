@@ -154,7 +154,7 @@ public class RobotContainer {
                 drivetrain,
                 () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
                 () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity,
-                () -> -driveControllerHelper.scaleAxis(driveController.getRightX()) * drivetrain.maxAngularVelocity * 0.9));
+                () -> -driveControllerHelper.scaleAxis(driveController.getRightX()) * drivetrain.maxAngularVelocity * 0.8));
 
         // create idle shoot command
         shooter.setDefaultCommand(new DefaultShooterCommand(shooter));
