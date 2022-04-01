@@ -38,8 +38,8 @@ public class TrajectoryFactory {
 
     // two ball trajectory (does not use coordinates: reset odometry)
     public static Trajectory twoMetersForward = new Trajectory(
-        new SimplePathBuilder(new Vector2(0, 0), Rotation2.ZERO).lineTo(new Vector2(2.5, 0), Rotation2.fromDegrees(180)).build(),
-        fast,
+        new SimplePathBuilder(new Vector2(0, 0), Rotation2.ZERO).lineTo(new Vector2(2, 0), Rotation2.fromDegrees(0)).build(),
+        slow,
         sampleDistance);
 
     // five ball trajectories (use coordinates: do not reset odometry)
