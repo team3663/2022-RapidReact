@@ -48,6 +48,7 @@ public class ShootCommand extends CommandBase {
         addRequirements(shooter, feeder, limelight);
     }
 
+    // backup for auto shoot (currently unused)
     public ShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, LimelightSubsystem limelight,
                         Consumer<Boolean> shootReadyNotifier, BooleanSupplier shootTrigger, 
                         double time) {
