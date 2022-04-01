@@ -227,7 +227,8 @@ public class RobotContainer {
                                             () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity),
                 new ShootCommand(shooter, feeder, limelight,
                                 driveControllerHelper::rumble,
-                                () -> driveController.getRightTriggerAxis() > 0.8)));
+                                () -> driveController.getRightTriggerAxis() > 0.8,
+                                () -> driveController.getBButton())));
 
         new JoystickButton(driveController, Button.kA.value).whenHeld(
             new ParallelCommandGroup(
@@ -235,8 +236,10 @@ public class RobotContainer {
                 new ShootCommand(shooter, feeder, limelight,
                                 driveControllerHelper::rumble,
                                 () -> driveController.getRightTriggerAxis() > 0.8,
+                                () -> driveController.getBButton(),
                                 0)));
         
+        /*
         new JoystickButton(driveController, Button.kB.value).whenHeld(
             new ParallelCommandGroup(
                 new AutoAlignWithHubCommand(limelight, drivetrain,
@@ -245,6 +248,7 @@ public class RobotContainer {
                 new ShootCommand(shooter, feeder, limelight,
                                 driveControllerHelper::rumble,
                                 () -> true)));
+        */
             
         // Schedule the Intake command to pick-up cargo
         new JoystickButton(driveController, Button.kRightBumper.value)
