@@ -260,65 +260,26 @@ public class RobotContainer {
 
         
         // operator controls
-        // new JoystickButton(operatorController, Button.kA.value).whenPressed(
-        //             new InstantCommand(() -> feeder.setFeedMode(FeedMode.REVERSE_CONTINUOUS)));
+        new JoystickButton(operatorController, Button.kA.value).whenPressed(
+                    new InstantCommand(() -> feeder.setFeedMode(FeedMode.REVERSE_CONTINUOUS)));
                 
-        // new JoystickButton(operatorController, Button.kA.value).whenReleased(
-        //             new InstantCommand(() -> feeder.setFeedMode(FeedMode.STOPPED)));
+        new JoystickButton(operatorController, Button.kA.value).whenReleased(
+                    new InstantCommand(() -> feeder.setFeedMode(FeedMode.STOPPED)));
 
-        // new JoystickButton(operatorController, Button.kB.value).whenPressed(
-        //     new InstantCommand(() -> feeder.setFeedMode(FeedMode.PRESHOOT)));
+        new JoystickButton(operatorController, Button.kB.value).whenPressed(
+            new InstantCommand(() -> feeder.setFeedMode(FeedMode.PRESHOOT)));
         
-        // new JoystickButton(operatorController, Button.kB.value).whenReleased(
-        //     new InstantCommand(() -> feeder.setFeedMode(FeedMode.STOPPED)));
-        
-        // new JoystickButton(operatorController, Button.kRightBumper.value).whenPressed(
-        //     new InstantCommand(() -> intake.operatorBallIn()));
-        
-        // new JoystickButton(operatorController, Button.kRightBumper.value).whenReleased(
-        //     new InstantCommand(() -> intake.stopMotor()));
-        
-        // new JoystickButton(operatorController, Button.kLeftBumper.value).whenPressed(
-        //     new InstantCommand(() -> intake.operatorBallOut()));
-
-        // new JoystickButton(operatorController, Button.kLeftBumper.value).whenReleased(
-        //     new InstantCommand(() -> intake.stopMotor()));
-
-        new JoystickButton(operatorController, Button.kA.value)
-            .whenPressed(new SwitchRedHookCommand(climber, HookPosition.Grab));
-
-        new JoystickButton(operatorController, Button.kB.value)
-            .whenPressed(new SwitchRedHookCommand(climber, HookPosition.Release));
-
-        new JoystickButton(operatorController, Button.kX.value)
-            .whenPressed(new SwitchBlueHookCommand(climber, HookPosition.Grab));
-
-        new JoystickButton(operatorController, Button.kY.value)
-            .whenPressed(new SwitchBlueHookCommand(climber, HookPosition.Release));
-
-        new POVButton(operatorController, 90).whenPressed(new SwitchBlueHookCommand(climber, HookPosition.Lock));
-
-        new POVButton(operatorController, 270).whenPressed(new SwitchRedHookCommand(climber, HookPosition.Lock));
-
-        new JoystickButton(operatorController, Button.kRightBumper.value)
-            .whileHeld(new MoveWindmillCommand(climber, -0.2));
+        new JoystickButton(operatorController, Button.kB.value).whenReleased(
+            new InstantCommand(() -> feeder.setFeedMode(FeedMode.STOPPED)));
 
         new JoystickButton(operatorController, Button.kLeftBumper.value)
             .whileHeld(new ExtendElevatorCommand(climber, -0.1));
 
         new JoystickButton(operatorController, Button.kBack.value).whenPressed(deployClimberCommand);
+
         new JoystickButton(operatorController, Button.kStart.value).whenPressed(climbCommand);
-        
-        // new JoystickButton(operatorController, Button.kStart.value)
-        //     .whenPressed(new RotateWindmillCommand(climber, WindmillState.FirstToSecond));
 
-        new POVButton(operatorController, 0).whenPressed(new IncrementWindmillAngle(climber, 5));
-
-        new POVButton(operatorController, 180).whenPressed(new IncrementWindmillAngle(climber, -5));
-
-        new POVButton(driveController, 0).whenPressed(new RotateWindmillCommand(climber, WindmillState.Home));
-        new POVButton(driveController, 90).whenPressed(new RotateWindmillCommand(climber, WindmillState.FirstToSecond));
-        new POVButton(driveController, 180).whenPressed(new RotateWindmillCommand(climber, WindmillState.SecondToThird));
+        new JoystickButton(operatorController, Button.kX.value).whenPressed(new RotateWindmillCommand(climber, WindmillState.Home));
 
 
     }

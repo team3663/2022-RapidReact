@@ -52,14 +52,16 @@ public class TrajectoryFactory {
             slow,
             sampleDistance);
 
+    // ball2_ball3
     public static Trajectory start_ball3_test = new Trajectory(
         new SplinePathBuilder(new Vector2(-0.58, -2), new Rotation2(0, 1, true), Rotation2.fromDegrees(-90))
-        .hermite(new Vector2(-3.38, -1.56), new Rotation2(-3.20, -1.14, true), Rotation2.fromDegrees(-136))
-        .build(),
-        slow,
+            .hermite(new Vector2(-3.38, -1.56), new Rotation2(-3.20, -1.14, true), Rotation2.fromDegrees(-136))
+            .build(),
+        fast,
         sampleDistance); 
         
 
+    /*
     public static Trajectory ball2_ball3 = new Trajectory(
         new SplinePathBuilder(new Vector2(-.6, -3.5), new Rotation2(-2, -2, true), Rotation2.fromDegrees(-90)) 
             .hermite(new Vector2(-2, -2), new Rotation2(-3.5, -2.2, true), Rotation2.fromDegrees(163.8720703125)) 
@@ -67,16 +69,22 @@ public class TrajectoryFactory {
             .build(),
         slow,
         sampleDistance);
+    */
 
+    // ball3_station
     public static Trajectory ball3_station_shoot = new Trajectory(
         new SplinePathBuilder(new Vector2(-3.38, -1.56), new Rotation2(-7.2,-2.2, true), Rotation2.fromDegrees(-114.96093749999997))
             .hermite(new Vector2(-7.5, -2.6), new Rotation2(-7.2,-2.2, true),Rotation2.fromDegrees(-147))
-    //        .hermite(new Vector2(-3.38, -1.56), new Rotation2(1, 1, true), Rotation2.fromDegrees(-155))
+            // .hermite(new Vector2(-3.38, -1.56), new Rotation2(1, 1, true), Rotation2.fromDegrees(-155))
             .build(),
         fast,
         sampleDistance);
+
+    // station_shoot
     public static Trajectory ball3_shoot_pos = new Trajectory(
         new SplinePathBuilder(new Vector2(-7, -2.6), new Rotation2(0, 0, true), Rotation2.fromDegrees(-147))
-        .hermite(new Vector2(-3.38, -1.56), Rotation2.ZERO, Rotation2.fromDegrees(-155)).build()
-        , fast, sampleDistance);
+        .hermite(new Vector2(-3.38, -1.56), Rotation2.ZERO, Rotation2.fromDegrees(-155))
+        .build(),
+        fast,
+        sampleDistance);
 }
