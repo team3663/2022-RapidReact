@@ -248,7 +248,7 @@ public class ClimberSubsystem extends SubsystemBase {
             currentWindmillState = WindmillState.FirstBarClimb;
             break;
           case FirstToSecond:
-            setAngle(FIRST_TO_SECOND);
+            setAngle(FIRST_TO_SECOND + 5);
             currentWindmillState = WindmillState.FirstToSecond;
             break;
           case ShiftWeightOffFirst:
