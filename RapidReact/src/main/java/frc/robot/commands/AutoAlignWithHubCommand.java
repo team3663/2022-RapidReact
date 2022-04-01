@@ -42,6 +42,8 @@ public class AutoAlignWithHubCommand extends CommandBase {
 		tController.setSetpoint(3);
 		limelight.setTolerance(3);
 
+		auto = false;
+
 		addRequirements(drivetrain);
 	}
 
@@ -56,7 +58,9 @@ public class AutoAlignWithHubCommand extends CommandBase {
 		tController.setSetpoint(0);
 		tController.setTolerance(3);
 		limelight.setTolerance(3);
-		
+
+		auto = true;
+
 		addRequirements(drivetrain);
 	}
 

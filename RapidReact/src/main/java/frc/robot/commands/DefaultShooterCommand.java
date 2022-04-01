@@ -13,8 +13,7 @@ public class DefaultShooterCommand extends CommandBase {
 
   @Override
   public void initialize() {
-    // shooter.idle();
-    shooter.setSpeed(0);
+    shooter.idle();
   }
 
   @Override
