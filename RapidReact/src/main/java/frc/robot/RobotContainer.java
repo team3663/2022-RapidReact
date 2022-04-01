@@ -438,20 +438,22 @@ public class RobotContainer {
             //new ShootCommand(shooter, feeder, drivetrain, limelight),
             //new ParallelCommandGroup(
             new FollowerCommand(drivetrain, TrajectoryFactory.start_ball2),
-            new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
+            new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 1.5), new AutoAlignWithHubCommand(limelight, drivetrain)),
                 //new InstantCommand(() -> feeder.setFeedMode(FeedMode.PRESHOOT))),
             //new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
             
-            //new ShootCommand(shooter, feeder, drivetrain, limelight),
+            //new AutoShootCommand(shooter, feeder, limelight, 1.5),
+            new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 1.5), new AutoAlignWithHubCommand(limelight, drivetrain)),
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
             new FollowerCommand(drivetrain, TrajectoryFactory.start_ball3_test),
             new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
-            //new ShootCommand(shooter, feeder, drivetrain, limelight),
+            new AutoShootCommand(shooter, feeder, limelight, 1),
+
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
             new FollowerCommand(drivetrain, TrajectoryFactory.ball3_station_shoot),
             new FollowerCommand(drivetrain, TrajectoryFactory.ball3_shoot_pos),
-            new AutoIntakeCommand(intake,feeder, IntakeMode.retracted)
-            //new AutoShootCommand(shooter, feeder, limelight)
+            new AutoIntakeCommand(intake,feeder, IntakeMode.retracted),
+            new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 1.5), new AutoAlignWithHubCommand(limelight, drivetrain))
           );
     }
 
