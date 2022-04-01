@@ -231,13 +231,11 @@ public class RobotContainer {
                                 () -> driveController.getBButton())));
 
         new JoystickButton(driveController, Button.kA.value).whenHeld(
-            new ParallelCommandGroup(
-                new AutoAlignWithHubCommand(limelight, drivetrain),
-                new ShootCommand(shooter, feeder, limelight,
-                                driveControllerHelper::rumble,
-                                () -> driveController.getRightTriggerAxis() > 0.8,
-                                () -> driveController.getBButton(),
-                                0)));
+            new ShootCommand(shooter, feeder, limelight,
+                driveControllerHelper::rumble,
+                () -> driveController.getRightTriggerAxis() > 0.8,
+                () -> driveController.getBButton(),
+                0));
         
         /*
         new JoystickButton(driveController, Button.kB.value).whenHeld(

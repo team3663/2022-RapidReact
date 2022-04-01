@@ -260,7 +260,7 @@ public class ClimberSubsystem extends SubsystemBase {
             currentWindmillState = WindmillState.HangOffSecond;
             break;
           case SecondToThird:
-            setAngle(SECOND_TO_THIRD);
+            setAngle(SECOND_TO_THIRD + 15);
             currentWindmillState = WindmillState.SecondToThird;
             break;
           case ShiftWeightOffSecond:
