@@ -145,7 +145,7 @@ public class RobotContainer {
         registerAutoCommand("Taxi Only", this::createTaxiOnlyCommand);
         registerAutoCommand("One Ball", this::createOneBallCommand);
         registerAutoCommand("Two Ball", this::createTwoBallCommand);
-        registerAutoCommand("Three Ball", this::createThreeBallCommand);
+        // registerAutoCommand("Three Ball", this::createThreeBallCommand);
         registerAutoCommand("Five Ball", () -> fiveBallAutoCommand);
         registerAutoCommand("TUNE", this::createTuneAutoCommand);
 
@@ -342,7 +342,7 @@ public class RobotContainer {
             new InstantCommand(() -> shooter.idle()),
             new ParallelCommandGroup(
                 new AutoAlignWithHubCommand(limelight, drivetrain),
-                new AutoShootCommand(shooter, feeder, limelight, 1)));
+                new AutoShootCommand(shooter, feeder, limelight, 1, false)));
     }
 
     private Command createOneBallCommand() {
@@ -357,7 +357,7 @@ public class RobotContainer {
             new FollowerCommand(drivetrain, TrajectoryFactory.twoMetersForward),
             new ParallelCommandGroup(
                 new AutoAlignWithHubCommand(limelight, drivetrain),
-                new AutoShootCommand(shooter, feeder, limelight, 2)),
+                new AutoShootCommand(shooter, feeder, limelight, 2, false)),
             new AutoIntakeCommand(intake, feeder, IntakeMode.retracted));
     }
 
@@ -394,25 +394,20 @@ public class RobotContainer {
         return new SequentialCommandGroup(new InstantCommand(() -> shooter.idle()),
             new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-0.5, -2, Rotation2d.fromDegrees(-90)))),
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
-            //new ShootCommand(shooter, feeder, drivetrain, limelight),
-            //new ParallelCommandGroup(
             new FollowerCommand(drivetrain, TrajectoryFactory.start_ball2),
-            new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 1.5), new AutoAlignWithHubCommand(limelight, drivetrain)),
-                //new InstantCommand(() -> feeder.setFeedMode(FeedMode.PRESHOOT))),
-            //new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
-            
-            //new AutoShootCommand(shooter, feeder, limelight, 1.5),
-            new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 1.5), new AutoAlignWithHubCommand(limelight, drivetrain)),
+            new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
+            new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 1.5, false), new AutoAlignWithHubCommand(limelight, drivetrain)),
+
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
             new FollowerCommand(drivetrain, TrajectoryFactory.start_ball3_test),
             new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
-            new AutoShootCommand(shooter, feeder, limelight, 1),
+            new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 1.5, false), new AutoAlignWithHubCommand(limelight, drivetrain)),
 
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
             new FollowerCommand(drivetrain, TrajectoryFactory.ball3_station_shoot),
             new FollowerCommand(drivetrain, TrajectoryFactory.ball3_shoot_pos),
             new AutoIntakeCommand(intake,feeder, IntakeMode.retracted),
-            new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 1.5), new AutoAlignWithHubCommand(limelight, drivetrain))
+            new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 1.5, false), new AutoAlignWithHubCommand(limelight, drivetrain))
           );
     }
 

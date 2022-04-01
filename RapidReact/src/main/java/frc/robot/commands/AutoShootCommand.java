@@ -14,11 +14,14 @@ public class AutoShootCommand extends CommandBase {
     private LimelightSubsystem limelight = null;
     private double currentRange;
     private boolean stagingCargo;
+    private boolean continuous;
     private Timer timer = new Timer();
     private double autoTimer;
 
     // Fixed range version, take the range to target as a parameter
-    public AutoShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, double range, double autoTimer) {
+    public AutoShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder,
+                            double range,
+                            double autoTimer, boolean continuous) {
         this.shooter = shooter;
         this.feeder = feeder;
         this.currentRange = range;
@@ -29,8 +32,10 @@ public class AutoShootCommand extends CommandBase {
 
     // Variable range version, takes a limelight object that is used to determine
     // the range
-    public AutoShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, LimelightSubsystem limelight, double autoTimer) {
-        this(shooter, feeder, 0, autoTimer);
+    public AutoShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder,
+                            LimelightSubsystem limelight,
+                            double autoTimer, boolean continuous) {
+        this(shooter, feeder, 0, autoTimer, continuous);
 
         this.limelight = limelight;
     }
@@ -60,6 +65,10 @@ public class AutoShootCommand extends CommandBase {
         if (limelight != null) {
             currentRange = limelight.getDistance();
             shooter.setRange(currentRange);
+        }
+
+        if (continuous) {
+            feeder.setFeedMode(FeedMode.CONTINUOUS);
         }
 
         // We bail out here if we are staging cargo and the feeder has not stopped yet.

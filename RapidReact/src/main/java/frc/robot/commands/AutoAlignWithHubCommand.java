@@ -56,8 +56,8 @@ public class AutoAlignWithHubCommand extends CommandBase {
 		this.translationYSupplier = () -> 0;
 
 		tController.setSetpoint(0);
-		tController.setTolerance(3);
-		limelight.setTolerance(3);
+		tController.setTolerance(6);
+		limelight.setTolerance(6);
 
 		auto = true;
 
