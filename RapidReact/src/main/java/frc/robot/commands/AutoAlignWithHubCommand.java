@@ -57,7 +57,7 @@ public class AutoAlignWithHubCommand extends CommandBase {
 
 		tController.setSetpoint(0);
 		tController.setTolerance(3); // align end condition
-		limelight.setTolerance(6); // shooter check
+		limelight.setTolerance(3); // shooter check
 
 		auto = true;
 
@@ -81,6 +81,7 @@ public class AutoAlignWithHubCommand extends CommandBase {
 
 	@Override
 	public void end(boolean interrupted) {
+		drivetrain.drive(new ChassisSpeeds(0, 0, 0));
 	}
 
 	@Override

@@ -72,7 +72,7 @@ public class ClimberSubsystem extends SubsystemBase {
 
     // positions based on encoders
     private double release = - 38;
-    private double grab = MAX_HOOK_ANGLE - 23;
+    private double grab = MAX_HOOK_ANGLE - 20;
     private double lock = MAX_HOOK_ANGLE - 1;
 
     // Tracking Info
@@ -248,7 +248,7 @@ public class ClimberSubsystem extends SubsystemBase {
             currentWindmillState = WindmillState.FirstBarClimb;
             break;
           case FirstToSecond:
-            setAngle(FIRST_TO_SECOND + 5);
+            setAngle(FIRST_TO_SECOND + 10);
             currentWindmillState = WindmillState.FirstToSecond;
             break;
           case ShiftWeightOffFirst:

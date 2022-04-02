@@ -27,6 +27,7 @@ public class AutoShootCommand extends CommandBase {
         this.feeder = feeder;
         this.currentRange = range;
         this.autoTimer = autoTimer;
+        this.continuous = continuous;
 
         addRequirements(shooter, feeder);
     }
@@ -72,10 +73,6 @@ public class AutoShootCommand extends CommandBase {
             shooter.setRange(currentRange);
         }
 
-        if (continuous) {
-            feeder.setFeedMode(FeedMode.CONTINUOUS);
-        }
-
         // We bail out here if we are staging cargo and the feeder has not stopped yet.
         if (stagingCargo) {
             if (feeder.isIdle()) {
@@ -90,8 +87,13 @@ public class AutoShootCommand extends CommandBase {
             aligned = limelight.aligned();
         }
 
-        atSpeed = shooter.ready();
-
+        if (continuous && !atSpeed) {
+            atSpeed = shooter.ready();
+        }
+        if (!continuous) {
+            atSpeed = shooter.ready();
+        }
+        
         // shuffleboard aligned
         shooter.aligned = aligned;
 
