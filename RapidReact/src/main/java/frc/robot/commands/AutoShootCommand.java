@@ -96,7 +96,7 @@ public class AutoShootCommand extends CommandBase {
         shooter.aligned = aligned;
 
         // We only get here if cargo staging has completed.
-        if (atSpeed && aligned) {
+        if (atSpeed) {
             feeder.setFeedMode(FeedMode.CONTINUOUS);
         }
         else {
@@ -110,6 +110,8 @@ public class AutoShootCommand extends CommandBase {
     public void end(boolean interrupted) {
         feeder.setFeedMode(FeedMode.STOPPED);
         shooter.idle();
+
+        timer.stop();
 
         if (limelight != null) {
             limelight.setLEDMode(limelight.LED_OFF);

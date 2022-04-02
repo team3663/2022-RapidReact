@@ -84,6 +84,7 @@ public class RobotContainer {
     private Command deployClimberCommand;
     private Command climbCommand;
     private Command climbSecondToThirdCommmand;
+    private Command threeBallAutoCommand;
     private Command fiveBallAutoCommand;
 
     // Autonomous command creation
@@ -139,15 +140,15 @@ public class RobotContainer {
         // Since the path generation is slow we pre-create the autonomous commands that use them to speed things up
         // and pass a lambda to the command chooser that just returns the pre-created command.
         fiveBallAutoCommand = createFiveBallCommand();
+        threeBallAutoCommand = createThreeBallCommand();
 
         // Register a creators for our autonomous commands
         registerAutoCommand("Do Nothing", this::createNullCommand);
         registerAutoCommand("Shoot Only", this::createShootOnlyCommand);
         registerAutoCommand("Taxi Only", this::createTaxiOnlyCommand);
         registerAutoCommand("One Ball", this::createOneBallCommand);
-        registerAutoCommand("Two Ball", this::createTwoBallCommand);
-        registerAutoCommand("RIGHT Two Ball", this::createTwoBallCommand);
-        // registerAutoCommand("Three Ball", this::createThreeBallCommand);
+        registerAutoCommand("Two Ball", this::createRightTwoBallCommand);
+        registerAutoCommand("Three Ball", () -> threeBallAutoCommand);
         registerAutoCommand("Five Ball", () -> fiveBallAutoCommand);
         registerAutoCommand("TUNE", this::createTuneAutoCommand);
 
@@ -353,7 +354,7 @@ public class RobotContainer {
         return new SequentialCommandGroup(createShootOnlyCommand(), createTaxiOnlyCommand());
     }
 
-    private Command createTwoBallCommand() {
+    private Command createLeftTwoBallCommand() {
         return new SequentialCommandGroup(
             new InstantCommand(() -> drivetrain.resetPosition()),
             new InstantCommand(() -> shooter.idle()),
@@ -383,18 +384,14 @@ public class RobotContainer {
         return new SequentialCommandGroup(new InstantCommand(() -> shooter.idle()),
             new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-0.5, -2, Rotation2d.fromDegrees(-90)))),
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
-            //new ShootCommand(shooter, feeder, drivetrain, limelight),
-            //new ParallelCommandGroup(
             new FollowerCommand(drivetrain, TrajectoryFactory.start_ball2),
             new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
-                //new InstantCommand(() -> feeder.setFeedMode(FeedMode.PRESHOOT))),
-            //new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
+            new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 5, false), new AutoAlignWithHubCommand(limelight, drivetrain)),
 
-            // new ShootCommand(shooter, feeder, drivetrain, limelight),
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
             new FollowerCommand(drivetrain, TrajectoryFactory.start_ball3_test),
-            new AutoIntakeCommand(intake, feeder, IntakeMode.retracted)
-            // new ShootCommand(shooter, feeder, drivetrain, limelight)
+            new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
+            new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 5, false), new AutoAlignWithHubCommand(limelight, drivetrain))
           );
     }
 
@@ -403,6 +400,8 @@ public class RobotContainer {
      * 
      * @return Command to perform 5 ball autonomous
      */
+
+     // TODO currently the same as two ball
     private Command createFiveBallCommand() {
         return new SequentialCommandGroup(new InstantCommand(() -> shooter.idle()),
             new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-0.5, -2, Rotation2d.fromDegrees(-90)))),
