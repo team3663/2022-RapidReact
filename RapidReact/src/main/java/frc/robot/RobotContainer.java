@@ -65,6 +65,7 @@ public class RobotContainer {
     private final XboxController driveController = new XboxController(Constants.DRIVE_CONTROLLER_PORT);
     private final XboxControllerHelper driveControllerHelper = new XboxControllerHelper(driveController);   
     private final XboxController operatorController = new XboxController(Constants.OPERATOR_CONTROLLER_PORT);
+    private final XboxController testController = new XboxController(Constants.TEST_CONTROLLER_PORT);
 
     Pigeon pigeon = new Pigeon(DRIVETRAIN_PIGEON_ID);
     // private final Pixy pixy = new Pixy(Pixy.TEAM_RED);
@@ -279,6 +280,8 @@ public class RobotContainer {
 
         new JoystickButton(operatorController, Button.kX.value).whenPressed(new RotateWindmillCommand(climber, WindmillState.Home));
 
+        // Test Controller
+        new JoystickButton(testController, Button.kA.value).whenPressed(new AutoShootCommand(shooter, feeder, limelight, 2, false));
 
     }
 
@@ -396,9 +399,9 @@ public class RobotContainer {
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
             new FollowerCommand(drivetrain, TrajectoryFactory.start_ball2),
             new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
-            new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 2, false), new AutoAlignWithHubCommand(limelight, drivetrain)),
+            new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 2, false), new AutoAlignWithHubCommand(limelight, drivetrain))
 
-            new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
+ /*            new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
             new FollowerCommand(drivetrain, TrajectoryFactory.start_ball3_test),
             new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
             new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 2, false), new AutoAlignWithHubCommand(limelight, drivetrain)),
@@ -408,7 +411,7 @@ public class RobotContainer {
             new FollowerCommand(drivetrain, TrajectoryFactory.ball3_shoot_pos),
             new AutoIntakeCommand(intake,feeder, IntakeMode.retracted),
             new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 2, false), new AutoAlignWithHubCommand(limelight, drivetrain))
-          );
+    */       );
     }
 
     public Command createTuneAutoCommand() {

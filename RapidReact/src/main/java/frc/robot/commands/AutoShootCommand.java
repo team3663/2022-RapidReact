@@ -80,8 +80,15 @@ public class AutoShootCommand extends CommandBase {
             }
         }
 
+        boolean aligned = true;
+        if (limelight != null) {
+            aligned = limelight.aligned();
+        }
+
+        boolean atSpeed = shooter.ready();
+
         // We only get here if cargo staging has completed.
-        if (shooter.ready() && limelight.aligned()) { 
+        if (shooter.ready()) { // limelight.aligned()
             feeder.setFeedMode(FeedMode.CONTINUOUS);
         }
         else {
