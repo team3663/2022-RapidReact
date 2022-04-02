@@ -146,6 +146,7 @@ public class RobotContainer {
         registerAutoCommand("Taxi Only", this::createTaxiOnlyCommand);
         registerAutoCommand("One Ball", this::createOneBallCommand);
         registerAutoCommand("Two Ball", this::createTwoBallCommand);
+        registerAutoCommand("RIGHT Two Ball", this::createTwoBallCommand);
         // registerAutoCommand("Three Ball", this::createThreeBallCommand);
         registerAutoCommand("Five Ball", () -> fiveBallAutoCommand);
         registerAutoCommand("TUNE", this::createTuneAutoCommand);
@@ -364,6 +365,15 @@ public class RobotContainer {
             new AutoIntakeCommand(intake, feeder, IntakeMode.retracted));
     }
 
+    public Command createRightTwoBallCommand() {
+        return new SequentialCommandGroup(new InstantCommand(() -> shooter.idle()),
+            new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-0.5, -2, Rotation2d.fromDegrees(-90)))),
+            new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
+            new FollowerCommand(drivetrain, TrajectoryFactory.start_ball2),
+            new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
+            new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 10, false), new AutoAlignWithHubCommand(limelight, drivetrain)));
+    }
+
     /**
      * Create our 3-ball autonomous command.
      * 
@@ -399,7 +409,7 @@ public class RobotContainer {
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
             new FollowerCommand(drivetrain, TrajectoryFactory.start_ball2),
             new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
-            new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 2, false), new AutoAlignWithHubCommand(limelight, drivetrain))
+            new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 10, false), new AutoAlignWithHubCommand(limelight, drivetrain))
 
  /*            new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
             new FollowerCommand(drivetrain, TrajectoryFactory.start_ball3_test),

@@ -17,6 +17,7 @@ public class AutoShootCommand extends CommandBase {
     private boolean continuous;
     private Timer timer = new Timer();
     private double autoTimer;
+    private boolean atSpeed;
 
     // Fixed range version, take the range to target as a parameter
     public AutoShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder,
@@ -43,6 +44,8 @@ public class AutoShootCommand extends CommandBase {
     // Called when the command is initially scheduled.
     @Override
     public void initialize() {
+        shooter.shoot();
+
         feeder.setFeedMode(FeedMode.PRESHOOT);
         stagingCargo = true;
 
@@ -56,6 +59,8 @@ public class AutoShootCommand extends CommandBase {
         
         timer.reset();
         timer.start();
+
+        atSpeed = false;
     }
 
     // Called every time the scheduler runs while the command is scheduled.
@@ -85,10 +90,13 @@ public class AutoShootCommand extends CommandBase {
             aligned = limelight.aligned();
         }
 
-        boolean atSpeed = shooter.ready();
+        atSpeed = shooter.ready();
+
+        // shuffleboard aligned
+        shooter.aligned = aligned;
 
         // We only get here if cargo staging has completed.
-        if (shooter.ready()) { // limelight.aligned()
+        if (atSpeed && aligned) {
             feeder.setFeedMode(FeedMode.CONTINUOUS);
         }
         else {
