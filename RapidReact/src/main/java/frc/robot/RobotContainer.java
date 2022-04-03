@@ -2,6 +2,7 @@ package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
@@ -65,6 +66,7 @@ public class RobotContainer {
     private final XboxController driveController = new XboxController(Constants.DRIVE_CONTROLLER_PORT);
     private final XboxControllerHelper driveControllerHelper = new XboxControllerHelper(driveController);   
     private final XboxController operatorController = new XboxController(Constants.OPERATOR_CONTROLLER_PORT);
+    private final XboxController testController = new XboxController(Constants.TEST_CONTROLLER_PORT);
 
     Pigeon pigeon = new Pigeon(DRIVETRAIN_PIGEON_ID);
     // private final Pixy pixy = new Pixy(Pixy.TEAM_RED);
@@ -83,6 +85,7 @@ public class RobotContainer {
     private Command deployClimberCommand;
     private Command climbCommand;
     private Command climbSecondToThirdCommmand;
+    private Command threeBallAutoCommand;
     private Command fiveBallAutoCommand;
 
     // Autonomous command creation
@@ -138,14 +141,15 @@ public class RobotContainer {
         // Since the path generation is slow we pre-create the autonomous commands that use them to speed things up
         // and pass a lambda to the command chooser that just returns the pre-created command.
         fiveBallAutoCommand = createFiveBallCommand();
+        threeBallAutoCommand = createThreeBallCommand();
 
         // Register a creators for our autonomous commands
         registerAutoCommand("Do Nothing", this::createNullCommand);
         registerAutoCommand("Shoot Only", this::createShootOnlyCommand);
         registerAutoCommand("Taxi Only", this::createTaxiOnlyCommand);
         registerAutoCommand("One Ball", this::createOneBallCommand);
-        registerAutoCommand("Two Ball", this::createTwoBallCommand);
-        registerAutoCommand("Three Ball", this::createThreeBallCommand);
+        registerAutoCommand("Two Ball", this::createRightTwoBallCommand);
+        registerAutoCommand("Three Ball", () -> threeBallAutoCommand);
         registerAutoCommand("Five Ball", () -> fiveBallAutoCommand);
         registerAutoCommand("TUNE", this::createTuneAutoCommand);
 
@@ -154,7 +158,7 @@ public class RobotContainer {
                 drivetrain,
                 () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
                 () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity,
-                () -> -driveControllerHelper.scaleAxis(driveController.getRightX()) * drivetrain.maxAngularVelocity * 0.9));
+                () -> -driveControllerHelper.scaleAxis(driveController.getRightX()) * drivetrain.maxAngularVelocity * 0.8));
 
         // create idle shoot command
         shooter.setDefaultCommand(new DefaultShooterCommand(shooter));
@@ -227,16 +231,17 @@ public class RobotContainer {
                                             () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity),
                 new ShootCommand(shooter, feeder, limelight,
                                 driveControllerHelper::rumble,
-                                () -> driveController.getRightTriggerAxis() > 0.8)));
+                                () -> driveController.getRightTriggerAxis() > 0.8,
+                                () -> driveController.getBButton())));
 
         new JoystickButton(driveController, Button.kA.value).whenHeld(
-            new ParallelCommandGroup(
-                new AutoAlignWithHubCommand(limelight, drivetrain),
-                new ShootCommand(shooter, feeder, limelight,
-                                driveControllerHelper::rumble,
-                                () -> driveController.getRightTriggerAxis() > 0.8,
-                                0)));
+            new ShootCommand(shooter, feeder, limelight,
+                driveControllerHelper::rumble,
+                () -> driveController.getRightTriggerAxis() > 0.8,
+                () -> driveController.getBButton(),
+                0));
         
+        /*
         new JoystickButton(driveController, Button.kB.value).whenHeld(
             new ParallelCommandGroup(
                 new AutoAlignWithHubCommand(limelight, drivetrain,
@@ -245,6 +250,7 @@ public class RobotContainer {
                 new ShootCommand(shooter, feeder, limelight,
                                 driveControllerHelper::rumble,
                                 () -> true)));
+        */
             
         // Schedule the Intake command to pick-up cargo
         new JoystickButton(driveController, Button.kRightBumper.value)
@@ -256,66 +262,29 @@ public class RobotContainer {
 
         
         // operator controls
-        // new JoystickButton(operatorController, Button.kA.value).whenPressed(
-        //             new InstantCommand(() -> feeder.setFeedMode(FeedMode.REVERSE_CONTINUOUS)));
+        new JoystickButton(operatorController, Button.kA.value).whenPressed(
+                    new InstantCommand(() -> feeder.setFeedMode(FeedMode.REVERSE_CONTINUOUS)));
                 
-        // new JoystickButton(operatorController, Button.kA.value).whenReleased(
-        //             new InstantCommand(() -> feeder.setFeedMode(FeedMode.STOPPED)));
+        new JoystickButton(operatorController, Button.kA.value).whenReleased(
+                    new InstantCommand(() -> feeder.setFeedMode(FeedMode.STOPPED)));
 
-        // new JoystickButton(operatorController, Button.kB.value).whenPressed(
-        //     new InstantCommand(() -> feeder.setFeedMode(FeedMode.PRESHOOT)));
+        new JoystickButton(operatorController, Button.kB.value).whenPressed(
+            new InstantCommand(() -> feeder.setFeedMode(FeedMode.PRESHOOT)));
         
-        // new JoystickButton(operatorController, Button.kB.value).whenReleased(
-        //     new InstantCommand(() -> feeder.setFeedMode(FeedMode.STOPPED)));
-        
-        // new JoystickButton(operatorController, Button.kRightBumper.value).whenPressed(
-        //     new InstantCommand(() -> intake.operatorBallIn()));
-        
-        // new JoystickButton(operatorController, Button.kRightBumper.value).whenReleased(
-        //     new InstantCommand(() -> intake.stopMotor()));
-        
-        // new JoystickButton(operatorController, Button.kLeftBumper.value).whenPressed(
-        //     new InstantCommand(() -> intake.operatorBallOut()));
-
-        // new JoystickButton(operatorController, Button.kLeftBumper.value).whenReleased(
-        //     new InstantCommand(() -> intake.stopMotor()));
-
-        new JoystickButton(operatorController, Button.kA.value)
-            .whenPressed(new SwitchRedHookCommand(climber, HookPosition.Grab));
-
-        new JoystickButton(operatorController, Button.kB.value)
-            .whenPressed(new SwitchRedHookCommand(climber, HookPosition.Release));
-
-        new JoystickButton(operatorController, Button.kX.value)
-            .whenPressed(new SwitchBlueHookCommand(climber, HookPosition.Grab));
-
-        new JoystickButton(operatorController, Button.kY.value)
-            .whenPressed(new SwitchBlueHookCommand(climber, HookPosition.Release));
-
-        new POVButton(operatorController, 90).whenPressed(new SwitchBlueHookCommand(climber, HookPosition.Lock));
-
-        new POVButton(operatorController, 270).whenPressed(new SwitchRedHookCommand(climber, HookPosition.Lock));
-
-        new JoystickButton(operatorController, Button.kRightBumper.value)
-            .whileHeld(new MoveWindmillCommand(climber, -0.2));
+        new JoystickButton(operatorController, Button.kB.value).whenReleased(
+            new InstantCommand(() -> feeder.setFeedMode(FeedMode.STOPPED)));
 
         new JoystickButton(operatorController, Button.kLeftBumper.value)
             .whileHeld(new ExtendElevatorCommand(climber, -0.1));
 
         new JoystickButton(operatorController, Button.kBack.value).whenPressed(deployClimberCommand);
+
         new JoystickButton(operatorController, Button.kStart.value).whenPressed(climbCommand);
-        
-        // new JoystickButton(operatorController, Button.kStart.value)
-        //     .whenPressed(new RotateWindmillCommand(climber, WindmillState.FirstToSecond));
 
-        new POVButton(operatorController, 0).whenPressed(new IncrementWindmillAngle(climber, 5));
+        new JoystickButton(operatorController, Button.kX.value).whenPressed(new RotateWindmillCommand(climber, WindmillState.Home));
 
-        new POVButton(operatorController, 180).whenPressed(new IncrementWindmillAngle(climber, -5));
-
-        new POVButton(driveController, 0).whenPressed(new RotateWindmillCommand(climber, WindmillState.Home));
-        new POVButton(driveController, 90).whenPressed(new RotateWindmillCommand(climber, WindmillState.FirstToSecond));
-        new POVButton(driveController, 180).whenPressed(new RotateWindmillCommand(climber, WindmillState.SecondToThird));
-
+        // Test Controller
+        new JoystickButton(testController, Button.kA.value).whenPressed(new AutoShootCommand(shooter, feeder, limelight, 2, false));
 
     }
 
@@ -379,14 +348,14 @@ public class RobotContainer {
             new InstantCommand(() -> shooter.idle()),
             new ParallelCommandGroup(
                 new AutoAlignWithHubCommand(limelight, drivetrain),
-                new AutoShootCommand(shooter, feeder, limelight, 1)));
+                new AutoShootCommand(shooter, feeder, limelight, 1, false)));
     }
 
     private Command createOneBallCommand() {
         return new SequentialCommandGroup(createShootOnlyCommand(), createTaxiOnlyCommand());
     }
 
-    private Command createTwoBallCommand() {
+    private Command createLeftTwoBallCommand() {
         return new SequentialCommandGroup(
             new InstantCommand(() -> drivetrain.resetPosition()),
             new InstantCommand(() -> shooter.idle()),
@@ -394,8 +363,17 @@ public class RobotContainer {
             new FollowerCommand(drivetrain, TrajectoryFactory.twoMetersForward),
             new ParallelCommandGroup(
                 new AutoAlignWithHubCommand(limelight, drivetrain),
-                new AutoShootCommand(shooter, feeder, limelight, 2)),
+                new AutoShootCommand(shooter, feeder, limelight, 2, false)),
             new AutoIntakeCommand(intake, feeder, IntakeMode.retracted));
+    }
+
+    public Command createRightTwoBallCommand() {
+        return new SequentialCommandGroup(new InstantCommand(() -> shooter.idle()),
+            new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-0.5, -2, Rotation2d.fromDegrees(-90)))),
+            new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
+            new FollowerCommand(drivetrain, TrajectoryFactory.start_ball2),
+            new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
+            new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 10, false), new AutoAlignWithHubCommand(limelight, drivetrain)));
     }
 
     /**
@@ -407,18 +385,14 @@ public class RobotContainer {
         return new SequentialCommandGroup(new InstantCommand(() -> shooter.idle()),
             new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-0.5, -2, Rotation2d.fromDegrees(-90)))),
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
-            //new ShootCommand(shooter, feeder, drivetrain, limelight),
-            //new ParallelCommandGroup(
             new FollowerCommand(drivetrain, TrajectoryFactory.start_ball2),
             new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
-                //new InstantCommand(() -> feeder.setFeedMode(FeedMode.PRESHOOT))),
-            //new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
+            new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 5, false), new AutoAlignWithHubCommand(limelight, drivetrain)),
 
-            // new ShootCommand(shooter, feeder, drivetrain, limelight),
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
             new FollowerCommand(drivetrain, TrajectoryFactory.start_ball3_test),
-            new AutoIntakeCommand(intake, feeder, IntakeMode.retracted)
-            // new ShootCommand(shooter, feeder, drivetrain, limelight)
+            new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
+            new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 5, false), new AutoAlignWithHubCommand(limelight, drivetrain))
           );
     }
 
@@ -427,28 +401,27 @@ public class RobotContainer {
      * 
      * @return Command to perform 5 ball autonomous
      */
+
+     // TODO currently the same as two ball
     private Command createFiveBallCommand() {
         return new SequentialCommandGroup(new InstantCommand(() -> shooter.idle()),
             new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-0.5, -2, Rotation2d.fromDegrees(-90)))),
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
-            //new ShootCommand(shooter, feeder, drivetrain, limelight),
-            //new ParallelCommandGroup(
             new FollowerCommand(drivetrain, TrajectoryFactory.start_ball2),
             new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
-                //new InstantCommand(() -> feeder.setFeedMode(FeedMode.PRESHOOT))),
-            //new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
-            
-            //new ShootCommand(shooter, feeder, drivetrain, limelight),
-            new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
+            new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 10, false), new AutoAlignWithHubCommand(limelight, drivetrain))
+
+ /*            new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
             new FollowerCommand(drivetrain, TrajectoryFactory.start_ball3_test),
             new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
-            //new ShootCommand(shooter, feeder, drivetrain, limelight),
+            new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 2, false), new AutoAlignWithHubCommand(limelight, drivetrain)),
+
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
             new FollowerCommand(drivetrain, TrajectoryFactory.ball3_station_shoot),
             new FollowerCommand(drivetrain, TrajectoryFactory.ball3_shoot_pos),
-            new AutoIntakeCommand(intake,feeder, IntakeMode.retracted)
-            //new AutoShootCommand(shooter, feeder, limelight)
-          );
+            new AutoIntakeCommand(intake,feeder, IntakeMode.retracted),
+            new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 2, false), new AutoAlignWithHubCommand(limelight, drivetrain))
+    */       );
     }
 
     public Command createTuneAutoCommand() {

@@ -38,7 +38,7 @@ public class ShooterSubsystem extends SubsystemBase {
     private double IDLE_ANGLE;
     private static final double shooterBeltRatio = 0.66;
     private static final double speedIncrement = 100;
-    private static final double speedMarginPercent = 0.02;
+    private static final double speedMarginPercent = 0.04;
 
     private static final double MAX_HOOD_ANGLE = 85;
     private static final double MIN_HOOD_ANGLE = 67;

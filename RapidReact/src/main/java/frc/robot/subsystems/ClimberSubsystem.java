@@ -67,12 +67,12 @@ public class ClimberSubsystem extends SubsystemBase {
     // Hook Constants
     private final double MAX_HOOK_ANGLE = 160;
     private final double ROTATIONS_PER_DEGREE = (270.0 / 1.0) * (1.0 / 360.0);
-    private final double kHookMinOutput = -0.25;
-    private final double kHookMaxOutput = 0.25;
+    private final double kHookMinOutput = -1;
+    private final double kHookMaxOutput = 1;
 
     // positions based on encoders
     private double release = - 38;
-    private double grab = MAX_HOOK_ANGLE - 23;
+    private double grab = MAX_HOOK_ANGLE - 20;
     private double lock = MAX_HOOK_ANGLE - 1;
 
     // Tracking Info
@@ -248,7 +248,7 @@ public class ClimberSubsystem extends SubsystemBase {
             currentWindmillState = WindmillState.FirstBarClimb;
             break;
           case FirstToSecond:
-            setAngle(FIRST_TO_SECOND);
+            setAngle(FIRST_TO_SECOND + 10);
             currentWindmillState = WindmillState.FirstToSecond;
             break;
           case ShiftWeightOffFirst:
@@ -260,7 +260,7 @@ public class ClimberSubsystem extends SubsystemBase {
             currentWindmillState = WindmillState.HangOffSecond;
             break;
           case SecondToThird:
-            setAngle(SECOND_TO_THIRD);
+            setAngle(SECOND_TO_THIRD + 15);
             currentWindmillState = WindmillState.SecondToThird;
             break;
           case ShiftWeightOffSecond:

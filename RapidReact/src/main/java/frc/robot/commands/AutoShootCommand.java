@@ -14,23 +14,30 @@ public class AutoShootCommand extends CommandBase {
     private LimelightSubsystem limelight = null;
     private double currentRange;
     private boolean stagingCargo;
+    private boolean continuous;
     private Timer timer = new Timer();
     private double autoTimer;
+    private boolean atSpeed;
 
     // Fixed range version, take the range to target as a parameter
-    public AutoShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, double range, double autoTimer) {
+    public AutoShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder,
+                            double range,
+                            double autoTimer, boolean continuous) {
         this.shooter = shooter;
         this.feeder = feeder;
         this.currentRange = range;
         this.autoTimer = autoTimer;
+        this.continuous = continuous;
 
         addRequirements(shooter, feeder);
     }
 
     // Variable range version, takes a limelight object that is used to determine
     // the range
-    public AutoShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, LimelightSubsystem limelight, double autoTimer) {
-        this(shooter, feeder, 0, autoTimer);
+    public AutoShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder,
+                            LimelightSubsystem limelight,
+                            double autoTimer, boolean continuous) {
+        this(shooter, feeder, 0, autoTimer, continuous);
 
         this.limelight = limelight;
     }
@@ -38,6 +45,8 @@ public class AutoShootCommand extends CommandBase {
     // Called when the command is initially scheduled.
     @Override
     public void initialize() {
+        shooter.shoot();
+
         feeder.setFeedMode(FeedMode.PRESHOOT);
         stagingCargo = true;
 
@@ -51,6 +60,8 @@ public class AutoShootCommand extends CommandBase {
         
         timer.reset();
         timer.start();
+
+        atSpeed = false;
     }
 
     // Called every time the scheduler runs while the command is scheduled.
@@ -71,8 +82,23 @@ public class AutoShootCommand extends CommandBase {
             }
         }
 
+        boolean aligned = true;
+        if (limelight != null) {
+            aligned = limelight.aligned();
+        }
+
+        if (continuous && !atSpeed) {
+            atSpeed = shooter.ready();
+        }
+        if (!continuous) {
+            atSpeed = shooter.ready();
+        }
+        
+        // shuffleboard aligned
+        shooter.aligned = aligned;
+
         // We only get here if cargo staging has completed.
-        if (shooter.ready() && limelight.aligned() && shooter.available()) { 
+        if (atSpeed) {
             feeder.setFeedMode(FeedMode.CONTINUOUS);
         }
         else {
@@ -86,6 +112,8 @@ public class AutoShootCommand extends CommandBase {
     public void end(boolean interrupted) {
         feeder.setFeedMode(FeedMode.STOPPED);
         shooter.idle();
+
+        timer.stop();
 
         if (limelight != null) {
             limelight.setLEDMode(limelight.LED_OFF);

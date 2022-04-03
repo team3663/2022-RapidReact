@@ -39,6 +39,10 @@ public class AutoAlignWithHubCommand extends CommandBase {
 		this.translationYSupplier = translationYSupplier;
 
 		tController.setSetpoint(0);
+		tController.setSetpoint(3);
+		limelight.setTolerance(3);
+
+		auto = false;
 
 		addRequirements(drivetrain);
 	}
@@ -52,7 +56,10 @@ public class AutoAlignWithHubCommand extends CommandBase {
 		this.translationYSupplier = () -> 0;
 
 		tController.setSetpoint(0);
-		tController.setTolerance(3);
+		tController.setTolerance(3); // align end condition
+		limelight.setTolerance(3); // shooter check
+
+		auto = true;
 
 		addRequirements(drivetrain);
 	}
@@ -74,6 +81,7 @@ public class AutoAlignWithHubCommand extends CommandBase {
 
 	@Override
 	public void end(boolean interrupted) {
+		drivetrain.drive(new ChassisSpeeds(0, 0, 0));
 	}
 
 	@Override

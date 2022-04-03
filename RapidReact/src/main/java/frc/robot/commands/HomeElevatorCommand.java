@@ -25,7 +25,7 @@ public class HomeElevatorCommand extends CommandBase {
   public void initialize() {
     timer.stop();
     timer.start();
-    climber.elevator.extendElevator(0.25);
+    climber.elevator.extendElevator(0.5);
   }
 
   // Called once the command ends or is interrupted.
