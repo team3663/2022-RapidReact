@@ -337,7 +337,7 @@ public class RobotContainer {
     /**
      * Create our 3-ball autonomous command.
      * 
-     * @return Command to perform 5 ball autonomous
+     * @return Command to perform 3 ball autonomous
      */
     private Command createThreeBallCommand() {
         return new SequentialCommandGroup(new InstantCommand(() -> shooter.idle()),
