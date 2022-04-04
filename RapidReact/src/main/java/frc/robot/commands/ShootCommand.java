@@ -70,7 +70,6 @@ public class ShootCommand extends CommandBase {
     // Called when the command is initially scheduled.
     @Override
     public void initialize() {
-        shooter.shoot();
         feeder.setFeedMode(FeedMode.PRESHOOT);
         
         stagingCargo = true;
@@ -139,14 +138,12 @@ public class ShootCommand extends CommandBase {
     @Override
     public void end(boolean interrupted) {
         feeder.setFeedMode(FeedMode.STOPPED);
-        shooter.idle();
 
         shootReadyNotifier.accept(false);
 
         if (!fixedRange) {
             limelight.setLEDMode(limelight.LED_OFF);
         }
-
     }
 
     // Returns true when the command should end.

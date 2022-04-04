@@ -17,7 +17,7 @@ import frc.robot.commands.AutoAlignWithHubCommand;
 import frc.robot.commands.AutoIntakeCommand;
 import frc.robot.commands.AutoShootCommand;
 import frc.robot.commands.DefaultDriveCommand;
-import frc.robot.commands.DefaultShooterCommand;
+import frc.robot.commands.IdleShooterCommand;
 import frc.robot.commands.ExtendElevatorCommand;
 import frc.robot.commands.HomeElevatorCommand;
 import frc.robot.commands.FollowerCommand;
@@ -148,7 +148,7 @@ public class RobotContainer {
                 () -> -driveControllerHelper.scaleAxis(driveController.getRightX()) * drivetrain.maxAngularVelocity * 0.8));
 
         // create idle shoot command
-        shooter.setDefaultCommand(new DefaultShooterCommand(shooter));
+        shooter.setDefaultCommand(new IdleShooterCommand(shooter));
 
         // Create the command to deploy the climber
 
@@ -303,10 +303,9 @@ public class RobotContainer {
 
     private Command createShootOnlyCommand() {
         return new SequentialCommandGroup(
-            new InstantCommand(() -> shooter.idle()),
             new ParallelCommandGroup(
-                new AutoAlignWithHubCommand(limelight, drivetrain),
-                new AutoShootCommand(shooter, feeder, limelight, 1, false)));
+            new AutoAlignWithHubCommand(limelight, drivetrain),
+            new AutoShootCommand(shooter, feeder, limelight, 1, false)));
     }
 
     private Command createOneBallCommand() {
@@ -316,7 +315,6 @@ public class RobotContainer {
 /*     private Command createLeftTwoBallCommand() {
         return new SequentialCommandGroup(
             new InstantCommand(() -> drivetrain.resetPosition()),
-            new InstantCommand(() -> shooter.idle()),
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
             new FollowerCommand(drivetrain, TrajectoryFactory.twoMetersForward),
             new ParallelCommandGroup(
@@ -326,7 +324,7 @@ public class RobotContainer {
     } */
 
     public Command createRightTwoBallCommand() {
-        return new SequentialCommandGroup(new InstantCommand(() -> shooter.idle()),
+        return new SequentialCommandGroup(
             new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-0.5, -2, Rotation2d.fromDegrees(-90)))),
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
             new FollowerCommand(drivetrain, TrajectoryFactory.start_ball2),
@@ -340,7 +338,7 @@ public class RobotContainer {
      * @return Command to perform 3 ball autonomous
      */
     private Command createThreeBallCommand() {
-        return new SequentialCommandGroup(new InstantCommand(() -> shooter.idle()),
+        return new SequentialCommandGroup(
             new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-0.5, -2, Rotation2d.fromDegrees(-90)))),
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
             new FollowerCommand(drivetrain, TrajectoryFactory.start_ball2),
@@ -360,7 +358,7 @@ public class RobotContainer {
      * @return Command to perform 5 ball autonomous
      */
     private Command createFiveBallCommand() {
-        return new SequentialCommandGroup(new InstantCommand(() -> shooter.idle()),
+        return new SequentialCommandGroup(
             new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-0.5, -2, Rotation2d.fromDegrees(-90)))),
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
             new FollowerCommand(drivetrain, TrajectoryFactory.start_ball2),
