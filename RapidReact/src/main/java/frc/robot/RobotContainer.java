@@ -79,8 +79,6 @@ public class RobotContainer {
     private Command deployClimberCommand;
     private Command climbCommand;
     private Command climbSecondToThirdCommmand;
-    private Command threeBallAutoCommand;
-    private Command fiveBallAutoCommand;
 
     // Autonomous command creation
     private final HashMap<String, Supplier<Command>> commandCreators = new HashMap<String, Supplier<Command>>();
@@ -132,19 +130,14 @@ public class RobotContainer {
      */
     void createCommands() {
 
-        // Since the path generation is slow we pre-create the autonomous commands that use them to speed things up
-        // and pass a lambda to the command chooser that just returns the pre-created command.
-        fiveBallAutoCommand = createFiveBallCommand();
-        threeBallAutoCommand = createThreeBallCommand();
-
         // Register a creators for our autonomous commands
         registerAutoCommand("Do Nothing", this::createNullCommand);
         registerAutoCommand("Shoot Only", this::createShootOnlyCommand);
         registerAutoCommand("Taxi Only", this::createTaxiOnlyCommand);
         registerAutoCommand("One Ball", this::createOneBallCommand);
         registerAutoCommand("Two Ball", this::createRightTwoBallCommand);
-        registerAutoCommand("Three Ball", () -> threeBallAutoCommand);
-        registerAutoCommand("Five Ball", () -> fiveBallAutoCommand);
+        registerAutoCommand("Three Ball", this::createThreeBallCommand);
+        registerAutoCommand("Five Ball", this::createFiveBallCommand);
         registerAutoCommand("TUNE", this::createTuneAutoCommand);
 
         // Create commands used during teleop
@@ -201,23 +194,6 @@ public class RobotContainer {
                 .whenPressed(new InstantCommand(() -> drivetrain.resetPosition()));
         
         // Schedule the Shoot command to fire a cargo
-        /*
-        new Trigger(() -> driveController.getLeftTriggerAxis() > 0.8).whileActiveOnce(
-                new ParallelCommandGroup(new ShootCommand(shooter, feeder, driveControllerHelper::rumble, () -> driveController.getRightTriggerAxis() > 0.8, limelight),
-                new AutoAlignWithHubCommand(limelight, drivetrain, 
-                () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
-                () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity)));
-
-        new JoystickButton(driveController, Button.kA.value).whenHeld(
-                new ShootCommand(shooter, feeder, driveControllerHelper::rumble, () -> driveController.getRightTriggerAxis() > 0.8, 0));
-        
-        new JoystickButton(driveController, Button.kB.value).whenHeld(
-            new ParallelCommandGroup(new ShootCommand(shooter, feeder, driveControllerHelper::rumble, () -> true, limelight),
-                new AutoAlignWithHubCommand(limelight, drivetrain, 
-                () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
-                () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity)));
-        */
-
         new Trigger(() -> driveController.getLeftTriggerAxis() > 0.8).whileActiveOnce(
             new ParallelCommandGroup(
                 new AutoAlignWithHubCommand(limelight, drivetrain,
@@ -234,17 +210,6 @@ public class RobotContainer {
                 () -> driveController.getRightTriggerAxis() > 0.8,
                 () -> driveController.getBButton(),
                 0));
-        
-        /*
-        new JoystickButton(driveController, Button.kB.value).whenHeld(
-            new ParallelCommandGroup(
-                new AutoAlignWithHubCommand(limelight, drivetrain,
-                                            () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
-                                            () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity),
-                new ShootCommand(shooter, feeder, limelight,
-                                driveControllerHelper::rumble,
-                                () -> true)));
-        */
             
         // Schedule the Intake command to pick-up cargo
         new JoystickButton(driveController, Button.kRightBumper.value)
@@ -281,7 +246,6 @@ public class RobotContainer {
         new JoystickButton(testController, Button.kA.value).whenPressed(new AutoShootCommand(shooter, feeder, limelight, 2, false));
 
     }
-
 
     /**
      * The main {@link Robot} class calls this to get the command to run during
@@ -395,8 +359,6 @@ public class RobotContainer {
      * 
      * @return Command to perform 5 ball autonomous
      */
-
-     // TODO currently the same as two ball
     private Command createFiveBallCommand() {
         return new SequentialCommandGroup(new InstantCommand(() -> shooter.idle()),
             new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-0.5, -2, Rotation2d.fromDegrees(-90)))),
