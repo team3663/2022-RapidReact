@@ -3,10 +3,10 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.ShooterSubsystem;
 
-public class DefaultShooterCommand extends CommandBase {
+public class IdleShooterCommand extends CommandBase {
   ShooterSubsystem shooter;
   
-  public DefaultShooterCommand(ShooterSubsystem shooter) {
+  public IdleShooterCommand(ShooterSubsystem shooter) {
     this.shooter = shooter;
     addRequirements(shooter);
   }
@@ -20,7 +20,9 @@ public class DefaultShooterCommand extends CommandBase {
   public void execute() {}
 
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+    shooter.shoot();
+  }
 
   @Override
   public boolean isFinished() {
