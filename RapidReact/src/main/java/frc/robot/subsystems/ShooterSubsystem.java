@@ -120,8 +120,8 @@ public class ShooterSubsystem extends SubsystemBase {
         hoodTimer = new Timer();
 
         this.ranger = ranger;
-        IDLE_RPM = ranger.getFiringSolution("lob").speed;
-        IDLE_ANGLE = ranger.getFiringSolution("lob").angle;
+        IDLE_RPM = ranger.getFiringSolution("hub").speed;
+        IDLE_ANGLE = ranger.getFiringSolution("hub").angle;
 
         shooterMotor1 = new CANSparkMax(shooterMotor1CANID, MotorType.kBrushless);
         shooterMotor1.setInverted(true);

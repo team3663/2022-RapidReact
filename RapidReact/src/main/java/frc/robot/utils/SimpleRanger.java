@@ -1,5 +1,7 @@
 package frc.robot.utils;
 
+import java.util.HashMap;
+
 public class SimpleRanger implements Ranger {
 
     private final double DISTANCE_0 = 0;
@@ -34,7 +36,7 @@ public class SimpleRanger implements Ranger {
     private final int ANGLE_COLUMN_INDEX = 1;
     private final int SPEED_COLUMN_INDEX = 2;
 
-    public double[][] KNOWN_DATA = new double[][] {
+    private double[][] KNOWN_DATA = new double[][] {
         {DISTANCE_0, ANGLE_0, SPEED_0},
         {DISTANCE_1, ANGLE_1, SPEED_1},
         {DISTANCE_2, ANGLE_2, SPEED_2},
@@ -45,15 +47,21 @@ public class SimpleRanger implements Ranger {
         {DISTANCE_7, ANGLE_7, SPEED_7},
     };
 
-    private final double ANGLE_LOB = ANGLE_0;
-    private final int SPEED_LOB = (int) Math.round(SPEED_0);
+    // We keep a list of a few fixed firing solutions that will work even if the limelight is not.
+    private HashMap<String,FiringSolution> fixedSolutions = new HashMap<String, FiringSolution>();
+    private FiringSolution hubShot = new FiringSolution((int) Math.round(SPEED_0), ANGLE_0);
+    private FiringSolution hangarShot = new FiringSolution(0,0);  //TODO: Collect actual values
 
-    public enum InterpolationMode {
+    private enum InterpolationMode {
         ANGLE,
         SPEED
     }
 
-    
+    public SimpleRanger() {
+        fixedSolutions.put("hub", hubShot);
+        fixedSolutions.put("hangar", hangarShot);
+    }
+
     public FiringSolution getFiringSolution(double range) {
 
         // beyond endpoints
@@ -82,15 +90,7 @@ public class SimpleRanger implements Ranger {
 
     public FiringSolution getFiringSolution(String name)
     {
-        int speed = 0;
-        double angle = 0;
-
-        if (name.equals("lob")) {
-            speed = SPEED_LOB;
-            angle = ANGLE_LOB;
-        }
-
-        return new FiringSolution(speed, angle);
+        return fixedSolutions.get(name);
     }
     
     private double linearInterpolation(double range, int distanceHigherBoundIndex, InterpolationMode mode) {
