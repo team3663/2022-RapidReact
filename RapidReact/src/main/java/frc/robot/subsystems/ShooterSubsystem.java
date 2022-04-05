@@ -17,6 +17,7 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 
 import frc.robot.utils.FiringSolution;
+import frc.robot.utils.MathUtils;
 import frc.robot.utils.Ranger;
 
 public class ShooterSubsystem extends SubsystemBase {
@@ -39,6 +40,8 @@ public class ShooterSubsystem extends SubsystemBase {
     private static final double shooterBeltRatio = 0.66;
     private static final double speedIncrement = 100;
     private static final double speedMarginPercent = 0.04;
+    private static final double speedFirstTolerance = 25;
+    private static final double speedSecondTolerance = 50;
 
     private static final double MAX_HOOD_ANGLE = 85;
     private static final double MIN_HOOD_ANGLE = 67;
@@ -92,6 +95,7 @@ public class ShooterSubsystem extends SubsystemBase {
     private double currentXOffset = 0;
 
     public boolean aligned = false;
+    public boolean atSpeed = false;
 
     private Timer hoodTimer;
 
@@ -193,7 +197,14 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     public boolean ready() {
-        return atTargetSpeed();
+        if (!atSpeed) {
+            atSpeed = withinFirstTolerance();
+        }
+        else {
+            atSpeed = withinSecondTolerance();
+        }
+
+        return atSpeed;
     }
 
     // ---------------------------------------------------------------------------
@@ -263,6 +274,14 @@ public class ShooterSubsystem extends SubsystemBase {
     private boolean atTargetSpeed() {
         double delta = speedMarginPercent * targetSpeed;
         return currentSpeed >= targetSpeed - delta && currentSpeed <= targetSpeed + delta;
+    }
+
+    private boolean withinFirstTolerance() {
+        return MathUtils.WithinDelta(currentSpeed, targetSpeed, speedFirstTolerance);
+    }
+
+    private boolean withinSecondTolerance() {
+        return MathUtils.WithinDelta(currentSpeed, targetSpeed, speedSecondTolerance);
     }
 
     // ---------------------------------------------------------------------------

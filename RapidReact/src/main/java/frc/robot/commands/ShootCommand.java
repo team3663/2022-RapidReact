@@ -112,7 +112,6 @@ public class ShootCommand extends CommandBase {
         if (!fixedRange) {
             aligned = limelight.aligned();
         }
-
         boolean atSpeed = shooter.ready();
 
         // Call our shoot ready notifier to let it know whether or not the shooter subsystem is ready to fire.

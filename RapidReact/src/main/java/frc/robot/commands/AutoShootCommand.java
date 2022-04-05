@@ -14,7 +14,6 @@ public class AutoShootCommand extends CommandBase {
     private LimelightSubsystem limelight = null;
     private double currentRange;
     private boolean stagingCargo;
-    private boolean continuous;
     private Timer timer = new Timer();
     private double autoTimer;
     private boolean atSpeed;
@@ -22,12 +21,11 @@ public class AutoShootCommand extends CommandBase {
     // Fixed range version, take the range to target as a parameter
     public AutoShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder,
                             double range,
-                            double autoTimer, boolean continuous) {
+                            double autoTimer) {
         this.shooter = shooter;
         this.feeder = feeder;
         this.currentRange = range;
         this.autoTimer = autoTimer;
-        this.continuous = continuous;
 
         addRequirements(shooter, feeder);
     }
@@ -36,8 +34,8 @@ public class AutoShootCommand extends CommandBase {
     // the range
     public AutoShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder,
                             LimelightSubsystem limelight,
-                            double autoTimer, boolean continuous) {
-        this(shooter, feeder, 0, autoTimer, continuous);
+                            double autoTimer) {
+        this(shooter, feeder, 0, autoTimer);
 
         this.limelight = limelight;
     }
@@ -85,14 +83,8 @@ public class AutoShootCommand extends CommandBase {
         if (limelight != null) {
             aligned = limelight.aligned();
         }
+        boolean atSpeed = shooter.ready();
 
-        if (continuous && !atSpeed) {
-            atSpeed = shooter.ready();
-        }
-        if (!continuous) {
-            atSpeed = shooter.ready();
-        }
-        
         // shuffleboard aligned
         shooter.aligned = aligned;
 
