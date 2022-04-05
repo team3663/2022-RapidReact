@@ -30,7 +30,6 @@ import frc.robot.commands.WaitForSecondsCommand;
 import frc.robot.commands.AutoIntakeCommand.IntakeMode;
 import frc.robot.drivers.Pigeon;
 import frc.robot.subsystems.ClimberSubsystem;
-import frc.robot.subsystems.DriverVisionSubsystem;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.FeederSubsystem;
 import frc.robot.utils.XboxControllerHelper;
@@ -118,9 +117,6 @@ public class RobotContainer {
         SwerveDriveConfig swerveConfig = new SwerveDriveConfig(fl, fr, bl, br, DRIVETRAIN_TRACKWIDTH_METERS,
                 DRIVETRAIN_WHEELBASE_METERS, DRIVE_TRAIN_WHEEL_DIAMETER_METERS);
         drivetrain = new DrivetrainSubsystem(swerveConfig, pigeon); // pixy
-
-        // We don't ever call the DriverVision subsystem, we just create it and let it do its thing.
-        new DriverVisionSubsystem();
 
         limelight = new LimelightSubsystem(CAMERA_ANGLE, CAMERA_HEIGHT, TARGET_HEIGHT);
     }
@@ -281,7 +277,7 @@ public class RobotContainer {
 
         Shuffleboard.getTab("Driver")
                 .add("Auto Command", chooser)
-                .withPosition(5, 0)
+                .withPosition(0, 0)
                 .withSize(2, 1)
                 .withWidget(BuiltInWidgets.kComboBoxChooser);
     }
