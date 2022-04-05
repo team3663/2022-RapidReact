@@ -15,7 +15,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.commands.AimCommand;
 import frc.robot.commands.AutoIntakeCommand;
-import frc.robot.commands.AutoShootCommand;
 import frc.robot.commands.DefaultDriveCommand;
 import frc.robot.commands.IdleShooterCommand;
 import frc.robot.commands.ExtendElevatorCommand;
@@ -197,8 +196,8 @@ public class RobotContainer {
         new Trigger(() -> driveController.getLeftTriggerAxis() > 0.8).whileActiveOnce(
             new ParallelCommandGroup(
                 new AimCommand(limelight, drivetrain,
-                                            () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
-                                            () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity),
+                                () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
+                                () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity),
                 new ShootCommand(shooter, feeder, limelight,
                                 driveControllerHelper::rumble,
                                 () -> driveController.getRightTriggerAxis() > 0.8,
@@ -206,21 +205,20 @@ public class RobotContainer {
 
         new JoystickButton(driveController, Button.kX.value).whenHeld(
             new ParallelCommandGroup(
-                new AutoShootCommand(shooter, feeder, limelight, 60),
+                new ShootCommand(shooter, feeder, limelight, () -> driveController.getBButton()),
                 new AimCommand(limelight, drivetrain,
                     () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
-                    () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity)
-            ));
+                    () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity)));
 
         new Trigger(() -> driveController.getLeftTriggerAxis() > 0.8).whileActiveOnce(
-                                    new ParallelCommandGroup(
-                                        new AimCommand(limelight, drivetrain,
-                                                                    () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
-                                                                    () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity),
-                                        new ShootCommand(shooter, feeder, limelight,
-                                                        driveControllerHelper::rumble,
-                                                        () -> driveController.getRightTriggerAxis() > 0.8,
-                                                        () -> driveController.getBButton())));
+            new ParallelCommandGroup(
+                new AimCommand(limelight, drivetrain,
+                                () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
+                                () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity),
+                new ShootCommand(shooter, feeder, limelight,
+                                    driveControllerHelper::rumble,
+                                    () -> driveController.getRightTriggerAxis() > 0.8,
+                                    () -> driveController.getBButton())));
 
         new JoystickButton(driveController, Button.kA.value).whenHeld(
             new ShootCommand(shooter, feeder,
@@ -322,10 +320,8 @@ public class RobotContainer {
     }
 
     private Command createShootOnlyCommand() {
-        return new SequentialCommandGroup(
-            new ParallelCommandGroup(
-            new AimCommand(limelight, drivetrain),
-            new AutoShootCommand(shooter, feeder, limelight, 1)));
+        return new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(2)
+                .raceWith(new AimCommand(limelight, drivetrain));
     }
 
     private Command createOneBallCommand() {
@@ -349,7 +345,8 @@ public class RobotContainer {
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
             new FollowerCommand(drivetrain, TrajectoryFactory.start_ball2),
             new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
-            new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 10), new AimCommand(limelight, drivetrain)));
+            new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(2)
+                .raceWith(new AimCommand(limelight, drivetrain)));
     }
 
     /**
@@ -363,13 +360,14 @@ public class RobotContainer {
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
             new FollowerCommand(drivetrain, TrajectoryFactory.start_ball2),
             new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
-            new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 5), new AimCommand(limelight, drivetrain)),
+            new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(2)
+                .raceWith(new AimCommand(limelight, drivetrain)),
 
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
             new FollowerCommand(drivetrain, TrajectoryFactory.start_ball3_test),
             new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
-            new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 5), new AimCommand(limelight, drivetrain))
-          );
+            new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(2)
+                .raceWith(new AimCommand(limelight, drivetrain)));
     }
 
     /**
@@ -383,18 +381,21 @@ public class RobotContainer {
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
             new FollowerCommand(drivetrain, TrajectoryFactory.start_ball2),
             new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
-            new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 10), new AimCommand(limelight, drivetrain))
+            new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(2)
+                .raceWith(new AimCommand(limelight, drivetrain))
 
  /*            new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
             new FollowerCommand(drivetrain, TrajectoryFactory.start_ball3_test),
             new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
-            new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 2), new AutoAlignWithHubCommand(limelight, drivetrain)),
+            new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(2)
+                .raceWith(new AimCommand(limelight, drivetrain)),
 
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
             new FollowerCommand(drivetrain, TrajectoryFactory.ball3_station_shoot),
             new FollowerCommand(drivetrain, TrajectoryFactory.ball3_shoot_pos),
             new AutoIntakeCommand(intake,feeder, IntakeMode.retracted),
-            new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 2), new AutoAlignWithHubCommand(limelight, drivetrain))
+            new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(2)
+                .raceWith(new AimCommand(limelight, drivetrain))
     */       );
     }
 
