@@ -37,7 +37,7 @@ public class ShootCommand extends CommandBase {
         this.shootingPose = shootingPose;
         this.varyingRange = false;
 
-        addRequirements(shooter, feeder, limelight);
+        addRequirements(shooter, feeder);
     }
 
     // Variable range version, takes a limelight object that is used to determine

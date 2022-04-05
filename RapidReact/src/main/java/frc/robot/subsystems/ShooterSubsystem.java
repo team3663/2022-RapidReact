@@ -39,9 +39,10 @@ public class ShooterSubsystem extends SubsystemBase {
     private double IDLE_ANGLE;
     private static final double shooterBeltRatio = 0.66;
     private static final double speedIncrement = 100;
-    private static final double speedMarginPercent = 0.04;
-    private static final double speedFirstTolerance = 25;
-    private static final double speedSecondTolerance = 50;
+    private static final double speedPercentTolerance = 0.04;
+    private static final double speedTolerance = 75;
+    private static final double speedFirstTolerance = 0.02;
+    private static final double speedSecondTolerance = 0.04;
 
     private static final double MAX_HOOD_ANGLE = 85;
     private static final double MIN_HOOD_ANGLE = 67;
@@ -197,6 +198,7 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     public boolean ready() {
+        /*
         if (!atSpeed) {
             atSpeed = withinFirstTolerance();
         }
@@ -205,6 +207,8 @@ public class ShooterSubsystem extends SubsystemBase {
         }
 
         return atSpeed;
+        */
+        return atTargetSpeed();
     }
 
     // ---------------------------------------------------------------------------
@@ -277,19 +281,18 @@ public class ShooterSubsystem extends SubsystemBase {
         }
     }
 
-    /*
     private boolean atTargetSpeed() {
-        double delta = speedMarginPercent * targetSpeed;
-        return currentSpeed >= targetSpeed - delta && currentSpeed <= targetSpeed + delta;
+        return MathUtils.WithinDelta(currentSpeed, targetSpeed, speedTolerance);
     }
-    */
 
     private boolean withinFirstTolerance() {
-        return MathUtils.WithinDelta(currentSpeed, targetSpeed, speedFirstTolerance);
+        double delta = currentSpeed * speedFirstTolerance;
+        return MathUtils.WithinDelta(currentSpeed, targetSpeed, delta);
     }
 
     private boolean withinSecondTolerance() {
-        return MathUtils.WithinDelta(currentSpeed, targetSpeed, speedSecondTolerance);
+        double delta = currentSpeed * speedSecondTolerance;
+        return MathUtils.WithinDelta(currentSpeed, targetSpeed, delta);
     }
 
     // ---------------------------------------------------------------------------

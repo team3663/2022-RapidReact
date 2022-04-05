@@ -103,8 +103,10 @@ public class RobotContainer {
                 HOOD_LIMITSWITCH_DIO, ranger);
         intake = new IntakeSubsystem(INTAKE_MOTOR_CAN_ID, BOOM_RETRACT_SOLENOID_CHAN, BOOM_EXTEND_SOLENOID_CHAN,
                 ARM_RETRACT_SOLENOID_CHAN, ARM_EXTEND_SOLENOID_CHAN);
+                /*
         climber = new ClimberSubsystem(ELEVATOR_CAN_ID, WINDMILL_1_CAN_ID, WINDMILL_2_CAN_ID, 
                 RED_HOOK_CAN_ID, BLUE_HOOK_CAN_ID, WINDMILL_SENSOR_DIO);
+                */
 
         // Setup our server drivetrain subsystem
         SwerveModuleConfig fl = new SwerveModuleConfig(FRONT_LEFT_MODULE_DRIVE_MOTOR, FRONT_LEFT_MODULE_STEER_MOTOR,
@@ -152,6 +154,7 @@ public class RobotContainer {
 
         // Create the command to deploy the climber
 
+        /*
         deployClimberCommand = new ParallelCommandGroup(
             new HomeElevatorCommand(climber),
             new SwitchRedHookCommand(climber, HookPosition.Grab),
@@ -182,6 +185,7 @@ public class RobotContainer {
             new WaitForSecondsCommand(0.25),
             new RotateWindmillCommand(climber, WindmillState.HangFromThird)
         );
+        */
     }
 
     /**
@@ -204,6 +208,24 @@ public class RobotContainer {
                                 () -> driveController.getRightTriggerAxis() > 0.8,
                                 () -> driveController.getBButton())));
 
+        new JoystickButton(driveController, Button.kX.value).whenHeld(
+            new ParallelCommandGroup(
+                new AutoShootCommand(shooter, feeder, limelight, 60),
+                new AutoAlignWithHubCommand(limelight, drivetrain,
+                    () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
+                    () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity)
+            ));
+
+        new Trigger(() -> driveController.getLeftTriggerAxis() > 0.8).whileActiveOnce(
+                                    new ParallelCommandGroup(
+                                        new AutoAlignWithHubCommand(limelight, drivetrain,
+                                                                    () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
+                                                                    () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity),
+                                        new ShootCommand(shooter, feeder, limelight,
+                                                        driveControllerHelper::rumble,
+                                                        () -> driveController.getRightTriggerAxis() > 0.8,
+                                                        () -> driveController.getBButton())));
+
         new JoystickButton(driveController, Button.kA.value).whenHeld(
             new ShootCommand(shooter, feeder,
                 driveControllerHelper::rumble,
@@ -216,6 +238,7 @@ public class RobotContainer {
                 .whenHeld(new IntakeCommand(intake, feeder, (() -> driveController.getLeftBumper())));
 
         // climb
+        /*
         new JoystickButton(driveController, Button.kBack.value)
             .whenHeld(deployClimberCommand);
 
@@ -245,6 +268,7 @@ public class RobotContainer {
         // Test Controller
         new JoystickButton(testController, Button.kA.value).whenPressed(new AutoShootCommand(shooter, feeder, limelight, 2));
 
+        */
     }
 
     /**

@@ -91,7 +91,7 @@ public class AutoShootCommand extends CommandBase {
         shooter.aligned = aligned;
 
         // We only get here if cargo staging has completed.
-        if (atSpeed) {
+        if (atSpeed && aligned) { // TODO might need to take out aligned
             feeder.setFeedMode(FeedMode.CONTINUOUS);
         }
         else {
