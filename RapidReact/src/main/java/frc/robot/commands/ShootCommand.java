@@ -16,21 +16,31 @@ public class ShootCommand extends CommandBase {
     private LimelightSubsystem limelight;
 
     private Consumer<Boolean> shootReadyNotifier;
+    private boolean manualShoot;
+
     private BooleanSupplier shootTrigger;
     private BooleanSupplier forceShootTrigger;
 
     private String shootingPose;
     private boolean varyingRange;
+
     private boolean stagingCargo;
 
-    // Fixed range version, take the range to target as a parameter
+    private boolean atSpeed;
+    private boolean aligned;
+    private boolean trigger;
+
+    // fixed range & manual shoot
     public ShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, 
-                        Consumer<Boolean> shootReadyNotifier, BooleanSupplier shootTrigger, BooleanSupplier forceShootTrigger,
+                        Consumer<Boolean> shootReadyNotifier, BooleanSupplier shootTrigger,
+                        BooleanSupplier forceShootTrigger,
                         String shootingPose) {
         this.shooter = shooter;
         this.feeder = feeder;
 
         this.shootReadyNotifier = shootReadyNotifier;
+        this.manualShoot = true;
+
         this.shootTrigger = shootTrigger;
         this.forceShootTrigger = forceShootTrigger;
 
@@ -40,66 +50,91 @@ public class ShootCommand extends CommandBase {
         addRequirements(shooter, feeder);
     }
 
-    // Variable range version, takes a limelight object that is used to determine
-    // the range
+    // varying range & manual shoot
     public ShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, LimelightSubsystem limelight,
-                        Consumer<Boolean> shootReadyNotifier, BooleanSupplier shootTrigger, BooleanSupplier forceShootTrigger) {
+                        Consumer<Boolean> shootReadyNotifier, BooleanSupplier shootTrigger,
+                        BooleanSupplier forceShootTrigger) {
         this(shooter, feeder, shootReadyNotifier, shootTrigger, forceShootTrigger, "");
 
         this.limelight = limelight;
         this.varyingRange = true;
     }
 
-    // Called when the command is initially scheduled.
+    // varying range & auto shoot
+    public ShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, LimelightSubsystem limelight,
+                        BooleanSupplier forceShootTrigger) {
+        this(shooter, feeder, null, null, forceShootTrigger, "");
+
+        this.limelight = limelight;
+        this.varyingRange = true;
+        this.manualShoot = false;
+    }
+
     @Override
     public void initialize() {
+        // send the cargo up to feeder's exit
         feeder.setFeedMode(FeedMode.PRESHOOT);
-        
         stagingCargo = true;
-        shootReadyNotifier.accept(false);
 
+        // initialize rumble
+        if (manualShoot) {
+            shootReadyNotifier.accept(false);
+        }
+
+        // turn on limelight
         if (varyingRange) {
             limelight.setLEDMode(limelight.LED_ON);
         }
+        // set fixed range
         else {
             shooter.setRange(shootingPose);
         }
     }
 
-    // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute() {
 
-        // If we have a limelight then use it to update the current range to target
+        // update range with limelight
         if (varyingRange) {
             shooter.setRange(limelight.getDistance());
         }
 
-        // We bail out here if we are staging cargo and the feeder has not stopped yet.
+        // check if cargo has arrived at feeder's exit
         if (stagingCargo) {
             if (feeder.isIdle()) {
                 stagingCargo = false;
-            } else {
+            }
+            else {
                 return;
             }
         }
 
-        // shooter checks
-        boolean aligned = true;
+        // check if shooter is ready
         if (varyingRange) {
-            aligned = limelight.aligned();
+            aligned = shooter.ready();
         }
-        boolean atSpeed = shooter.ready();
+        else {
+            aligned = true; // do not check for alignment if fixed range
+        }
 
-        // Call our shoot ready notifier to let it know whether or not the shooter subsystem is ready to fire.
-        shootReadyNotifier.accept(atSpeed);
+        if (manualShoot) {
+            trigger = shootTrigger.getAsBoolean();
+        }
+        else {
+            trigger = true; // auto shoot does not wait for trigger
+        }
+        
+
+        // rumble if at speed
+        if (manualShoot) {
+            shootReadyNotifier.accept(atSpeed);
+        }
 
         // shuffleboard aligned
         shooter.aligned = aligned;
 
-        // We only get here if cargo staging has completed.
-        // Use the state of the trigger to decided whether to run or stop the feeder.
-        if (shootTrigger.getAsBoolean() && atSpeed && aligned) { 
+        // shoot
+        if (trigger && atSpeed && aligned) { 
             feeder.setFeedMode(FeedMode.CONTINUOUS);
         }
         else if (forceShootTrigger.getAsBoolean()) {
@@ -110,13 +145,17 @@ public class ShootCommand extends CommandBase {
         }
     }
 
-    // Called once the command ends or is interrupted.
     @Override
     public void end(boolean interrupted) {
+        // stop feeder
         feeder.setFeedMode(FeedMode.STOPPED);
 
-        shootReadyNotifier.accept(false);
+        // disable rumble
+        if (manualShoot) {
+            shootReadyNotifier.accept(false);
+        }
 
+        // turn off limelight
         if (varyingRange) {
             limelight.setLEDMode(limelight.LED_OFF);
         }

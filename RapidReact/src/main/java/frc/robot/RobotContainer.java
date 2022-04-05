@@ -13,7 +13,7 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import frc.robot.commands.AutoAlignWithHubCommand;
+import frc.robot.commands.AimCommand;
 import frc.robot.commands.AutoIntakeCommand;
 import frc.robot.commands.AutoShootCommand;
 import frc.robot.commands.DefaultDriveCommand;
@@ -200,7 +200,7 @@ public class RobotContainer {
         // Schedule the Shoot command to fire a cargo
         new Trigger(() -> driveController.getLeftTriggerAxis() > 0.8).whileActiveOnce(
             new ParallelCommandGroup(
-                new AutoAlignWithHubCommand(limelight, drivetrain,
+                new AimCommand(limelight, drivetrain,
                                             () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
                                             () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity),
                 new ShootCommand(shooter, feeder, limelight,
@@ -211,14 +211,14 @@ public class RobotContainer {
         new JoystickButton(driveController, Button.kX.value).whenHeld(
             new ParallelCommandGroup(
                 new AutoShootCommand(shooter, feeder, limelight, 60),
-                new AutoAlignWithHubCommand(limelight, drivetrain,
+                new AimCommand(limelight, drivetrain,
                     () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
                     () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity)
             ));
 
         new Trigger(() -> driveController.getLeftTriggerAxis() > 0.8).whileActiveOnce(
                                     new ParallelCommandGroup(
-                                        new AutoAlignWithHubCommand(limelight, drivetrain,
+                                        new AimCommand(limelight, drivetrain,
                                                                     () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
                                                                     () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity),
                                         new ShootCommand(shooter, feeder, limelight,
@@ -328,7 +328,7 @@ public class RobotContainer {
     private Command createShootOnlyCommand() {
         return new SequentialCommandGroup(
             new ParallelCommandGroup(
-            new AutoAlignWithHubCommand(limelight, drivetrain),
+            new AimCommand(limelight, drivetrain),
             new AutoShootCommand(shooter, feeder, limelight, 1)));
     }
 
@@ -353,7 +353,7 @@ public class RobotContainer {
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
             new FollowerCommand(drivetrain, TrajectoryFactory.start_ball2),
             new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
-            new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 10), new AutoAlignWithHubCommand(limelight, drivetrain)));
+            new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 10), new AimCommand(limelight, drivetrain)));
     }
 
     /**
@@ -367,12 +367,12 @@ public class RobotContainer {
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
             new FollowerCommand(drivetrain, TrajectoryFactory.start_ball2),
             new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
-            new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 5), new AutoAlignWithHubCommand(limelight, drivetrain)),
+            new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 5), new AimCommand(limelight, drivetrain)),
 
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
             new FollowerCommand(drivetrain, TrajectoryFactory.start_ball3_test),
             new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
-            new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 5), new AutoAlignWithHubCommand(limelight, drivetrain))
+            new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 5), new AimCommand(limelight, drivetrain))
           );
     }
 
@@ -387,7 +387,7 @@ public class RobotContainer {
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
             new FollowerCommand(drivetrain, TrajectoryFactory.start_ball2),
             new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
-            new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 10), new AutoAlignWithHubCommand(limelight, drivetrain))
+            new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 10), new AimCommand(limelight, drivetrain))
 
  /*            new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
             new FollowerCommand(drivetrain, TrajectoryFactory.start_ball3_test),
