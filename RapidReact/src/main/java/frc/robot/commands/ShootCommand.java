@@ -3,7 +3,6 @@ package frc.robot.commands;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.FeederSubsystem;
 import frc.robot.subsystems.LimelightSubsystem;
@@ -25,10 +24,6 @@ public class ShootCommand extends CommandBase {
 
     private boolean fixedRange;
 
-    private boolean timed;
-    private double time;
-    private Timer timer = new Timer();
-
     // Fixed range version, take the range to target as a parameter
     public ShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, LimelightSubsystem limelight,
                         Consumer<Boolean> shootReadyNotifier, BooleanSupplier shootTrigger, BooleanSupplier forceShootTrigger,
@@ -43,19 +38,8 @@ public class ShootCommand extends CommandBase {
 
         this.currentRange = range;
         this.fixedRange = true;
-        this.timed = false;
 
         addRequirements(shooter, feeder, limelight);
-    }
-
-    // backup for auto shoot (currently unused)
-    public ShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, LimelightSubsystem limelight,
-                        Consumer<Boolean> shootReadyNotifier, BooleanSupplier shootTrigger, 
-                        double time) {
-        this(shooter, feeder, limelight, shootReadyNotifier, shootTrigger, () -> false, 0);
-
-        timed = true;
-        this.time = time;
     }
 
     // Variable range version, takes a limelight object that is used to determine
@@ -82,11 +66,6 @@ public class ShootCommand extends CommandBase {
         // Initialze the shooter range, if we have a limelight it will get updated each
         // time through periodic.
         shooter.setRange(currentRange);
-
-        if (timed) {
-            timer.reset();
-            timer.start();
-        }
     }
 
     // Called every time the scheduler runs while the command is scheduled.
@@ -108,6 +87,7 @@ public class ShootCommand extends CommandBase {
             }
         }
 
+        // shooter checks
         boolean aligned = true;
         if (!fixedRange) {
             aligned = limelight.aligned();
@@ -148,9 +128,6 @@ public class ShootCommand extends CommandBase {
     // Returns true when the command should end.
     @Override
     public boolean isFinished() {
-        if (timed) {
-            return timer.hasElapsed(time);
-        }
         return false;
     }
 }
