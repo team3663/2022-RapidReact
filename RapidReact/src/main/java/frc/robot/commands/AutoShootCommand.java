@@ -15,6 +15,7 @@ public class AutoShootCommand extends CommandBase {
 
     private boolean stagingCargo;
     private String shootingPose;
+    private boolean varyingRange;
     private double currentRange;
 
     private Timer timer = new Timer();
@@ -27,6 +28,7 @@ public class AutoShootCommand extends CommandBase {
         this.shooter = shooter;
         this.feeder = feeder;
         this.shootingPose = shootingPose;
+        this.varyingRange = false;
         this.timeOut = timeOut;
 
         addRequirements(shooter, feeder);
@@ -37,9 +39,10 @@ public class AutoShootCommand extends CommandBase {
     public AutoShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder,
                             LimelightSubsystem limelight,
                             double timeOut) {
-        this(shooter, feeder, "varying", timeOut);
+        this(shooter, feeder, "", timeOut);
 
         this.limelight = limelight;
+        this.varyingRange = true;
     }
 
     // Called when the command is initially scheduled.
@@ -49,7 +52,7 @@ public class AutoShootCommand extends CommandBase {
         feeder.setFeedMode(FeedMode.PRESHOOT);
         stagingCargo = true;
 
-        if (shootingPose.equals("varying")) {
+        if (varyingRange) {
             limelight.setLEDMode(limelight.LED_ON);
         }
         else {
@@ -64,7 +67,7 @@ public class AutoShootCommand extends CommandBase {
     @Override
     public void execute() {
         // If we have a limelight then use it to update the current range to target
-        if (shootingPose.equals("varying")) {
+        if (varyingRange) {
             currentRange = limelight.getDistance();
             shooter.setRange(currentRange);
         }
@@ -79,7 +82,7 @@ public class AutoShootCommand extends CommandBase {
         }
 
         boolean aligned = true;
-        if (shootingPose.equals("varying")) {
+        if (varyingRange) {
             aligned = limelight.aligned();
         }
         boolean atSpeed = shooter.ready();
@@ -104,7 +107,7 @@ public class AutoShootCommand extends CommandBase {
 
         timer.stop();
 
-        if (shootingPose.equals("varying")) {
+        if (varyingRange) {
             limelight.setLEDMode(limelight.LED_OFF);
         }
 

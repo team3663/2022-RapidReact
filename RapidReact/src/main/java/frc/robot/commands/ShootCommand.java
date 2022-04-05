@@ -20,6 +20,7 @@ public class ShootCommand extends CommandBase {
     private BooleanSupplier forceShootTrigger;
 
     private String shootingPose;
+    private boolean varyingRange;
     private boolean stagingCargo;
 
     // Fixed range version, take the range to target as a parameter
@@ -34,6 +35,7 @@ public class ShootCommand extends CommandBase {
         this.forceShootTrigger = forceShootTrigger;
 
         this.shootingPose = shootingPose;
+        this.varyingRange = false;
 
         addRequirements(shooter, feeder, limelight);
     }
@@ -42,9 +44,10 @@ public class ShootCommand extends CommandBase {
     // the range
     public ShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, LimelightSubsystem limelight,
                         Consumer<Boolean> shootReadyNotifier, BooleanSupplier shootTrigger, BooleanSupplier forceShootTrigger) {
-        this(shooter, feeder, shootReadyNotifier, shootTrigger, forceShootTrigger, "varying");
+        this(shooter, feeder, shootReadyNotifier, shootTrigger, forceShootTrigger, "");
 
         this.limelight = limelight;
+        this.varyingRange = true;
     }
 
     // Called when the command is initially scheduled.
@@ -55,7 +58,7 @@ public class ShootCommand extends CommandBase {
         stagingCargo = true;
         shootReadyNotifier.accept(false);
 
-        if (shootingPose.equals("varying")) {
+        if (varyingRange) {
             limelight.setLEDMode(limelight.LED_ON);
         }
         else {
@@ -68,7 +71,7 @@ public class ShootCommand extends CommandBase {
     public void execute() {
 
         // If we have a limelight then use it to update the current range to target
-        if (shootingPose.equals("varying")) {
+        if (varyingRange) {
             shooter.setRange(limelight.getDistance());
         }
 
@@ -83,7 +86,7 @@ public class ShootCommand extends CommandBase {
 
         // shooter checks
         boolean aligned = true;
-        if (shootingPose.equals("varying")) {
+        if (varyingRange) {
             aligned = limelight.aligned();
         }
         boolean atSpeed = shooter.ready();
@@ -114,7 +117,7 @@ public class ShootCommand extends CommandBase {
 
         shootReadyNotifier.accept(false);
 
-        if (shootingPose.equals("varying")) {
+        if (varyingRange) {
             limelight.setLEDMode(limelight.LED_OFF);
         }
     }
