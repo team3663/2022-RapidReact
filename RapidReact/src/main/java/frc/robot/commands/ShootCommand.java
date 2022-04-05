@@ -19,15 +19,13 @@ public class ShootCommand extends CommandBase {
     private BooleanSupplier shootTrigger;
     private BooleanSupplier forceShootTrigger;
 
-    private double currentRange;
+    private String shootingPose;
     private boolean stagingCargo;
-
-    private boolean fixedRange;
 
     // Fixed range version, take the range to target as a parameter
     public ShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, 
                         Consumer<Boolean> shootReadyNotifier, BooleanSupplier shootTrigger, BooleanSupplier forceShootTrigger,
-                        double range) {
+                        String shootingPose) {
         this.shooter = shooter;
         this.feeder = feeder;
 
@@ -35,8 +33,7 @@ public class ShootCommand extends CommandBase {
         this.shootTrigger = shootTrigger;
         this.forceShootTrigger = forceShootTrigger;
 
-        this.currentRange = range;
-        this.fixedRange = true;
+        this.shootingPose = shootingPose;
 
         addRequirements(shooter, feeder, limelight);
     }
@@ -45,9 +42,8 @@ public class ShootCommand extends CommandBase {
     // the range
     public ShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, LimelightSubsystem limelight,
                         Consumer<Boolean> shootReadyNotifier, BooleanSupplier shootTrigger, BooleanSupplier forceShootTrigger) {
-        this(shooter, feeder, shootReadyNotifier, shootTrigger, forceShootTrigger, 0);
+        this(shooter, feeder, shootReadyNotifier, shootTrigger, forceShootTrigger, "varying");
 
-        this.fixedRange = false;
         this.limelight = limelight;
     }
 
@@ -59,13 +55,12 @@ public class ShootCommand extends CommandBase {
         stagingCargo = true;
         shootReadyNotifier.accept(false);
 
-        if (!fixedRange) {
+        if (shootingPose.equals("varying")) {
             limelight.setLEDMode(limelight.LED_ON);
         }
-
-        // Initialze the shooter range, if we have a limelight it will get updated each
-        // time through periodic.
-        shooter.setRange(currentRange);
+        else {
+            shooter.setRange(shootingPose);
+        }
     }
 
     // Called every time the scheduler runs while the command is scheduled.
@@ -73,9 +68,8 @@ public class ShootCommand extends CommandBase {
     public void execute() {
 
         // If we have a limelight then use it to update the current range to target
-        if (!fixedRange) {
-            currentRange = limelight.getDistance();
-            shooter.setRange(currentRange);
+        if (shootingPose.equals("varying")) {
+            shooter.setRange(limelight.getDistance());
         }
 
         // We bail out here if we are staging cargo and the feeder has not stopped yet.
@@ -89,7 +83,7 @@ public class ShootCommand extends CommandBase {
 
         // shooter checks
         boolean aligned = true;
-        if (!fixedRange) {
+        if (shootingPose.equals("varying")) {
             aligned = limelight.aligned();
         }
         boolean atSpeed = shooter.ready();
@@ -120,14 +114,8 @@ public class ShootCommand extends CommandBase {
 
         shootReadyNotifier.accept(false);
 
-        if (!fixedRange) {
+        if (shootingPose.equals("varying")) {
             limelight.setLEDMode(limelight.LED_OFF);
         }
-    }
-
-    // Returns true when the command should end.
-    @Override
-    public boolean isFinished() {
-        return false;
     }
 }

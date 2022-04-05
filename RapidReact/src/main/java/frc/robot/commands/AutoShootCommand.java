@@ -13,23 +13,21 @@ public class AutoShootCommand extends CommandBase {
     private FeederSubsystem feeder;
     private LimelightSubsystem limelight;
 
+    private boolean stagingCargo;
+    private String shootingPose;
     private double currentRange;
 
-    private boolean stagingCargo;
-    private boolean fixedRange;
-
     private Timer timer = new Timer();
-    private double autoTimer;
+    private double timeOut;
 
     // Fixed range version, take the range to target as a parameter
     public AutoShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder,
-                            double range,
-                            double autoTimer) {
+                            String shootingPose,
+                            double timeOut) {
         this.shooter = shooter;
         this.feeder = feeder;
-        this.currentRange = range;
-        this.fixedRange = true;
-        this.autoTimer = autoTimer;
+        this.shootingPose = shootingPose;
+        this.timeOut = timeOut;
 
         addRequirements(shooter, feeder);
     }
@@ -38,11 +36,10 @@ public class AutoShootCommand extends CommandBase {
     // the range
     public AutoShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder,
                             LimelightSubsystem limelight,
-                            double autoTimer) {
-        this(shooter, feeder, 0, autoTimer);
+                            double timeOut) {
+        this(shooter, feeder, "varying", timeOut);
 
         this.limelight = limelight;
-        this.fixedRange = false;
     }
 
     // Called when the command is initially scheduled.
@@ -52,13 +49,12 @@ public class AutoShootCommand extends CommandBase {
         feeder.setFeedMode(FeedMode.PRESHOOT);
         stagingCargo = true;
 
-        if (!fixedRange) {
+        if (shootingPose.equals("varying")) {
             limelight.setLEDMode(limelight.LED_ON);
         }
-
-        // Initialze the shooter range, if we have a limelight it will get updated each
-        // time through periodic.
-        shooter.setRange(currentRange);
+        else {
+            shooter.setRange(shootingPose);
+        }
         
         timer.reset();
         timer.start();
@@ -68,7 +64,7 @@ public class AutoShootCommand extends CommandBase {
     @Override
     public void execute() {
         // If we have a limelight then use it to update the current range to target
-        if (limelight != null) {
+        if (shootingPose.equals("varying")) {
             currentRange = limelight.getDistance();
             shooter.setRange(currentRange);
         }
@@ -83,7 +79,7 @@ public class AutoShootCommand extends CommandBase {
         }
 
         boolean aligned = true;
-        if (!fixedRange) {
+        if (shootingPose.equals("varying")) {
             aligned = limelight.aligned();
         }
         boolean atSpeed = shooter.ready();
@@ -108,7 +104,7 @@ public class AutoShootCommand extends CommandBase {
 
         timer.stop();
 
-        if (!fixedRange) {
+        if (shootingPose.equals("varying")) {
             limelight.setLEDMode(limelight.LED_OFF);
         }
 
@@ -117,6 +113,6 @@ public class AutoShootCommand extends CommandBase {
     // Returns true when the command should end.
     @Override
     public boolean isFinished() {
-        return timer.hasElapsed(autoTimer);
+        return timer.hasElapsed(timeOut);
     }
 }

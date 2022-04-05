@@ -242,6 +242,12 @@ public class ShooterSubsystem extends SubsystemBase {
         setAngle(solution.angle);
     }
 
+    public void setRange(String range) {
+        FiringSolution solution = ranger.getFiringSolution(range);
+        setSpeed(solution.speed);
+        setAngle(solution.angle);
+    }
+
     public void setSpeed(double targetSpeed) {
         this.targetSpeed = targetSpeed;
 
@@ -271,10 +277,12 @@ public class ShooterSubsystem extends SubsystemBase {
         }
     }
 
+    /*
     private boolean atTargetSpeed() {
         double delta = speedMarginPercent * targetSpeed;
         return currentSpeed >= targetSpeed - delta && currentSpeed <= targetSpeed + delta;
     }
+    */
 
     private boolean withinFirstTolerance() {
         return MathUtils.WithinDelta(currentSpeed, targetSpeed, speedFirstTolerance);

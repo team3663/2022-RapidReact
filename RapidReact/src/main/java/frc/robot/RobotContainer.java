@@ -209,7 +209,7 @@ public class RobotContainer {
                 driveControllerHelper::rumble,
                 () -> driveController.getRightTriggerAxis() > 0.8,
                 () -> driveController.getBButton(),
-                0));
+                "hub"));
             
         // Schedule the Intake command to pick-up cargo
         new JoystickButton(driveController, Button.kRightBumper.value)
