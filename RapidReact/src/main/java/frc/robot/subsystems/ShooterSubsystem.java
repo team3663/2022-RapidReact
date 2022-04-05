@@ -1,9 +1,12 @@
 package frc.robot.subsystems;
 
+import java.util.Map;
+
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -85,6 +88,7 @@ public class ShooterSubsystem extends SubsystemBase {
     private MotorState motorState = MotorState.STOPPED;
     private double currentSpeed = 0;
     private double targetSpeed = 0;
+    private double speedAdjust = 0;
     private double speedError;
     private double speedErrorPercent;
 
@@ -102,6 +106,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
     private NetworkTableEntry currentSpeedEntry;
     private NetworkTableEntry targetSpeedEntry;
+    private NetworkTableEntry speedAdjustEntry;   
     private NetworkTableEntry shooterEncoderEntry;
     private NetworkTableEntry speedErrorEntry;
     private NetworkTableEntry speedErrorPercentEntry;
@@ -114,10 +119,9 @@ public class ShooterSubsystem extends SubsystemBase {
     private NetworkTableEntry currentXEntry;
     private NetworkTableEntry highestCurrentEntry;
     private NetworkTableEntry alignedWithHubEntry;
-
     private NetworkTableEntry shooterMotorCurrentEntry;
     private NetworkTableEntry hoodMotorCurrentEntry;
-
+ 
     /** Creates a new instance of the Shooter subsystem. */
     public ShooterSubsystem(int shooterMotor1CANID, int shooterMotor2CANID, int hoodMotorCANID, int hoodLimitDio,
             Ranger ranger) {
@@ -188,6 +192,10 @@ public class ShooterSubsystem extends SubsystemBase {
             setSpeed(targetSpeed - 20);
         }
 
+        // Read the current speed adjustment value from network table.
+        // Value is set in shuffleboard.
+        speedAdjust = speedAdjustEntry.getDouble(speedAdjust);
+
         updateTelemetry();
     }
 
@@ -253,7 +261,9 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     public void setSpeed(double targetSpeed) {
-        this.targetSpeed = targetSpeed;
+        // Set new target speed to value provided by caller plus the current speed adjust
+        // set in shuffleboard.
+        this.targetSpeed = targetSpeed + speedAdjust;
 
         if (targetSpeed > MAX_RPM) {
             targetSpeed = MAX_RPM;
@@ -363,85 +373,93 @@ public class ShooterSubsystem extends SubsystemBase {
     // ---------------------------------------------------------------------------
 
     private void initTelemetry() {
-        ShuffleboardTab tab = Shuffleboard.getTab("Shooter"); // Data is grouped with shooter and intake.
+        ShuffleboardTab shooterTab = Shuffleboard.getTab("Shooter");
+        ShuffleboardTab driverTab = Shuffleboard.getTab("Driver");
 
         // Shooter Data
-        currentSpeedEntry = tab.add("Current Speed", 0)
+        currentSpeedEntry = shooterTab.add("Current Speed", 0)
                 .withPosition(0, 2)
                 .withSize(1, 1)
                 .getEntry();
 
-        targetSpeedEntry = tab.add("Target Speed", 0)
+        targetSpeedEntry = shooterTab.add("Target Speed", 0)
                 .withPosition(1, 2)
                 .withSize(1, 1)
                 .getEntry();
+        
+        speedAdjustEntry = driverTab.add("Shooter Speed Adjust", speedAdjust)
+                .withPosition(0, 1)
+                .withSize(4, 1)
+                .withWidget(BuiltInWidgets.kNumberSlider)
+                .withProperties(Map.of("min", -250, "max", 250, "block increment", 25))
+                .getEntry();
 
-        speedErrorEntry = tab.add("Error", 0)
+        speedErrorEntry = shooterTab.add("Error", 0)
                 .withPosition(2, 2)
                 .withSize(1, 1)
                 .getEntry();
 
-        speedErrorPercentEntry = tab.add("Error %", 0)
+        speedErrorPercentEntry = shooterTab.add("Error %", 0)
                 .withPosition(3, 2)
                 .withSize(1, 1)
                 .getEntry();
 
-        shooterEncoderEntry = tab.add("Encoder", 0)
+        shooterEncoderEntry = shooterTab.add("Encoder", 0)
                 .withPosition(4, 2)
                 .withSize(1, 1)
                 .getEntry();
 
-        currentRangeEntry = tab.add("Distance", 0)
+        currentRangeEntry = shooterTab.add("Distance", 0)
                 .withPosition(5, 2)
                 .withSize(1, 1)
                 .getEntry();
-        currentXEntry = tab.add("X offset", 0)
+        currentXEntry = shooterTab.add("X offset", 0)
                 .withPosition(5, 1)
                 .withSize(1, 1)
                 .getEntry();
 
-        readyToShootEntry = tab.add("Ready", false)
+        readyToShootEntry = shooterTab.add("Ready", false)
                 .withPosition(6, 2)
                 .withSize(1, 1)
                 .getEntry();
 
-        alignedWithHubEntry = tab.add("Aligned", false)
+        alignedWithHubEntry = shooterTab.add("Aligned", false)
                 .withPosition(7, 2)
                 .withSize(1, 1)
                 .getEntry();
 
         // Hood Data
-        currentAngleEntry = tab.add("Current Angle", 0)
+        currentAngleEntry = shooterTab.add("Current Angle", 0)
                 .withPosition(0, 3)
                 .withSize(1, 1)
                 .getEntry();
 
-        targetAngleEntry = tab.add("Target Angle", 0)
+        targetAngleEntry = shooterTab.add("Target Angle", 0)
                 .withPosition(1, 3)
                 .withSize(1, 1)
                 .getEntry();
 
-        hoodEncoderEntry = tab.add("Hood Encoder", 0)
+        hoodEncoderEntry = shooterTab.add("Hood Encoder", 0)
                 .withPosition(2, 3)
                 .withSize(1, 1)
                 .getEntry();
 
-        hoodLimitSwitchEntry = tab.add("Hood Limit", false)
+        hoodLimitSwitchEntry = shooterTab.add("Hood Limit", false)
                 .withPosition(3, 3)
                 .withSize(1, 1)
                 .getEntry();
 
         // current data
-        highestCurrentEntry = tab.add("Highest Current", 0)
+        highestCurrentEntry = shooterTab.add("Highest Current", 0)
                 .withPosition(7, 0)
                 .withSize(1, 1)
                 .getEntry();
 
-        shooterMotorCurrentEntry = tab.add("shooter motor current", 0)
+        shooterMotorCurrentEntry = shooterTab.add("shooter motor current", 0)
                 .withPosition(8, 0)
                 .withSize(1, 1)
                 .getEntry();
-        hoodMotorCurrentEntry = tab.add("hood motor current", 0)
+        hoodMotorCurrentEntry = shooterTab.add("hood motor current", 0)
                 .withPosition(9, 0)
                 .withSize(1, 1)
                 .getEntry();
