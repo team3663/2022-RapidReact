@@ -412,3 +412,5 @@ public class ClimberSubsystem extends SubsystemBase {
     elevatorCurrentAngleEntry.setDouble(elevator.getHeight());
 }
 }
+
+//smart motion

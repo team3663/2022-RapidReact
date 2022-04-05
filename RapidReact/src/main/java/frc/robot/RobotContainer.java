@@ -20,7 +20,9 @@ import frc.robot.commands.DefaultDriveCommand;
 import frc.robot.commands.DefaultShooterCommand;
 import frc.robot.commands.ExtendElevatorCommand;
 import frc.robot.commands.HomeElevatorCommand;
+import frc.robot.commands.HomeRedHookCommand;
 import frc.robot.commands.FollowerCommand;
+import frc.robot.commands.HomeBlueHookCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.RotateWindmillCommand;
 import frc.robot.commands.ShootCommand;
@@ -77,6 +79,7 @@ public class RobotContainer {
 
     // Commands
     private DefaultDriveCommand drive;
+    private Command homeHookCommand;
     private Command deployClimberCommand;
     private Command climbCommand;
     private Command climbSecondToThirdCommmand;
@@ -159,7 +162,11 @@ public class RobotContainer {
         // create idle shoot command
         shooter.setDefaultCommand(new DefaultShooterCommand(shooter));
 
-        // Create the command to deploy the climber
+        // Climber Command Groups
+        homeHookCommand = new ParallelCommandGroup(
+            new HomeRedHookCommand(climber),
+            new HomeBlueHookCommand(climber)
+        );
 
         deployClimberCommand = new ParallelCommandGroup(
             new HomeElevatorCommand(climber),
@@ -288,6 +295,8 @@ public class RobotContainer {
         new JoystickButton(operatorController, Button.kStart.value).whenPressed(climbCommand);
 
         new JoystickButton(operatorController, Button.kX.value).whenPressed(new RotateWindmillCommand(climber, WindmillState.Home));
+
+        new JoystickButton(operatorController, Button.kY.value).whenPressed(homeHookCommand);
 
         // Test Controller
         new JoystickButton(testController, Button.kA.value).whenPressed(new AutoShootCommand(shooter, feeder, limelight, 2, false));
