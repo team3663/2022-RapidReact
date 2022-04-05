@@ -13,8 +13,6 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -47,7 +45,7 @@ public class ClimberSubsystem extends SubsystemBase {
   // Hook Helper class.
   public class Hook {
 
-    private RelativeEncoder hookPosition;
+    public RelativeEncoder hookPosition;
     private CANSparkMax hookMotor;
     private SparkMaxPIDController hookPositionPID;
 
@@ -76,10 +74,9 @@ public class ClimberSubsystem extends SubsystemBase {
     // Tracking Info
     public boolean goingHome = true;
     private double targetAngle  = 0;
-    private Timer hookTimer;
 
     // All of these args are in Degreas
-    private Hook(int HookCanId, HookSet hookSet) {
+    public Hook(int HookCanId, HookSet hookSet) {
       hookMotor = new CANSparkMax(HookCanId, MotorType.kBrushless);
       hookPosition = hookMotor.getEncoder();
       hookPositionPID = hookMotor.getPIDController();
@@ -87,8 +84,6 @@ public class ClimberSubsystem extends SubsystemBase {
       hookPosition.setPositionConversionFactor(ROTATIONS_PER_DEGREE);
 
       hookMotor.setInverted(false);
-
-      hookTimer = new Timer();
 
       // Setting the PID Values
       hookPositionPID.setP(hookP);
@@ -101,23 +96,8 @@ public class ClimberSubsystem extends SubsystemBase {
       hookMotor.setIdleMode(IdleMode.kBrake);
     }
 
-    private void homeHook() {
-      hookTimer.start();
-
-      if (!goingHome) {
-          return;
-      }
-
-      if (Math.abs(hookPosition.getVelocity()) > 0.01 || hookTimer.get() < 0.25) {
-        hookMotor.set(0.1);
-        return;
-      }
-
-      goingHome = false;
-      hookTimer.stop();
-      hookMotor.set(0);
-      targetAngle = release;
-      hookPosition.setPosition(MAX_HOOK_ANGLE);
+    public void zeroEncoder(){
+      hookPosition.setPosition(0);
     }
 
     public void setAngle(double angle) {
@@ -125,8 +105,20 @@ public class ClimberSubsystem extends SubsystemBase {
       hookPositionPID.setReference(targetAngle, ControlType.kPosition);
     }
 
+    public void setSpeed(double speed){
+      hookMotor.set(speed);
+    }
+
     public double getAngle(){
       return hookPosition.getPosition();
+    }
+
+    public double getVelocity(){
+      return hookPosition.getVelocity();
+    }
+
+    public void setTargetAngle(double angle){
+      hookPositionPID.setReference(angle, ControlType.kPosition);
     }
 
     public void setHookPosition(HookPosition position) {
@@ -145,11 +137,7 @@ public class ClimberSubsystem extends SubsystemBase {
           break;
       }
     }
-
-    public HookPosition getHookPosition(){
-      return currentHookPosition;
-    }
-
+    
     public boolean isAtTargetPosition() {
       return  Math.abs(targetAngle - getAngle()) < 2;
     }
@@ -173,8 +161,10 @@ public class ClimberSubsystem extends SubsystemBase {
 
     private final double HOME = 0;
     private final double FIRST_TO_SECOND = 165; //155
-    private final double SHIFT_WEIGHT_OFFSET = -45; //-55
+    private final double SHIFT_WEIGHT_FIRST_OFFSET = -45; //-55
+    private final double SHIFT_WEIGHT_SECOND_OFFSET = -45; // lower this one when able to test
     private final double SECOND_TO_THIRD = FIRST_TO_SECOND + 195; //fts + 180
+    private final double HANG_OFFSET = 30; // tune this
 
     // PID Values
     private double windmillP = 0.1;
@@ -245,7 +235,7 @@ public class ClimberSubsystem extends SubsystemBase {
             currentWindmillState = WindmillState.FirstToSecond;
             break;
           case ShiftWeightOffFirst:
-            setAngle(FIRST_TO_SECOND + SHIFT_WEIGHT_OFFSET);
+            setAngle(FIRST_TO_SECOND + SHIFT_WEIGHT_FIRST_OFFSET);
             currentWindmillState = WindmillState.ShiftWeightOffFirst;
             break;
           case SecondToThird:
@@ -253,11 +243,11 @@ public class ClimberSubsystem extends SubsystemBase {
             currentWindmillState = WindmillState.SecondToThird;
             break;
           case ShiftWeightOffSecond:
-            setAngle(SECOND_TO_THIRD + SHIFT_WEIGHT_OFFSET);
+            setAngle(SECOND_TO_THIRD + SHIFT_WEIGHT_SECOND_OFFSET);
             currentWindmillState = WindmillState.ShiftWeightOffSecond;
             break;
           case Hang:
-            setAngle(SECOND_TO_THIRD + Math.abs(SHIFT_WEIGHT_OFFSET));
+            setAngle(SECOND_TO_THIRD + HANG_OFFSET);
             currentWindmillState = WindmillState.Hang;
             break;
         }
@@ -352,16 +342,6 @@ public class ClimberSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
-
-    if (DriverStation.isEnabled()) {
-      hookRed.homeHook();
-      hookBlue.homeHook();
-    } else {
-      hookRed.hookTimer.stop();
-      hookBlue.hookTimer.stop();
-    }
-
     updateTelemetry();
   }
 
@@ -432,7 +412,3 @@ public class ClimberSubsystem extends SubsystemBase {
     elevatorCurrentAngleEntry.setDouble(elevator.getHeight());
 }
 }
-
-//gear ratios 
-//command group 
-//parrellel movement of hooks and windmill

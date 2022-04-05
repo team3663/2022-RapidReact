@@ -2,7 +2,6 @@ package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
@@ -12,7 +11,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
-import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.commands.AutoAlignWithHubCommand;
@@ -22,16 +20,13 @@ import frc.robot.commands.DefaultDriveCommand;
 import frc.robot.commands.DefaultShooterCommand;
 import frc.robot.commands.ExtendElevatorCommand;
 import frc.robot.commands.HomeElevatorCommand;
-import frc.robot.commands.IncrementWindmillAngle;
 import frc.robot.commands.FollowerCommand;
 import frc.robot.commands.IntakeCommand;
-import frc.robot.commands.MoveWindmillCommand;
 import frc.robot.commands.RotateWindmillCommand;
 import frc.robot.commands.ShootCommand;
 import frc.robot.commands.SwitchBlueHookCommand;
 import frc.robot.commands.SwitchRedHookCommand;
 import frc.robot.commands.WaitForSecondsCommand;
-import frc.robot.commands.WaitShooterAvailableCommand;
 import frc.robot.commands.AutoIntakeCommand.IntakeMode;
 import frc.robot.drivers.Pigeon;
 import frc.robot.subsystems.ClimberSubsystem;
@@ -269,7 +264,6 @@ public class RobotContainer {
         new JoystickButton(driveController, Button.kBack.value)
             .whenHeld(deployClimberCommand);
 
-        
         // operator controls
         new JoystickButton(operatorController, Button.kA.value).whenPressed(
                     new InstantCommand(() -> feeder.setFeedMode(FeedMode.REVERSE_CONTINUOUS)));
