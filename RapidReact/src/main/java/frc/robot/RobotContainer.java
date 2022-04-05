@@ -220,8 +220,10 @@ public class RobotContainer {
                 .whenHeld(new IntakeCommand(intake, feeder, (() -> driveController.getLeftBumper())));
 
         // climb
+        /*
         new JoystickButton(driveController, Button.kBack.value)
             .whenHeld(deployClimberCommand);
+        */
 
         
         // operator controls
