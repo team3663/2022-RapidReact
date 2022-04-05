@@ -103,8 +103,10 @@ public class RobotContainer {
                 HOOD_LIMITSWITCH_DIO, ranger);
         intake = new IntakeSubsystem(INTAKE_MOTOR_CAN_ID, BOOM_RETRACT_SOLENOID_CHAN, BOOM_EXTEND_SOLENOID_CHAN,
                 ARM_RETRACT_SOLENOID_CHAN, ARM_EXTEND_SOLENOID_CHAN);
-        climber = new ClimberSubsystem(ELEVATOR_CAN_ID, WINDMILL_1_CAN_ID, WINDMILL_2_CAN_ID, 
+        /*
+                climber = new ClimberSubsystem(ELEVATOR_CAN_ID, WINDMILL_1_CAN_ID, WINDMILL_2_CAN_ID, 
                 RED_HOOK_CAN_ID, BLUE_HOOK_CAN_ID, WINDMILL_SENSOR_DIO);
+            */
 
         // Setup our server drivetrain subsystem
         SwerveModuleConfig fl = new SwerveModuleConfig(FRONT_LEFT_MODULE_DRIVE_MOTOR, FRONT_LEFT_MODULE_STEER_MOTOR,
@@ -152,6 +154,7 @@ public class RobotContainer {
 
         // Create the command to deploy the climber
 
+        /*
         deployClimberCommand = new ParallelCommandGroup(
             new HomeElevatorCommand(climber),
             new SwitchRedHookCommand(climber, HookPosition.Grab),
@@ -182,6 +185,7 @@ public class RobotContainer {
             new WaitForSecondsCommand(0.25),
             new RotateWindmillCommand(climber, WindmillState.HangFromThird)
         );
+        */
     }
 
     /**
@@ -221,6 +225,7 @@ public class RobotContainer {
 
         
         // operator controls
+        /*
         new JoystickButton(operatorController, Button.kA.value).whenPressed(
                     new InstantCommand(() -> feeder.setFeedMode(FeedMode.REVERSE_CONTINUOUS)));
                 
@@ -245,6 +250,7 @@ public class RobotContainer {
         // Test Controller
         new JoystickButton(testController, Button.kA.value).whenPressed(new AutoShootCommand(shooter, feeder, limelight, 2, false));
 
+        */
     }
 
     /**
