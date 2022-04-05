@@ -354,7 +354,7 @@ public class RobotContainer {
             new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 5, false), new AutoAlignWithHubCommand(limelight, drivetrain)),
 
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
-            new FollowerCommand(drivetrain, TrajectoryFactory.start_ball3_test),
+            new FollowerCommand(drivetrain, TrajectoryFactory.ball2_ball3),
             new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
             new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 5, false), new AutoAlignWithHubCommand(limelight, drivetrain))
           );
@@ -374,7 +374,7 @@ public class RobotContainer {
             new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 10, false), new AutoAlignWithHubCommand(limelight, drivetrain))
 
  /*            new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
-            new FollowerCommand(drivetrain, TrajectoryFactory.start_ball3_test),
+            new FollowerCommand(drivetrain, TrajectoryFactory.ball2_ball3_test),
             new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
             new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 2, false), new AutoAlignWithHubCommand(limelight, drivetrain)),
 
