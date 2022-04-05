@@ -85,6 +85,7 @@ public class RobotContainer {
     private Command deployClimberCommand;
     private Command climbCommand;
     private Command climbSecondToThirdCommmand;
+    private Command shiftWeightAndUnlockCommand;
     private Command threeBallAutoCommand;
     private Command fiveBallAutoCommand;
 
@@ -176,14 +177,22 @@ public class RobotContainer {
             new SwitchRedHookCommand(climber, HookPosition.Grab)
         );
 
+        shiftWeightAndUnlockCommand = new ParallelCommandGroup(
+            new RotateWindmillCommand(climber, WindmillState.ShiftWeightOffFirst),
+            new WaitForSecondsCommand(0.25),
+            new SwitchRedHookCommand(climber, HookPosition.Release)
+        );
+
         climbCommand = new SequentialCommandGroup(
             new RotateWindmillCommand(climber, WindmillState.FirstToSecond),
             new WaitForSecondsCommand(0.25),
             new SwitchBlueHookCommand(climber, HookPosition.Lock),
             new WaitForSecondsCommand(0.5),
+            //new command would go here
             new RotateWindmillCommand(climber, WindmillState.ShiftWeightOffFirst),
             new WaitForSecondsCommand(0.25),
             new SwitchRedHookCommand(climber, HookPosition.Release),
+            // end of new command
             new WaitForSecondsCommand(0.25),
             climbSecondToThirdCommmand,
             new WaitForSecondsCommand(0.5),
@@ -193,7 +202,7 @@ public class RobotContainer {
             new WaitForSecondsCommand(0.25),
             new SwitchBlueHookCommand(climber, HookPosition.Release),
             new WaitForSecondsCommand(0.25),
-            new RotateWindmillCommand(climber, WindmillState.HangFromThird)
+            new RotateWindmillCommand(climber, WindmillState.Hang)
         );
     }
 
@@ -276,6 +285,9 @@ public class RobotContainer {
 
         new JoystickButton(operatorController, Button.kLeftBumper.value)
             .whileHeld(new ExtendElevatorCommand(climber, -0.1));
+
+        new JoystickButton(operatorController, Button.kRightBumper.value)
+            .whileHeld(new ExtendElevatorCommand(climber, 0.1));
 
         new JoystickButton(operatorController, Button.kBack.value).whenPressed(deployClimberCommand);
 
