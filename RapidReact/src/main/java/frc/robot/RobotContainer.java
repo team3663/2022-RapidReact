@@ -389,6 +389,6 @@ public class RobotContainer {
     public Command createTuneAutoCommand() {
         return new SequentialCommandGroup(
             new InstantCommand(() -> drivetrain.resetPosition()),
-            new FollowerCommand(drivetrain, TrajectoryFactory.tune));
+            new FollowerCommand(drivetrain, TrajectoryFactory.tuneCurve));
     }
 }

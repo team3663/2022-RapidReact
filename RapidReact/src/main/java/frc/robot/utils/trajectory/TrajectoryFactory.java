@@ -5,11 +5,14 @@ import org.frcteam2910.common.control.Trajectory;
 import org.frcteam2910.common.control.TrajectoryConstraint;
 
 import org.frcteam2910.common.control.CentripetalAccelerationConstraint;
+import org.frcteam2910.common.control.FeedforwardConstraint;
 import org.frcteam2910.common.control.MaxAccelerationConstraint;
 import org.frcteam2910.common.control.MaxVelocityConstraint;
 import org.frcteam2910.common.control.SimplePathBuilder;
 import org.frcteam2910.common.math.Rotation2;
 import org.frcteam2910.common.math.Vector2;
+
+import frc.robot.commands.FollowerCommand;
 
 
 public class TrajectoryFactory {
@@ -30,10 +33,26 @@ public class TrajectoryFactory {
           new CentripetalAccelerationConstraint(5.0)
         };
 
+    public static TrajectoryConstraint[] tuneConstraints = {
+            new MaxAccelerationConstraint(1.5), 
+            new FeedforwardConstraint(9, 
+                FollowerCommand.FEEDFORWARD_CONSTANTS.getVelocityConstant(), 
+                FollowerCommand.FEEDFORWARD_CONSTANTS.getAccelerationConstant()),
+            // new MaxVelocityConstraint()
+            new CentripetalAccelerationConstraint(3)
+          };
+
     // for tuning pid & feedforward
     public static Trajectory tune = new Trajectory(
         new SimplePathBuilder(new Vector2(0, 0), Rotation2.ZERO).lineTo(new Vector2(5, 0), Rotation2.fromDegrees(0)).build(),
-        slow,
+        tuneConstraints,
+        sampleDistance);
+    
+    public static Trajectory tuneCurve = new Trajectory(
+        new SplinePathBuilder(new Vector2(0, 0), Rotation2.ZERO, Rotation2.ZERO)
+        .hermite(new Vector2(2, 2), Rotation2.fromDegrees(180), Rotation2.ZERO)
+        .build(),
+        tuneConstraints,
         sampleDistance);
 
     // two ball trajectory (does not use coordinates: reset odometry)
