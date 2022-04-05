@@ -11,12 +11,15 @@ public class AutoShootCommand extends CommandBase {
 
     private ShooterSubsystem shooter;
     private FeederSubsystem feeder;
-    private LimelightSubsystem limelight = null;
+    private LimelightSubsystem limelight;
+
     private double currentRange;
+
     private boolean stagingCargo;
+    private boolean fixedRange;
+
     private Timer timer = new Timer();
     private double autoTimer;
-    private boolean atSpeed;
 
     // Fixed range version, take the range to target as a parameter
     public AutoShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder,
@@ -25,6 +28,7 @@ public class AutoShootCommand extends CommandBase {
         this.shooter = shooter;
         this.feeder = feeder;
         this.currentRange = range;
+        this.fixedRange = true;
         this.autoTimer = autoTimer;
 
         addRequirements(shooter, feeder);
@@ -38,6 +42,7 @@ public class AutoShootCommand extends CommandBase {
         this(shooter, feeder, 0, autoTimer);
 
         this.limelight = limelight;
+        this.fixedRange = false;
     }
 
     // Called when the command is initially scheduled.
@@ -47,7 +52,7 @@ public class AutoShootCommand extends CommandBase {
         feeder.setFeedMode(FeedMode.PRESHOOT);
         stagingCargo = true;
 
-        if (limelight != null) {
+        if (!fixedRange) {
             limelight.setLEDMode(limelight.LED_ON);
         }
 
@@ -57,8 +62,6 @@ public class AutoShootCommand extends CommandBase {
         
         timer.reset();
         timer.start();
-
-        atSpeed = false;
     }
 
     // Called every time the scheduler runs while the command is scheduled.
@@ -80,7 +83,7 @@ public class AutoShootCommand extends CommandBase {
         }
 
         boolean aligned = true;
-        if (limelight != null) {
+        if (!fixedRange) {
             aligned = limelight.aligned();
         }
         boolean atSpeed = shooter.ready();
@@ -105,7 +108,7 @@ public class AutoShootCommand extends CommandBase {
 
         timer.stop();
 
-        if (limelight != null) {
+        if (!fixedRange) {
             limelight.setLEDMode(limelight.LED_OFF);
         }
 

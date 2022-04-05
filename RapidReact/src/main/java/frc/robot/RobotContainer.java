@@ -205,7 +205,7 @@ public class RobotContainer {
                                 () -> driveController.getBButton())));
 
         new JoystickButton(driveController, Button.kA.value).whenHeld(
-            new ShootCommand(shooter, feeder, limelight,
+            new ShootCommand(shooter, feeder,
                 driveControllerHelper::rumble,
                 () -> driveController.getRightTriggerAxis() > 0.8,
                 () -> driveController.getBButton(),

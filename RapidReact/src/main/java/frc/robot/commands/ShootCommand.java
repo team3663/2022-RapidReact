@@ -25,12 +25,11 @@ public class ShootCommand extends CommandBase {
     private boolean fixedRange;
 
     // Fixed range version, take the range to target as a parameter
-    public ShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, LimelightSubsystem limelight,
+    public ShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, 
                         Consumer<Boolean> shootReadyNotifier, BooleanSupplier shootTrigger, BooleanSupplier forceShootTrigger,
                         double range) {
         this.shooter = shooter;
         this.feeder = feeder;
-        this.limelight = limelight;
 
         this.shootReadyNotifier = shootReadyNotifier;
         this.shootTrigger = shootTrigger;
@@ -46,9 +45,10 @@ public class ShootCommand extends CommandBase {
     // the range
     public ShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder, LimelightSubsystem limelight,
                         Consumer<Boolean> shootReadyNotifier, BooleanSupplier shootTrigger, BooleanSupplier forceShootTrigger) {
-        this(shooter, feeder, limelight, shootReadyNotifier, shootTrigger, forceShootTrigger, 0);
+        this(shooter, feeder, shootReadyNotifier, shootTrigger, forceShootTrigger, 0);
 
         this.fixedRange = false;
+        this.limelight = limelight;
     }
 
     // Called when the command is initially scheduled.
