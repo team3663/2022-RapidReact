@@ -4,6 +4,8 @@ import org.frcteam2910.common.control.SplinePathBuilder;
 import org.frcteam2910.common.control.Trajectory;
 import org.frcteam2910.common.control.TrajectoryConstraint;
 
+import java.util.HashMap;
+
 import org.frcteam2910.common.control.CentripetalAccelerationConstraint;
 import org.frcteam2910.common.control.FeedforwardConstraint;
 import org.frcteam2910.common.control.MaxAccelerationConstraint;
@@ -14,7 +16,6 @@ import org.frcteam2910.common.math.Vector2;
 
 import frc.robot.commands.FollowerCommand;
 
-
 public class TrajectoryFactory {
 
     // smaller sample distance, more precision
@@ -22,79 +23,105 @@ public class TrajectoryFactory {
 
     // constraints
     public static TrajectoryConstraint[] constraints = {
-            new MaxAccelerationConstraint(1.5), 
-            new FeedforwardConstraint(9, 
-                FollowerCommand.FEEDFORWARD_CONSTANTS.getVelocityConstant(), 
-                FollowerCommand.FEEDFORWARD_CONSTANTS.getAccelerationConstant()),
+            new MaxAccelerationConstraint(1.5),
+            new FeedforwardConstraint(9,
+                    FollowerCommand.FEEDFORWARD_CONSTANTS.getVelocityConstant(),
+                    FollowerCommand.FEEDFORWARD_CONSTANTS.getAccelerationConstant()),
             new CentripetalAccelerationConstraint(3)
-          };
-
+    };
     // for tuning feedforward & pid & constraints
-          // 1. tune kStatic : set a reasonable kV, kStatic = voltage at which the robot starts up (Glass)
-          // 2. tune kV : better kV = error * last kV + last kV
-          // 3. tune kA : increase until robot twitches, then consider decrease kV or kA
-          // 4. tune P: increase until consistantly hitting target within a reasonable tolerance
-          // 5. tune AConstraint : increase until robot overshoots, then decrease
-          // 6. tune FFConstraint : adjust between 6 - 10
-          // 7. tune AcConstraint : robot goes through the curve at the reasonable speed while hitting target
-    public static Trajectory tuneLine = new Trajectory(
-        new SimplePathBuilder(new Vector2(0, 0), Rotation2.ZERO).lineTo(new Vector2(5, 0), Rotation2.fromDegrees(0)).build(),
+    // 1. tune kStatic : set a reasonable kV, kStatic = voltage at which the robot
+    // starts up (Glass)
+    // 2. tune kV : better kV = error * last kV + last kV
+    // 3. tune kA : increase until robot twitches, then consider decrease kV or kA
+    // 4. tune P: increase until consistantly hitting target within a reasonable
+    // tolerance
+    // 5. tune AConstraint : increase until robot overshoots, then decrease
+    // 6. tune FFConstraint : adjust between 6 - 10
+    // 7. tune AcConstraint : robot goes through the curve at the reasonable speed
+    // while hitting target
+
+    private HashMap<String, Trajectory> trajectories = new HashMap<String, Trajectory>();
+
+    private Trajectory tuneLine = new Trajectory(
+        new SimplePathBuilder(new Vector2(0, 0), Rotation2.ZERO)
+            .lineTo(new Vector2(5, 0), Rotation2.fromDegrees(0))
+            .build(),
+        constraints,
+        sampleDistance);
+
+    private Trajectory tuneCurve = new Trajectory(
+        new SplinePathBuilder(new Vector2(0, 0), Rotation2.ZERO, Rotation2.ZERO)
+            .hermite(new Vector2(2, 2), Rotation2.fromDegrees(180), Rotation2.ZERO)
+            .build(),
         constraints,
         sampleDistance);
     
-    public static Trajectory tuneCurve = new Trajectory(
-        new SplinePathBuilder(new Vector2(0, 0), Rotation2.ZERO, Rotation2.ZERO)
-        .hermite(new Vector2(2, 2), Rotation2.fromDegrees(180), Rotation2.ZERO)
-        .build(),
+    /*
+    private Trajectory wrong_start_ball2 = new Trajectory(
+        new SplinePathBuilder(new Vector2(-0.5, -2), new Rotation2(-.5, -2, true), Rotation2.fromDegrees(-90))
+            .hermite(new Vector2(-.58, -2.85), new Rotation2(0, 1, true), Rotation2.fromDegrees(-90))
+            // .hermite(new Vector2(-2, -2), new Rotation2(-3.5, -2.2, true),
+            // Rotation2.fromDegrees(163.8720703125))
+            // .hermite(new Vector2(-3.38, -1.56), new Rotation2(-3.20, -1.14, true),
+            // Rotation2.fromDegrees(-136))
+            .build(),
         constraints,
         sampleDistance);
+    */
+    
+    private Trajectory start_ball2 = new Trajectory(
+        new SimplePathBuilder(new Vector2(-0.5, -2), Rotation2.fromDegrees(-90))
+            .lineTo(new Vector2(-.58, -2.85), Rotation2.fromDegrees(-90)).build(),
+            constraints,
+            sampleDistance);
 
-    // two ball trajectory (does not use coordinates: reset odometry)
-    public static Trajectory twoMetersForward = new Trajectory(
-        new SimplePathBuilder(new Vector2(0, 0), Rotation2.ZERO).lineTo(new Vector2(2, 0), Rotation2.fromDegrees(0)).build(),
-        constraints,
-        sampleDistance);
+    private Trajectory ball2_ball3 = new Trajectory(
+        new SplinePathBuilder(new Vector2(-0.58, -2), new Rotation2(0, 1, true), Rotation2.fromDegrees(-90))
+            .hermite(new Vector2(-3.38, -1.56), new Rotation2(-3.20, -1.14, true), Rotation2.fromDegrees(-136))
+            .build(),
+            constraints,
+            sampleDistance);
 
-    // five ball trajectories (use coordinates: do not reset odometry)
-    public static Trajectory start_ball2 = new Trajectory(
-            new SplinePathBuilder(new Vector2(-0.5, -2), new Rotation2(-.5, -2, true), Rotation2.fromDegrees(-90))
-                .hermite(new Vector2(-.58, -2.85), new Rotation2(0, 1, true), Rotation2.fromDegrees(-90))
-                //.hermite(new Vector2(-2, -2), new Rotation2(-3.5, -2.2, true), Rotation2.fromDegrees(163.8720703125)) 
-                //.hermite(new Vector2(-3.38, -1.56), new Rotation2(-3.20, -1.14, true), Rotation2.fromDegrees(-136)) 
+    /*
+     * public static Trajectory ball2_ball3 = new Trajectory(
+     * new SplinePathBuilder(new Vector2(-.6, -3.5), new Rotation2(-2, -2, true),
+     * Rotation2.fromDegrees(-90))
+     * .hermite(new Vector2(-2, -2), new Rotation2(-3.5, -2.2, true),
+     * Rotation2.fromDegrees(163.8720703125))
+     * .hermite(new Vector2(-3.2, -2.2), new Rotation2(-2, -2, true),
+     * Rotation2.fromDegrees(-114.96093749999997))
+     * .build(),
+     * slow,
+     * sampleDistance);
+     */
+
+    private Trajectory ball3_station = new Trajectory(
+        new SplinePathBuilder(new Vector2(-3.38, -1.56), new Rotation2(-7.2, -2.2, true), Rotation2.fromDegrees(-114.96093749999997))
+                .hermite(new Vector2(-7.5, -2.6), new Rotation2(-7.2, -2.2, true), Rotation2.fromDegrees(-147))
+                // .hermite(new Vector2(-3.38, -1.56), new Rotation2(1, 1, true),
+                // Rotation2.fromDegrees(-155))
                 .build(),
             constraints,
             sampleDistance);
 
-    public static Trajectory ball2_ball3 = new Trajectory(
-        new SplinePathBuilder(new Vector2(-0.58, -2), new Rotation2(0, 1, true), Rotation2.fromDegrees(-90))
-            .hermite(new Vector2(-3.38, -1.56), new Rotation2(-3.20, -1.14, true), Rotation2.fromDegrees(-136))
-            .build(),
-        constraints,
-        sampleDistance); 
-        
+    private Trajectory station_shoot = new Trajectory(
+            new SplinePathBuilder(new Vector2(-7, -2.6), new Rotation2(0, 0, true), Rotation2.fromDegrees(-147))
+                    .hermite(new Vector2(-3.38, -1.56), Rotation2.ZERO, Rotation2.fromDegrees(-155))
+                    .build(),
+            constraints,
+            sampleDistance);
+   
+    public TrajectoryFactory() {
+        trajectories.put("tune line", tuneLine);
+        trajectories.put("tune curve", tuneCurve);
+        trajectories.put("start to ball2", start_ball2);
+        trajectories.put("ball2 to ball3", ball2_ball3);
+        trajectories.put("ball3 to station", ball3_station);
+        trajectories.put("station to shoot", station_shoot);
+    }
 
-    /*
-    public static Trajectory ball2_ball3 = new Trajectory(
-        new SplinePathBuilder(new Vector2(-.6, -3.5), new Rotation2(-2, -2, true), Rotation2.fromDegrees(-90)) 
-            .hermite(new Vector2(-2, -2), new Rotation2(-3.5, -2.2, true), Rotation2.fromDegrees(163.8720703125)) 
-            .hermite(new Vector2(-3.2, -2.2), new Rotation2(-2, -2, true), Rotation2.fromDegrees(-114.96093749999997)) 
-            .build(),
-        slow,
-        sampleDistance);
-    */
-
-    public static Trajectory ball3_station = new Trajectory(
-        new SplinePathBuilder(new Vector2(-3.38, -1.56), new Rotation2(-7.2,-2.2, true), Rotation2.fromDegrees(-114.96093749999997))
-            .hermite(new Vector2(-7.5, -2.6), new Rotation2(-7.2,-2.2, true),Rotation2.fromDegrees(-147))
-            // .hermite(new Vector2(-3.38, -1.56), new Rotation2(1, 1, true), Rotation2.fromDegrees(-155))
-            .build(),
-        constraints,
-        sampleDistance);
-
-    public static Trajectory station_shoot = new Trajectory(
-        new SplinePathBuilder(new Vector2(-7, -2.6), new Rotation2(0, 0, true), Rotation2.fromDegrees(-147))
-        .hermite(new Vector2(-3.38, -1.56), Rotation2.ZERO, Rotation2.fromDegrees(-155))
-        .build(),
-        constraints,
-        sampleDistance);
+    public Trajectory get(String name) {
+        return trajectories.get(name);
+    }
 }
