@@ -361,16 +361,14 @@ public class RobotContainer {
     private Command createThreeBallCommand() {
         return new SequentialCommandGroup(
             new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-0.5, -2, Rotation2d.fromDegrees(-90)))),
-            new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
-            new FollowerCommand(drivetrain, trajectoryFactory.get("start to ball2")),
-            new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
-            new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(2)
+            new IntakeCommand(intake, feeder, () -> false)
+                .raceWith(new FollowerCommand(drivetrain, trajectoryFactory.get("start to ball2"))),
+            new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(2.5)
                 .raceWith(new AimCommand(limelight, drivetrain)),
 
-            new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
-            new FollowerCommand(drivetrain, trajectoryFactory.get("ball2 to ball3")),
-            new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
-            new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(2)
+            new IntakeCommand(intake, feeder, () -> false)
+                .raceWith(new FollowerCommand(drivetrain, trajectoryFactory.get("ball2 to ball3"))),
+            new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(2.5)
                 .raceWith(new AimCommand(limelight, drivetrain)));
     }
 
@@ -383,25 +381,20 @@ public class RobotContainer {
         return new SequentialCommandGroup(
             new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-0.5, -2, Rotation2d.fromDegrees(-90)))),
             new FollowerCommand(drivetrain, trajectoryFactory.get("start to ball2"))
-            .raceWith(new IntakeCommand(intake, feeder, () -> false)),
-            new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
-            new ShootCommand(shooter, feeder, limelight, () -> false)
-            .alongWith(new AimCommand(limelight, drivetrain))
-            .withTimeout(2)
-
- /*            new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
-            new FollowerCommand(drivetrain, TrajectoryFactory.ball2_ball3_test),
-            new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
+                .raceWith(new IntakeCommand(intake, feeder, () -> false)),
             new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(2)
                 .raceWith(new AimCommand(limelight, drivetrain)),
 
-            new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
-            new FollowerCommand(drivetrain, TrajectoryFactory.ball3_station_shoot),
-            new FollowerCommand(drivetrain, TrajectoryFactory.ball3_shoot_pos),
-            new AutoIntakeCommand(intake,feeder, IntakeMode.retracted),
+            new FollowerCommand(drivetrain, trajectoryFactory.get("ball2 to ball3")),
+            new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(2)
+                .raceWith(new AimCommand(limelight, drivetrain)),
+
+            new FollowerCommand(drivetrain, trajectoryFactory.get("ball3 to station")),
+            new FollowerCommand(drivetrain, trajectoryFactory.get("station to shoot"))
+                .raceWith(new IntakeCommand(intake, feeder, () -> false)),
             new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(2)
                 .raceWith(new AimCommand(limelight, drivetrain))
-    */       );
+       );
     }
 
     public Command createTuneAutoCommand() {
