@@ -12,24 +12,22 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.LimelightSubsystem;
 
-public class AutoAlignWithHubCommand extends CommandBase {
+public class AimCommand extends CommandBase {
 	private DrivetrainSubsystem drivetrain;
 	private LimelightSubsystem limelight;
 
 	private PIDController tController = new PIDController(0.055, 0, 0.005);
 
 	private double currentOffset;
-	private double speed;
+	private double rotationSpeed;
 
 	private DoubleSupplier translationXSupplier;
 	private DoubleSupplier translationYSupplier;
 	
     private double staticConst = .34;
 
-	private boolean auto;
-
 	// during tele
-	public AutoAlignWithHubCommand(LimelightSubsystem limelight, DrivetrainSubsystem drivetrain,
+	public AimCommand(LimelightSubsystem limelight, DrivetrainSubsystem drivetrain,
 			DoubleSupplier translationXSupplier,
 			DoubleSupplier translationYSupplier) {
 		this.limelight = limelight;
@@ -42,53 +40,33 @@ public class AutoAlignWithHubCommand extends CommandBase {
 		tController.setSetpoint(3);
 		limelight.setTolerance(3);
 
-		auto = false;
-
 		addRequirements(drivetrain);
 	}
 
 	// during auto
-	public AutoAlignWithHubCommand(LimelightSubsystem limelight, DrivetrainSubsystem drivetrain) {
-		this.limelight = limelight;
-		this.drivetrain = drivetrain;
-
-		this.translationXSupplier = () -> 0;
-		this.translationYSupplier = () -> 0;
-
-		tController.setSetpoint(0);
-		tController.setTolerance(3); // align end condition
-		limelight.setTolerance(3); // shooter check
-
-		auto = true;
-
-		addRequirements(drivetrain);
-	}
-
-	@Override
-	public void initialize() {
+	public AimCommand(LimelightSubsystem limelight, DrivetrainSubsystem drivetrain) {
+		this(limelight, drivetrain, () -> 0, () -> 0);
 	}
 
 	@Override
 	public void execute() {
+		// calculate rotation speed
 		currentOffset = limelight.getXOffset();
-		speed = tController.calculate(currentOffset);
+		rotationSpeed = tController.calculate(currentOffset) 
+						+ Math.copySign(staticConst, tController.getPositionError());
 
-		drivetrain.drive(ChassisSpeeds.fromFieldRelativeSpeeds(translationXSupplier.getAsDouble(),
+		// create drive signal
+		drivetrain.drive(
+			ChassisSpeeds.fromFieldRelativeSpeeds(
+				translationXSupplier.getAsDouble(),
 				translationYSupplier.getAsDouble(),
-				speed + Math.copySign(staticConst, tController.getPositionError()),
+				rotationSpeed,
 				drivetrain.getPose().getRotation()));
 	}
 
 	@Override
 	public void end(boolean interrupted) {
+		// delete drive signal
 		drivetrain.drive(new ChassisSpeeds(0, 0, 0));
 	}
-
-	@Override
-  public boolean isFinished() {
-	  if (auto && tController.atSetpoint()) {
-		  return true;
-	  }
-      return false;
-  }
 }

@@ -20,6 +20,7 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 
 import frc.robot.utils.FiringSolution;
+import frc.robot.utils.MathUtils;
 import frc.robot.utils.Ranger;
 
 public class ShooterSubsystem extends SubsystemBase {
@@ -41,7 +42,10 @@ public class ShooterSubsystem extends SubsystemBase {
     private double IDLE_ANGLE;
     private static final double shooterBeltRatio = 0.66;
     private static final double speedIncrement = 100;
-    private static final double speedMarginPercent = 0.04;
+    private static final double speedPercentTolerance = 0.04;
+    private static final double speedTolerance = 75;
+    private static final double speedFirstTolerance = 0.02;
+    private static final double speedSecondTolerance = 0.04;
 
     private static final double MAX_HOOD_ANGLE = 85;
     private static final double MIN_HOOD_ANGLE = 67;
@@ -96,6 +100,7 @@ public class ShooterSubsystem extends SubsystemBase {
     private double currentXOffset = 0;
 
     public boolean aligned = false;
+    public boolean atSpeed = false;
 
     private Timer hoodTimer;
 
@@ -201,6 +206,16 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     public boolean ready() {
+        /*
+        if (!atSpeed) {
+            atSpeed = withinFirstTolerance();
+        }
+        else {
+            atSpeed = withinSecondTolerance();
+        }
+
+        return atSpeed;
+        */
         return atTargetSpeed();
     }
 
@@ -239,6 +254,12 @@ public class ShooterSubsystem extends SubsystemBase {
         setAngle(solution.angle);
     }
 
+    public void setRange(String range) {
+        FiringSolution solution = ranger.getFiringSolution(range);
+        setSpeed(solution.speed);
+        setAngle(solution.angle);
+    }
+
     public void setSpeed(double targetSpeed) {
         // Set new target speed to value provided by caller plus the current speed adjust
         // set in shuffleboard.
@@ -271,8 +292,17 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     private boolean atTargetSpeed() {
-        double delta = speedMarginPercent * targetSpeed;
-        return currentSpeed >= targetSpeed - delta && currentSpeed <= targetSpeed + delta;
+        return MathUtils.WithinDelta(currentSpeed, targetSpeed, speedTolerance);
+    }
+
+    private boolean withinFirstTolerance() {
+        double delta = currentSpeed * speedFirstTolerance;
+        return MathUtils.WithinDelta(currentSpeed, targetSpeed, delta);
+    }
+
+    private boolean withinSecondTolerance() {
+        double delta = currentSpeed * speedSecondTolerance;
+        return MathUtils.WithinDelta(currentSpeed, targetSpeed, delta);
     }
 
     // ---------------------------------------------------------------------------
