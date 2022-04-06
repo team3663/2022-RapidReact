@@ -13,9 +13,8 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import frc.robot.commands.AutoAlignWithHubCommand;
+import frc.robot.commands.AimCommand;
 import frc.robot.commands.AutoIntakeCommand;
-import frc.robot.commands.AutoShootCommand;
 import frc.robot.commands.DefaultDriveCommand;
 import frc.robot.commands.IdleShooterCommand;
 import frc.robot.commands.ExtendElevatorCommand;
@@ -30,7 +29,6 @@ import frc.robot.commands.WaitForSecondsCommand;
 import frc.robot.commands.AutoIntakeCommand.IntakeMode;
 import frc.robot.drivers.Pigeon;
 import frc.robot.subsystems.ClimberSubsystem;
-import frc.robot.subsystems.DriverVisionSubsystem;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.FeederSubsystem;
 import frc.robot.utils.XboxControllerHelper;
@@ -103,10 +101,11 @@ public class RobotContainer {
                 HOOD_LIMITSWITCH_DIO, ranger);
         intake = new IntakeSubsystem(INTAKE_MOTOR_CAN_ID, BOOM_RETRACT_SOLENOID_CHAN, BOOM_EXTEND_SOLENOID_CHAN,
                 ARM_RETRACT_SOLENOID_CHAN, ARM_EXTEND_SOLENOID_CHAN);
-        /*
-                climber = new ClimberSubsystem(ELEVATOR_CAN_ID, WINDMILL_1_CAN_ID, WINDMILL_2_CAN_ID, 
+
+                /*
+        climber = new ClimberSubsystem(ELEVATOR_CAN_ID, WINDMILL_1_CAN_ID, WINDMILL_2_CAN_ID, 
                 RED_HOOK_CAN_ID, BLUE_HOOK_CAN_ID, WINDMILL_SENSOR_DIO);
-            */
+                */
 
         // Setup our server drivetrain subsystem
         SwerveModuleConfig fl = new SwerveModuleConfig(FRONT_LEFT_MODULE_DRIVE_MOTOR, FRONT_LEFT_MODULE_STEER_MOTOR,
@@ -120,9 +119,6 @@ public class RobotContainer {
         SwerveDriveConfig swerveConfig = new SwerveDriveConfig(fl, fr, bl, br, DRIVETRAIN_TRACKWIDTH_METERS,
                 DRIVETRAIN_WHEELBASE_METERS, DRIVE_TRAIN_WHEEL_DIAMETER_METERS);
         drivetrain = new DrivetrainSubsystem(swerveConfig, pigeon); // pixy
-
-        // We don't ever call the DriverVision subsystem, we just create it and let it do its thing.
-        new DriverVisionSubsystem();
 
         limelight = new LimelightSubsystem(CAMERA_ANGLE, CAMERA_HEIGHT, TARGET_HEIGHT);
     }
@@ -200,20 +196,37 @@ public class RobotContainer {
         // Schedule the Shoot command to fire a cargo
         new Trigger(() -> driveController.getLeftTriggerAxis() > 0.8).whileActiveOnce(
             new ParallelCommandGroup(
-                new AutoAlignWithHubCommand(limelight, drivetrain,
-                                            () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
-                                            () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity),
+                new AimCommand(limelight, drivetrain,
+                                () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
+                                () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity),
                 new ShootCommand(shooter, feeder, limelight,
                                 driveControllerHelper::rumble,
                                 () -> driveController.getRightTriggerAxis() > 0.8,
                                 () -> driveController.getBButton())));
 
+        new JoystickButton(driveController, Button.kX.value).whenHeld(
+            new ParallelCommandGroup(
+                new ShootCommand(shooter, feeder, limelight, () -> driveController.getBButton()),
+                new AimCommand(limelight, drivetrain,
+                    () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
+                    () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity)));
+
+        new Trigger(() -> driveController.getLeftTriggerAxis() > 0.8).whileActiveOnce(
+            new ParallelCommandGroup(
+                new AimCommand(limelight, drivetrain,
+                                () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
+                                () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity),
+                new ShootCommand(shooter, feeder, limelight,
+                                    driveControllerHelper::rumble,
+                                    () -> driveController.getRightTriggerAxis() > 0.8,
+                                    () -> driveController.getBButton())));
+
         new JoystickButton(driveController, Button.kA.value).whenHeld(
-            new ShootCommand(shooter, feeder, limelight,
+            new ShootCommand(shooter, feeder,
                 driveControllerHelper::rumble,
                 () -> driveController.getRightTriggerAxis() > 0.8,
                 () -> driveController.getBButton(),
-                0));
+                "hub"));
             
         // Schedule the Intake command to pick-up cargo
         new JoystickButton(driveController, Button.kRightBumper.value)
@@ -250,7 +263,7 @@ public class RobotContainer {
         new JoystickButton(operatorController, Button.kX.value).whenPressed(new RotateWindmillCommand(climber, WindmillState.Home));
 
         // Test Controller
-        new JoystickButton(testController, Button.kA.value).whenPressed(new AutoShootCommand(shooter, feeder, limelight, 2, false));
+        new JoystickButton(testController, Button.kA.value).whenPressed(new AutoShootCommand(shooter, feeder, limelight, 2));
 
         */
     }
@@ -289,7 +302,7 @@ public class RobotContainer {
 
         Shuffleboard.getTab("Driver")
                 .add("Auto Command", chooser)
-                .withPosition(5, 0)
+                .withPosition(0, 0)
                 .withSize(2, 1)
                 .withWidget(BuiltInWidgets.kComboBoxChooser);
     }
@@ -310,10 +323,8 @@ public class RobotContainer {
     }
 
     private Command createShootOnlyCommand() {
-        return new SequentialCommandGroup(
-            new ParallelCommandGroup(
-            new AutoAlignWithHubCommand(limelight, drivetrain),
-            new AutoShootCommand(shooter, feeder, limelight, 1, false)));
+        return new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(2)
+                .raceWith(new AimCommand(limelight, drivetrain));
     }
 
     private Command createOneBallCommand() {
@@ -337,7 +348,8 @@ public class RobotContainer {
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
             new FollowerCommand(drivetrain, TrajectoryFactory.start_ball2),
             new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
-            new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 10, false), new AutoAlignWithHubCommand(limelight, drivetrain)));
+            new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(2)
+                .raceWith(new AimCommand(limelight, drivetrain)));
     }
 
     /**
@@ -351,13 +363,14 @@ public class RobotContainer {
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
             new FollowerCommand(drivetrain, TrajectoryFactory.start_ball2),
             new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
-            new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 5, false), new AutoAlignWithHubCommand(limelight, drivetrain)),
+            new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(2)
+                .raceWith(new AimCommand(limelight, drivetrain)),
 
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
             new FollowerCommand(drivetrain, TrajectoryFactory.ball2_ball3),
             new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
-            new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 5, false), new AutoAlignWithHubCommand(limelight, drivetrain))
-          );
+            new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(2)
+                .raceWith(new AimCommand(limelight, drivetrain)));
     }
 
     /**
@@ -371,18 +384,21 @@ public class RobotContainer {
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
             new FollowerCommand(drivetrain, TrajectoryFactory.start_ball2),
             new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
-            new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 10, false), new AutoAlignWithHubCommand(limelight, drivetrain))
+            new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(2)
+                .raceWith(new AimCommand(limelight, drivetrain))
 
  /*            new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
             new FollowerCommand(drivetrain, TrajectoryFactory.ball2_ball3_test),
             new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
-            new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 2, false), new AutoAlignWithHubCommand(limelight, drivetrain)),
+            new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(2)
+                .raceWith(new AimCommand(limelight, drivetrain)),
 
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
             new FollowerCommand(drivetrain, TrajectoryFactory.ball3_station_shoot),
             new FollowerCommand(drivetrain, TrajectoryFactory.ball3_shoot_pos),
             new AutoIntakeCommand(intake,feeder, IntakeMode.retracted),
-            new ParallelCommandGroup(new AutoShootCommand(shooter, feeder, limelight, 2, false), new AutoAlignWithHubCommand(limelight, drivetrain))
+            new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(2)
+                .raceWith(new AimCommand(limelight, drivetrain))
     */       );
     }
 
