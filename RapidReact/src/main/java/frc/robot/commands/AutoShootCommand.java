@@ -11,23 +11,25 @@ public class AutoShootCommand extends CommandBase {
 
     private ShooterSubsystem shooter;
     private FeederSubsystem feeder;
-    private LimelightSubsystem limelight = null;
-    private double currentRange;
+    private LimelightSubsystem limelight;
+
     private boolean stagingCargo;
-    private boolean continuous;
+    private String shootingPose;
+    private boolean varyingRange;
+    private double currentRange;
+
     private Timer timer = new Timer();
-    private double autoTimer;
-    private boolean atSpeed;
+    private double timeOut;
 
     // Fixed range version, take the range to target as a parameter
     public AutoShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder,
-                            double range,
-                            double autoTimer, boolean continuous) {
+                            String shootingPose,
+                            double timeOut) {
         this.shooter = shooter;
         this.feeder = feeder;
-        this.currentRange = range;
-        this.autoTimer = autoTimer;
-        this.continuous = continuous;
+        this.shootingPose = shootingPose;
+        this.varyingRange = false;
+        this.timeOut = timeOut;
 
         addRequirements(shooter, feeder);
     }
@@ -36,39 +38,36 @@ public class AutoShootCommand extends CommandBase {
     // the range
     public AutoShootCommand(ShooterSubsystem shooter, FeederSubsystem feeder,
                             LimelightSubsystem limelight,
-                            double autoTimer, boolean continuous) {
-        this(shooter, feeder, 0, autoTimer, continuous);
+                            double timeOut) {
+        this(shooter, feeder, "", timeOut);
 
         this.limelight = limelight;
+        this.varyingRange = true;
     }
 
     // Called when the command is initially scheduled.
     @Override
     public void initialize() {
-        shooter.shoot();
 
         feeder.setFeedMode(FeedMode.PRESHOOT);
         stagingCargo = true;
 
-        if (limelight != null) {
+        if (varyingRange) {
             limelight.setLEDMode(limelight.LED_ON);
         }
-
-        // Initialze the shooter range, if we have a limelight it will get updated each
-        // time through periodic.
-        shooter.setRange(currentRange);
+        else {
+            shooter.setRange(shootingPose);
+        }
         
         timer.reset();
         timer.start();
-
-        atSpeed = false;
     }
 
     // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute() {
         // If we have a limelight then use it to update the current range to target
-        if (limelight != null) {
+        if (varyingRange) {
             currentRange = limelight.getDistance();
             shooter.setRange(currentRange);
         }
@@ -83,22 +82,16 @@ public class AutoShootCommand extends CommandBase {
         }
 
         boolean aligned = true;
-        if (limelight != null) {
+        if (varyingRange) {
             aligned = limelight.aligned();
         }
+        boolean atSpeed = shooter.ready();
 
-        if (continuous && !atSpeed) {
-            atSpeed = shooter.ready();
-        }
-        if (!continuous) {
-            atSpeed = shooter.ready();
-        }
-        
         // shuffleboard aligned
         shooter.aligned = aligned;
 
         // We only get here if cargo staging has completed.
-        if (atSpeed) {
+        if (atSpeed && aligned) { // TODO might need to take out aligned
             feeder.setFeedMode(FeedMode.CONTINUOUS);
         }
         else {
@@ -111,11 +104,10 @@ public class AutoShootCommand extends CommandBase {
     @Override
     public void end(boolean interrupted) {
         feeder.setFeedMode(FeedMode.STOPPED);
-        shooter.idle();
 
         timer.stop();
 
-        if (limelight != null) {
+        if (varyingRange) {
             limelight.setLEDMode(limelight.LED_OFF);
         }
 
@@ -124,6 +116,6 @@ public class AutoShootCommand extends CommandBase {
     // Returns true when the command should end.
     @Override
     public boolean isFinished() {
-        return timer.hasElapsed(autoTimer);
+        return timer.hasElapsed(timeOut);
     }
 }

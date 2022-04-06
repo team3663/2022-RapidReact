@@ -23,13 +23,13 @@ import frc.robot.utils.Conversions;
 public class FollowerCommand extends CommandBase {
 
   public static final DrivetrainFeedforwardConstants FEEDFORWARD_CONSTANTS = new DrivetrainFeedforwardConstants(
-      3.25, // 2.715
-      0.4, // 0.25
-      0.0);
+      2.375, // 3.25
+      0.545, // 0.4
+      0.2);
 
   private final HolonomicMotionProfiledTrajectoryFollower follower = new HolonomicMotionProfiledTrajectoryFollower(
-      new PidConstants(15, 0.0, 0.0),
-      new PidConstants(7, 0.0, 0.0),
+      new PidConstants(5, 0.0, 0.0),
+      new PidConstants(5, 0.0, 0.0),
       new HolonomicFeedforward(FEEDFORWARD_CONSTANTS));
 
   private Trajectory m_trajectory;
