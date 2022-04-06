@@ -111,11 +111,13 @@ public class ShootCommand extends CommandBase {
 
         // check if shooter is ready
         if (varyingRange) {
-            aligned = shooter.ready();
+            aligned = limelight.aligned();
         }
         else {
             aligned = true; // do not check for alignment if fixed range
         }
+
+        atSpeed = shooter.ready();
 
         if (manualShoot) {
             trigger = shootTrigger.getAsBoolean();

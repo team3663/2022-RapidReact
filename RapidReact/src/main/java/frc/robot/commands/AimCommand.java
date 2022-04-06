@@ -16,7 +16,7 @@ public class AimCommand extends CommandBase {
 	private DrivetrainSubsystem drivetrain;
 	private LimelightSubsystem limelight;
 
-	private PIDController tController = new PIDController(0.055, 0, 0.005);
+	private PIDController tController = new PIDController(0.01, 0, 0); // 0.055, 0, 0.005
 
 	private double currentOffset;
 	private double rotationSpeed;
@@ -24,7 +24,8 @@ public class AimCommand extends CommandBase {
 	private DoubleSupplier translationXSupplier;
 	private DoubleSupplier translationYSupplier;
 	
-    private double staticConst = .34;
+    private double staticConst = .4;
+		// set pid to 0, increase until slightly rotating
 
 	// during tele
 	public AimCommand(LimelightSubsystem limelight, DrivetrainSubsystem drivetrain,
@@ -37,7 +38,7 @@ public class AimCommand extends CommandBase {
 		this.translationYSupplier = translationYSupplier;
 
 		tController.setSetpoint(0);
-		tController.setSetpoint(3);
+		tController.setTolerance(3);
 		limelight.setTolerance(3);
 
 		addRequirements(drivetrain);
