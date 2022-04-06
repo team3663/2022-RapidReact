@@ -154,7 +154,7 @@ public class ClimberSubsystem extends SubsystemBase {
     private double windmillRotationSpeed = 0.5; // :) 
 
     // Windmill Constants
-    private final double ROTATIONS_PER_DEGREE = (400 / 1.0) * (1.0 / 360.0) * (360.0 / 500.0);
+    private final double ROTATIONS_PER_DEGREE = (366.66 / 1.0) * (1.0 / 360.0) * (360.0 / 500.0);
 
     // Windmill Positions
     private double targetAngle;
@@ -189,6 +189,10 @@ public class ClimberSubsystem extends SubsystemBase {
 
       windmillEncoder.setPositionConversionFactor(ROTATIONS_PER_DEGREE);
 
+      // windmillPIDController.setSmartMotionMaxVelocity(0.05, slotID);
+      // windmillPIDController.setSmartMotionMinOutputVelocity(minVel, slotID);
+
+
       // Setting PIDs
       windmillPIDController.setP(windmillP);
       windmillPIDController.setI(windmillI);
@@ -200,7 +204,7 @@ public class ClimberSubsystem extends SubsystemBase {
 
     public void setAngle(double angle) {
       targetAngle = angle;
-      windmillPIDController.setReference(targetAngle, ControlType.kPosition);
+      windmillPIDController.setReference(targetAngle, ControlType.kPosition); //controltype smart motion
     }
 
     public double getAngle(){
