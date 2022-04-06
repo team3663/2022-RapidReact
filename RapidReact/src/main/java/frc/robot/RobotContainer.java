@@ -101,6 +101,7 @@ public class RobotContainer {
                 HOOD_LIMITSWITCH_DIO, ranger);
         intake = new IntakeSubsystem(INTAKE_MOTOR_CAN_ID, BOOM_RETRACT_SOLENOID_CHAN, BOOM_EXTEND_SOLENOID_CHAN,
                 ARM_RETRACT_SOLENOID_CHAN, ARM_EXTEND_SOLENOID_CHAN);
+
                 /*
         climber = new ClimberSubsystem(ELEVATOR_CAN_ID, WINDMILL_1_CAN_ID, WINDMILL_2_CAN_ID, 
                 RED_HOOK_CAN_ID, BLUE_HOOK_CAN_ID, WINDMILL_SENSOR_DIO);
@@ -235,9 +236,11 @@ public class RobotContainer {
         /*
         new JoystickButton(driveController, Button.kBack.value)
             .whenHeld(deployClimberCommand);
+        */
 
         
         // operator controls
+        /*
         new JoystickButton(operatorController, Button.kA.value).whenPressed(
                     new InstantCommand(() -> feeder.setFeedMode(FeedMode.REVERSE_CONTINUOUS)));
                 
@@ -364,7 +367,7 @@ public class RobotContainer {
                 .raceWith(new AimCommand(limelight, drivetrain)),
 
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
-            new FollowerCommand(drivetrain, TrajectoryFactory.start_ball3_test),
+            new FollowerCommand(drivetrain, TrajectoryFactory.ball2_ball3),
             new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
             new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(2)
                 .raceWith(new AimCommand(limelight, drivetrain)));
@@ -385,7 +388,7 @@ public class RobotContainer {
                 .raceWith(new AimCommand(limelight, drivetrain))
 
  /*            new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
-            new FollowerCommand(drivetrain, TrajectoryFactory.start_ball3_test),
+            new FollowerCommand(drivetrain, TrajectoryFactory.ball2_ball3_test),
             new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
             new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(2)
                 .raceWith(new AimCommand(limelight, drivetrain)),
@@ -402,6 +405,6 @@ public class RobotContainer {
     public Command createTuneAutoCommand() {
         return new SequentialCommandGroup(
             new InstantCommand(() -> drivetrain.resetPosition()),
-            new FollowerCommand(drivetrain, TrajectoryFactory.tune));
+            new FollowerCommand(drivetrain, TrajectoryFactory.tuneCurve));
     }
 }
