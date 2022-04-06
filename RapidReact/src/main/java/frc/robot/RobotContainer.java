@@ -109,11 +109,8 @@ public class RobotContainer {
                 HOOD_LIMITSWITCH_DIO, ranger);
         intake = new IntakeSubsystem(INTAKE_MOTOR_CAN_ID, BOOM_RETRACT_SOLENOID_CHAN, BOOM_EXTEND_SOLENOID_CHAN,
                 ARM_RETRACT_SOLENOID_CHAN, ARM_EXTEND_SOLENOID_CHAN);
-
-                /*
         climber = new ClimberSubsystem(ELEVATOR_CAN_ID, WINDMILL_1_CAN_ID, WINDMILL_2_CAN_ID, 
                 RED_HOOK_CAN_ID, BLUE_HOOK_CAN_ID, WINDMILL_SENSOR_DIO);
-                */
 
         // Setup our server drivetrain subsystem
         SwerveModuleConfig fl = new SwerveModuleConfig(FRONT_LEFT_MODULE_DRIVE_MOTOR, FRONT_LEFT_MODULE_STEER_MOTOR,
@@ -157,12 +154,11 @@ public class RobotContainer {
         shooter.setDefaultCommand(new IdleShooterCommand(shooter));
 
         // Climber Command Groups
-        homeHookCommand = new ParallelCommandGroup(
+        homeHookCommand = new SequentialCommandGroup(
             new HomeRedHookCommand(climber),
             new HomeBlueHookCommand(climber)
         );
 
-        /*
         deployClimberCommand = new ParallelCommandGroup(
             new HomeElevatorCommand(climber),
             new SwitchRedHookCommand(climber, HookPosition.Grab),
@@ -186,9 +182,10 @@ public class RobotContainer {
             new SwitchBlueHookCommand(climber, HookPosition.Lock),
             new WaitForSecondsCommand(0.5),
             //new command would go here
-            new RotateWindmillCommand(climber, WindmillState.ShiftWeightOffFirst),
-            new WaitForSecondsCommand(0.25),
-            new SwitchRedHookCommand(climber, HookPosition.Release),
+            shiftWeightAndUnlockCommand,
+            // new RotateWindmillCommand(climber, WindmillState.ShiftWeightOffFirst),
+            // new WaitForSecondsCommand(0.25),
+            // new SwitchRedHookCommand(climber, HookPosition.Release),
             // end of new command
             new WaitForSecondsCommand(0.25),
             climbSecondToThirdCommmand,
@@ -201,7 +198,6 @@ public class RobotContainer {
             new WaitForSecondsCommand(0.25),
             new RotateWindmillCommand(climber, WindmillState.Hang)
         );
-        */
     }
 
     /**
@@ -252,14 +248,7 @@ public class RobotContainer {
         new JoystickButton(driveController, Button.kRightBumper.value)
                 .whenHeld(new IntakeCommand(intake, feeder, (() -> driveController.getLeftBumper())));
 
-        // climb
-        /*
-        new JoystickButton(driveController, Button.kBack.value)
-            .whenHeld(deployClimberCommand);
-        */
-
         // operator controls
-        /*
         new JoystickButton(operatorController, Button.kA.value).whenPressed(
                     new InstantCommand(() -> feeder.setFeedMode(FeedMode.REVERSE_CONTINUOUS)));
                 
@@ -272,24 +261,21 @@ public class RobotContainer {
         new JoystickButton(operatorController, Button.kB.value).whenReleased(
             new InstantCommand(() -> feeder.setFeedMode(FeedMode.STOPPED)));
 
+        new JoystickButton(operatorController, Button.kX.value)
+            .whileHeld(new RotateWindmillCommand(climber, WindmillState.Freeze));
+
+        new JoystickButton(operatorController, Button.kY.value)
+            .whenPressed(new RotateWindmillCommand(climber, WindmillState.Home));
+
         new JoystickButton(operatorController, Button.kLeftBumper.value)
             .whileHeld(new ExtendElevatorCommand(climber, -0.1));
-
-        new JoystickButton(operatorController, Button.kRightBumper.value)
-            .whileHeld(new ExtendElevatorCommand(climber, 0.1));
-
+        
         new JoystickButton(operatorController, Button.kBack.value).whenPressed(deployClimberCommand);
 
         new JoystickButton(operatorController, Button.kStart.value).whenPressed(climbCommand);
 
-        new JoystickButton(operatorController, Button.kX.value).whenPressed(new RotateWindmillCommand(climber, WindmillState.Home));
+        new JoystickButton(operatorController, Button.kRightBumper.value).whenPressed(homeHookCommand);
 
-        new JoystickButton(operatorController, Button.kY.value).whenPressed(homeHookCommand);
-
-        // Test Controller
-        new JoystickButton(testController, Button.kA.value).whenPressed(new AutoShootCommand(shooter, feeder, limelight, 2));
-
-        */
     }
 
     /**

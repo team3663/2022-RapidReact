@@ -12,7 +12,7 @@ public class HomeBlueHookCommand extends CommandBase {
 
   private ClimberSubsystem climber;
   private Timer hookTimer;
-  private double homeSpeed = 0.05;
+  private double homeSpeed = -0.1;
 
   public HomeBlueHookCommand(ClimberSubsystem climber) {
     this.climber = climber;

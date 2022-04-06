@@ -26,6 +26,7 @@ public class ClimberSubsystem extends SubsystemBase {
 
   public enum WindmillState {
     Home,
+    Freeze,
     FirstToSecond,
     SecondToThird,
     ShiftWeightOffFirst,
@@ -61,15 +62,14 @@ public class ClimberSubsystem extends SubsystemBase {
     public DigitalInput hookLimitSwitch2;
 
     // Hook Constants
-    private final double MAX_HOOK_ANGLE = 160;
     private final double ROTATIONS_PER_DEGREE = (270.0 / 1.0) * (1.0 / 360.0);
     private final double kHookMinOutput = -1;
     private final double kHookMaxOutput = 1;
 
     // positions based on encoders
-    private double release = - 38;
-    private double grab = MAX_HOOK_ANGLE - 20;
-    private double lock = MAX_HOOK_ANGLE - 1;
+    private double release = 195;
+    private double grab = 20;
+    private double lock = 0;
 
     // Tracking Info
     public boolean goingHome = true;
@@ -83,7 +83,7 @@ public class ClimberSubsystem extends SubsystemBase {
       
       hookPosition.setPositionConversionFactor(ROTATIONS_PER_DEGREE);
 
-      hookMotor.setInverted(false);
+      hookMotor.setInverted(true);
 
       // Setting the PID Values
       hookPositionPID.setP(hookP);
@@ -154,7 +154,7 @@ public class ClimberSubsystem extends SubsystemBase {
     private double windmillRotationSpeed = 0.5; // :) 
 
     // Windmill Constants
-    private final double ROTATIONS_PER_DEGREE = (366.66 / 1.0) * (1.0 / 360.0) * (360.0 / 500.0);
+    private final double ROTATIONS_PER_DEGREE = (366.66 / 1.0) * (1.0 / 360.0) * (360.0 / 500.0) * (180.0 / 132.0);
 
     // Windmill Positions
     private double targetAngle;
@@ -167,7 +167,7 @@ public class ClimberSubsystem extends SubsystemBase {
     private final double HANG_OFFSET = 30; // tune this
 
     // PID Values
-    private double windmillP = 0.1;
+    private double windmillP = 0.0005; //0.1
     private double windmillI = 0.0;
     private double windmillD = 0.0;
 
@@ -180,8 +180,10 @@ public class ClimberSubsystem extends SubsystemBase {
 
       // Setting Modes
       windmillFollowerMotor.follow(windmillMotor, true);
-      windmillFollowerMotor.setIdleMode(IdleMode.kBrake);
-      windmillMotor.setIdleMode(IdleMode.kBrake);
+      // windmillFollowerMotor.setIdleMode(IdleMode.kBrake);
+      // windmillMotor.setIdleMode(IdleMode.kBrake);
+      windmillFollowerMotor.setIdleMode(IdleMode.kCoast);
+      windmillMotor.setIdleMode(IdleMode.kCoast);
 
       // Setting Local Varbles
       windmillPIDController = windmillMotor.getPIDController();
@@ -189,8 +191,8 @@ public class ClimberSubsystem extends SubsystemBase {
 
       windmillEncoder.setPositionConversionFactor(ROTATIONS_PER_DEGREE);
 
-      // windmillPIDController.setSmartMotionMaxVelocity(0.05, slotID);
-      // windmillPIDController.setSmartMotionMinOutputVelocity(minVel, slotID);
+      windmillPIDController.setSmartMotionMaxVelocity(3500, 0);
+      windmillPIDController.setSmartMotionMaxAccel(1500, 0);
 
 
       // Setting PIDs
@@ -204,7 +206,7 @@ public class ClimberSubsystem extends SubsystemBase {
 
     public void setAngle(double angle) {
       targetAngle = angle;
-      windmillPIDController.setReference(targetAngle, ControlType.kPosition); //controltype smart motion
+      windmillPIDController.setReference(targetAngle, ControlType.kSmartMotion); //controltype smart motion
     }
 
     public double getAngle(){
@@ -230,6 +232,10 @@ public class ClimberSubsystem extends SubsystemBase {
     public void rotateWindmill(WindmillState position) {
       if(homed){
         switch (position) {
+          case Freeze:
+            setAngle(targetAngle);
+            currentWindmillState = WindmillState.Home;
+            break;
           case Home:
             setAngle(HOME);
             currentWindmillState = WindmillState.Home;
