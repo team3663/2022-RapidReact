@@ -64,6 +64,7 @@ public class RobotContainer {
     Pigeon pigeon = new Pigeon(DRIVETRAIN_PIGEON_ID);
     // private final Pixy pixy = new Pixy(Pixy.TEAM_RED);
     private final Ranger ranger = new SimpleRanger();
+    private final TrajectoryFactory trajectoryFactory = new TrajectoryFactory();
 
     // Subsystems
     private FeederSubsystem feeder;
@@ -318,7 +319,7 @@ public class RobotContainer {
     private Command createTaxiOnlyCommand() {
         return new SequentialCommandGroup(
             new InstantCommand(() -> drivetrain.resetPosition()),
-            new FollowerCommand(drivetrain, TrajectoryFactory.twoMetersForward)
+            new FollowerCommand(drivetrain, trajectoryFactory.get("start to ball2"))
         );
     }
 
@@ -346,7 +347,7 @@ public class RobotContainer {
         return new SequentialCommandGroup(
             new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-0.5, -2, Rotation2d.fromDegrees(-90)))),
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
-            new FollowerCommand(drivetrain, TrajectoryFactory.start_ball2),
+            new FollowerCommand(drivetrain, trajectoryFactory.get("start to ball2")),
             new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
             new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(2)
                 .raceWith(new AimCommand(limelight, drivetrain)));
@@ -361,13 +362,13 @@ public class RobotContainer {
         return new SequentialCommandGroup(
             new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-0.5, -2, Rotation2d.fromDegrees(-90)))),
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
-            new FollowerCommand(drivetrain, TrajectoryFactory.start_ball2),
+            new FollowerCommand(drivetrain, trajectoryFactory.get("start to ball2")),
             new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
             new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(2)
                 .raceWith(new AimCommand(limelight, drivetrain)),
 
             new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
-            new FollowerCommand(drivetrain, TrajectoryFactory.ball2_ball3),
+            new FollowerCommand(drivetrain, trajectoryFactory.get("ball2 to ball3")),
             new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
             new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(2)
                 .raceWith(new AimCommand(limelight, drivetrain)));
@@ -381,7 +382,7 @@ public class RobotContainer {
     private Command createFiveBallCommand() {
         return new SequentialCommandGroup(
             new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-0.5, -2, Rotation2d.fromDegrees(-90)))),
-            new FollowerCommand(drivetrain, TrajectoryFactory.start_line_ball2)
+            new FollowerCommand(drivetrain, trajectoryFactory.get("start to ball2"))
             .raceWith(new IntakeCommand(intake, feeder, () -> false)),
             new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
             new ShootCommand(shooter, feeder, limelight, () -> false)
@@ -406,6 +407,6 @@ public class RobotContainer {
     public Command createTuneAutoCommand() {
         return new SequentialCommandGroup(
             new InstantCommand(() -> drivetrain.resetPosition()),
-            new FollowerCommand(drivetrain, TrajectoryFactory.tuneCurve));
+            new FollowerCommand(drivetrain, trajectoryFactory.get("tune curve")));
     }
 }
