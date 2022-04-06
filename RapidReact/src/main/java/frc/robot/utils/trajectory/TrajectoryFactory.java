@@ -71,7 +71,12 @@ public class TrajectoryFactory {
             .build(),
         constraints,
         sampleDistance); 
-        
+     public static Trajectory start_line_ball2 = new Trajectory(
+        new SimplePathBuilder(new Vector2(-0.5, -2), Rotation2.fromDegrees(-90)).lineTo(new Vector2(-.58, -2.85), Rotation2.fromDegrees(-90)).build(),
+        constraints,
+        sampleDistance);
+
+   
 
     /*
     public static Trajectory ball2_ball3 = new Trajectory(

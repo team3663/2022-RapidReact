@@ -381,11 +381,12 @@ public class RobotContainer {
     private Command createFiveBallCommand() {
         return new SequentialCommandGroup(
             new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-0.5, -2, Rotation2d.fromDegrees(-90)))),
-            new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
-            new FollowerCommand(drivetrain, TrajectoryFactory.start_ball2),
+            new FollowerCommand(drivetrain, TrajectoryFactory.start_line_ball2)
+            .raceWith(new IntakeCommand(intake, feeder, () -> false)),
             new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
-            new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(2)
-                .raceWith(new AimCommand(limelight, drivetrain))
+            new ShootCommand(shooter, feeder, limelight, () -> false)
+            .alongWith(new AimCommand(limelight, drivetrain))
+            .withTimeout(2)
 
  /*            new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
             new FollowerCommand(drivetrain, TrajectoryFactory.ball2_ball3_test),
