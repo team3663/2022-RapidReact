@@ -260,10 +260,10 @@ public class ShooterSubsystem extends SubsystemBase {
         setAngle(solution.angle);
     }
 
-    public void setSpeed(double targetSpeed) {
+    public void setSpeed(double newTarget) {
         // Set new target speed to value provided by caller plus the current speed adjust
         // set in shuffleboard.
-        this.targetSpeed = targetSpeed + speedAdjust;
+        targetSpeed = newTarget + speedAdjust;
 
         if (targetSpeed > MAX_RPM) {
             targetSpeed = MAX_RPM;

@@ -29,6 +29,12 @@ public class TrajectoryFactory {
                     FollowerCommand.FEEDFORWARD_CONSTANTS.getAccelerationConstant()),
             new CentripetalAccelerationConstraint(3)
     };
+
+    public static TrajectoryConstraint[] testConstraints = {
+        new MaxAccelerationConstraint(0.1),
+        new MaxVelocityConstraint(1),
+        new CentripetalAccelerationConstraint(3)
+};
     // for tuning feedforward & pid & constraints
     // 1. tune kStatic : set a reasonable kV, kStatic = voltage at which the robot
     // starts up (Glass)
@@ -72,12 +78,13 @@ public class TrajectoryFactory {
     
     private Trajectory start_ball2 = new Trajectory(
         new SimplePathBuilder(new Vector2(-0.5, -2), Rotation2.fromDegrees(-90))
-            .lineTo(new Vector2(-.58, -2.85), Rotation2.fromDegrees(-90)).build(),
+            .lineTo(new Vector2(-.58, -2.85), Rotation2.fromDegrees(-90))
+            .build(),
             constraints,
             sampleDistance);
 
     private Trajectory ball2_ball3 = new Trajectory(
-        new SplinePathBuilder(new Vector2(-0.58, -2), new Rotation2(0, 1, true), Rotation2.fromDegrees(-90))
+        new SplinePathBuilder(new Vector2(-0.58, -2.85), new Rotation2(0, 1, true), Rotation2.fromDegrees(-90))
             .hermite(new Vector2(-3.38, -1.56), new Rotation2(-3.20, -1.14, true), Rotation2.fromDegrees(-136))
             .build(),
             constraints,
