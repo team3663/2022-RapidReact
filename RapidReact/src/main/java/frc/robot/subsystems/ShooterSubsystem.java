@@ -88,7 +88,7 @@ public class ShooterSubsystem extends SubsystemBase {
     private MotorState motorState = MotorState.STOPPED;
     private double currentSpeed = 0;
     private double targetSpeed = 0;
-    private double speedAdjust = 0;
+    private double speedAdjust = 0; // TODO speed adjust
     private double speedError;
     private double speedErrorPercent;
 

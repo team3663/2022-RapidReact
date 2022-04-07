@@ -227,16 +227,6 @@ public class RobotContainer {
                     () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
                     () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity)));
 
-        new Trigger(() -> driveController.getLeftTriggerAxis() > 0.8).whileActiveOnce(
-            new ParallelCommandGroup(
-                new AimCommand(limelight, drivetrain,
-                                () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
-                                () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity),
-                new ShootCommand(shooter, feeder, limelight,
-                                    driveControllerHelper::rumble,
-                                    () -> driveController.getRightTriggerAxis() > 0.8,
-                                    () -> driveController.getBButton())));
-
         new JoystickButton(driveController, Button.kA.value).whenHeld(
             new ShootCommand(shooter, feeder,
                 driveControllerHelper::rumble,
@@ -355,9 +345,8 @@ public class RobotContainer {
     public Command createRightTwoBallCommand() {
         return new SequentialCommandGroup(
             new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-0.5, -2, Rotation2d.fromDegrees(-90)))),
-            new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
-            new FollowerCommand(drivetrain, trajectoryFactory.get("start to ball2")),
-            new AutoIntakeCommand(intake, feeder, IntakeMode.retracted),
+            new FollowerCommand(drivetrain, trajectoryFactory.get("start to ball2"))
+                .raceWith(new IntakeCommand(intake, feeder, () -> false)),
             new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(2)
                 .raceWith(new AimCommand(limelight, drivetrain)));
     }
