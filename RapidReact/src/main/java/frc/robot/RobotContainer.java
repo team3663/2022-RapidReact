@@ -14,7 +14,6 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.commands.AimCommand;
-import frc.robot.commands.AutoIntakeCommand;
 import frc.robot.commands.DefaultDriveCommand;
 import frc.robot.commands.IdleShooterCommand;
 import frc.robot.commands.ExtendElevatorCommand;
@@ -28,7 +27,6 @@ import frc.robot.commands.ShootCommand;
 import frc.robot.commands.SwitchBlueHookCommand;
 import frc.robot.commands.SwitchRedHookCommand;
 import frc.robot.commands.WaitForSecondsCommand;
-import frc.robot.commands.AutoIntakeCommand.IntakeMode;
 import frc.robot.drivers.Pigeon;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.DrivetrainSubsystem;
@@ -61,7 +59,7 @@ public class RobotContainer {
     private final XboxController driveController = new XboxController(Constants.DRIVE_CONTROLLER_PORT);
     private final XboxControllerHelper driveControllerHelper = new XboxControllerHelper(driveController);   
     private final XboxController operatorController = new XboxController(Constants.OPERATOR_CONTROLLER_PORT);
-    private final XboxController testController = new XboxController(Constants.TEST_CONTROLLER_PORT);
+    // private final XboxController testController = new XboxController(Constants.TEST_CONTROLLER_PORT);
 
     Pigeon pigeon = new Pigeon(DRIVETRAIN_PIGEON_ID);
     // private final Pixy pixy = new Pixy(Pixy.TEAM_RED);
@@ -77,14 +75,10 @@ public class RobotContainer {
     private ClimberSubsystem climber;
 
     // Commands
-    private DefaultDriveCommand drive;
     private Command homeHookCommand;
     private Command deployClimberCommand;
     private Command climbCommand;
     private Command climbSecondToThirdCommmand;
-    private Command shiftWeightAndUnlockCommand;
-    private Command threeBallAutoCommand;
-    private Command fiveBallAutoCommand;
 
     // Autonomous command creation
     private final HashMap<String, Supplier<Command>> commandCreators = new HashMap<String, Supplier<Command>>();
@@ -141,6 +135,7 @@ public class RobotContainer {
         registerAutoCommand("Two Ball", this::createRightTwoBallCommand);
         registerAutoCommand("Three Ball", this::createThreeBallCommand);
         registerAutoCommand("Five Ball", this::createFiveBallCommand);
+        registerAutoCommand("JUST TEST Five Ball Line", this::createFiveBallLineCommand);
         registerAutoCommand("TUNE", this::createTuneAutoCommand);
 
         // Create commands used during teleop
@@ -167,13 +162,10 @@ public class RobotContainer {
 
         climbSecondToThirdCommmand = new ParallelCommandGroup(
             new RotateWindmillCommand(climber, WindmillState.SecondToThird),
-            new SwitchRedHookCommand(climber, HookPosition.Grab)
-        );
-
-        shiftWeightAndUnlockCommand = new ParallelCommandGroup(
-            new RotateWindmillCommand(climber, WindmillState.ShiftWeightOffFirst),
-            new WaitForSecondsCommand(0.25),
-            new SwitchRedHookCommand(climber, HookPosition.Release)
+            new SequentialCommandGroup(
+                new WaitForSecondsCommand(2),
+                new SwitchRedHookCommand(climber, HookPosition.Grab)  
+            )
         );
 
         climbCommand = new SequentialCommandGroup(
@@ -181,12 +173,9 @@ public class RobotContainer {
             new WaitForSecondsCommand(0.25),
             new SwitchBlueHookCommand(climber, HookPosition.Lock),
             new WaitForSecondsCommand(0.5),
-            //new command would go here
-            shiftWeightAndUnlockCommand,
-            // new RotateWindmillCommand(climber, WindmillState.ShiftWeightOffFirst),
-            // new WaitForSecondsCommand(0.25),
-            // new SwitchRedHookCommand(climber, HookPosition.Release),
-            // end of new command
+            new RotateWindmillCommand(climber, WindmillState.ShiftWeightOffFirst),
+            new WaitForSecondsCommand(0.25),
+            new SwitchRedHookCommand(climber, HookPosition.Release),
             new WaitForSecondsCommand(0.25),
             climbSecondToThirdCommmand,
             new WaitForSecondsCommand(0.5),
@@ -208,7 +197,7 @@ public class RobotContainer {
         // Reset the gyroscope on the Pigeon.
         new JoystickButton(driveController, Button.kStart.value)
                 .whenPressed(new InstantCommand(() -> drivetrain.resetPosition()));
-        
+
         // Schedule the Shoot command to fire a cargo
         new Trigger(() -> driveController.getLeftTriggerAxis() > 0.8).whileActiveOnce(
             new ParallelCommandGroup(
@@ -218,11 +207,11 @@ public class RobotContainer {
                 new ShootCommand(shooter, feeder, limelight,
                                 driveControllerHelper::rumble,
                                 () -> driveController.getRightTriggerAxis() > 0.8,
-                                () -> driveController.getBButton())));
+                                () -> driveController.getXButton())));
 
-        new JoystickButton(driveController, Button.kX.value).whenHeld(
+        new JoystickButton(driveController, Button.kB.value).whenHeld(
             new ParallelCommandGroup(
-                new ShootCommand(shooter, feeder, limelight, () -> driveController.getBButton()),
+                new ShootCommand(shooter, feeder, limelight, () -> driveController.getXButton()),
                 new AimCommand(limelight, drivetrain,
                     () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
                     () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity)));
@@ -231,7 +220,7 @@ public class RobotContainer {
             new ShootCommand(shooter, feeder,
                 driveControllerHelper::rumble,
                 () -> driveController.getRightTriggerAxis() > 0.8,
-                () -> driveController.getBButton(),
+                () -> driveController.getXButton(),
                 "hub"));
             
         // Schedule the Intake command to pick-up cargo
@@ -266,6 +255,10 @@ public class RobotContainer {
 
         new JoystickButton(operatorController, Button.kRightBumper.value).whenPressed(homeHookCommand);
 
+    }
+
+    public Command getHomeHookCommand() {
+        return homeHookCommand;
     }
 
     /**
@@ -347,7 +340,7 @@ public class RobotContainer {
             new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-0.5, -2, Rotation2d.fromDegrees(-90)))),
             new FollowerCommand(drivetrain, trajectoryFactory.get("start to ball2"))
                 .raceWith(new IntakeCommand(intake, feeder, () -> false)),
-            new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(2)
+            new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(5)
                 .raceWith(new AimCommand(limelight, drivetrain)));
     }
 
@@ -390,7 +383,27 @@ public class RobotContainer {
             new FollowerCommand(drivetrain, trajectoryFactory.get("ball3 to station")),
             new FollowerCommand(drivetrain, trajectoryFactory.get("station to shoot"))
                 .raceWith(new IntakeCommand(intake, feeder, () -> false)),
+            new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(3)
+                .raceWith(new AimCommand(limelight, drivetrain))
+       );
+    }
+
+    private Command createFiveBallLineCommand() {
+        return new SequentialCommandGroup(
+            new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-0.5, -2, Rotation2d.fromDegrees(-90)))),
+            new FollowerCommand(drivetrain, trajectoryFactory.get("start to ball2"))
+                .raceWith(new IntakeCommand(intake, feeder, () -> false)),
             new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(2)
+                .raceWith(new AimCommand(limelight, drivetrain)),
+
+            new FollowerCommand(drivetrain, trajectoryFactory.get("ball2 to ball3")),
+            new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(2)
+                .raceWith(new AimCommand(limelight, drivetrain)),
+
+            new FollowerCommand(drivetrain, trajectoryFactory.get("ball3 to station line")),
+            new FollowerCommand(drivetrain, trajectoryFactory.get("station to shoot line"))
+                .raceWith(new IntakeCommand(intake, feeder, () -> false)),
+            new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(3)
                 .raceWith(new AimCommand(limelight, drivetrain))
        );
     }

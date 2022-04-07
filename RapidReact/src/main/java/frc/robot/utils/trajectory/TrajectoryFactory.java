@@ -78,14 +78,14 @@ public class TrajectoryFactory {
     
     private Trajectory start_ball2 = new Trajectory(
         new SimplePathBuilder(new Vector2(-0.5, -2), Rotation2.fromDegrees(-90))
-            .lineTo(new Vector2(-.58, -2.85), Rotation2.fromDegrees(-90))
+            .lineTo(new Vector2(-.58, -2.95), Rotation2.fromDegrees(-90))
             .build(),
             constraints,
             sampleDistance);
 
     private Trajectory ball2_ball3 = new Trajectory(
-        new SplinePathBuilder(new Vector2(-0.58, -2.85), new Rotation2(0, 1, true), Rotation2.fromDegrees(-90))
-            .hermite(new Vector2(-3.38, -1.56), new Rotation2(-3.20, -1.14, true), Rotation2.fromDegrees(-136))
+        new SplinePathBuilder(new Vector2(-0.58, -2.95), new Rotation2(0, 1, true), Rotation2.fromDegrees(-90))
+            .hermite(new Vector2(-3.38, -1.76), new Rotation2(-3.20, -1.14, true), Rotation2.fromDegrees(-136))
             .build(),
             constraints,
             sampleDistance);
@@ -104,18 +104,32 @@ public class TrajectoryFactory {
      */
 
     private Trajectory ball3_station = new Trajectory(
-        new SplinePathBuilder(new Vector2(-3.38, -1.56), new Rotation2(-7.2, -2.2, true), Rotation2.fromDegrees(-114.96093749999997))
-                .hermite(new Vector2(-7.5, -2.6), new Rotation2(-7.2, -2.2, true), Rotation2.fromDegrees(-147))
-                // .hermite(new Vector2(-3.38, -1.56), new Rotation2(1, 1, true),
-                // Rotation2.fromDegrees(-155))
-                .build(),
-            constraints,
-            sampleDistance);
-
+        new SplinePathBuilder(new Vector2(-3.38, -1.76), new Rotation2(-7.2, -2.2, true), Rotation2.fromDegrees(-114.96093749999997))
+            .hermite(new Vector2(-6.72, -2.21), new Rotation2(-7.2, -2.2, true), Rotation2.fromDegrees(-149)) // 7.2, 2.2
+            // .hermite(new Vector2(-3.38, -1.56), new Rotation2(1, 1, true),
+            // Rotation2.fromDegrees(-155))
+            .build(),
+        constraints,
+        sampleDistance);
+        
     private Trajectory station_shoot = new Trajectory(
-            new SplinePathBuilder(new Vector2(-7, -2.6), new Rotation2(0, 0, true), Rotation2.fromDegrees(-147))
-                    .hermite(new Vector2(-3.38, -1.56), Rotation2.ZERO, Rotation2.fromDegrees(-155))
-                    .build(),
+        new SplinePathBuilder(new Vector2(-6.72, -2.21), Rotation2.ZERO, Rotation2.fromDegrees(-149))
+            .hermite(new Vector2(-3.38, -1.76), Rotation2.ZERO, Rotation2.fromDegrees(-136))
+            .build(),
+        constraints,
+        sampleDistance);
+
+    private Trajectory ball3_station_line = new Trajectory(
+        new SimplePathBuilder(new Vector2(-3.38, -1.76), Rotation2.fromDegrees(-114.96093749999997))
+            .lineTo(new Vector2(-6.72, -2.21), Rotation2.fromDegrees(-149))
+            .build(),
+        constraints,
+        sampleDistance);
+            
+    private Trajectory station_shoot_line = new Trajectory(
+            new SimplePathBuilder(new Vector2(-6.72, -2.21), Rotation2.fromDegrees(-149))
+                .lineTo(new Vector2(-3.38, -1.76), Rotation2.fromDegrees(-136))
+                .build(),
             constraints,
             sampleDistance);
    
@@ -126,6 +140,8 @@ public class TrajectoryFactory {
         trajectories.put("ball2 to ball3", ball2_ball3);
         trajectories.put("ball3 to station", ball3_station);
         trajectories.put("station to shoot", station_shoot);
+        trajectories.put("ball3 to station line", ball3_station_line);
+        trajectories.put("station to shoot line", station_shoot_line);
     }
 
     public Trajectory get(String name) {

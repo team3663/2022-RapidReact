@@ -161,9 +161,9 @@ public class ClimberSubsystem extends SubsystemBase {
 
     private final double HOME = 0;
     private final double FIRST_TO_SECOND = 165; //155
-    private final double SHIFT_WEIGHT_FIRST_OFFSET = -45; //-55
+    private final double SHIFT_WEIGHT_FIRST_OFFSET = -55; //-55
     private final double SHIFT_WEIGHT_SECOND_OFFSET = -45; // lower this one when able to test
-    private final double SECOND_TO_THIRD = FIRST_TO_SECOND + 195; //fts + 180
+    private final double SECOND_TO_THIRD = FIRST_TO_SECOND + 185; //fts + 180 // changed from 195
     private final double HANG_OFFSET = 30; // tune this
 
     // PID Values
@@ -182,8 +182,8 @@ public class ClimberSubsystem extends SubsystemBase {
       windmillFollowerMotor.follow(windmillMotor, true);
       // windmillFollowerMotor.setIdleMode(IdleMode.kBrake);
       // windmillMotor.setIdleMode(IdleMode.kBrake);
-      windmillFollowerMotor.setIdleMode(IdleMode.kCoast);
-      windmillMotor.setIdleMode(IdleMode.kCoast);
+      windmillFollowerMotor.setIdleMode(IdleMode.kBrake);
+      windmillMotor.setIdleMode(IdleMode.kBrake);
 
       // Setting Local Varbles
       windmillPIDController = windmillMotor.getPIDController();
@@ -191,8 +191,8 @@ public class ClimberSubsystem extends SubsystemBase {
 
       windmillEncoder.setPositionConversionFactor(ROTATIONS_PER_DEGREE);
 
-      windmillPIDController.setSmartMotionMaxVelocity(3500, 0);
-      windmillPIDController.setSmartMotionMaxAccel(1500, 0);
+      windmillPIDController.setSmartMotionMaxVelocity(4200, 0); // 35
+      windmillPIDController.setSmartMotionMaxAccel(2500, 0); // 15
 
 
       // Setting PIDs

@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
  */
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
+  private Command homeHookCommand;
 
   private RobotContainer m_robotContainer;
 
@@ -80,6 +81,12 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
+
+    homeHookCommand = m_robotContainer.getHomeHookCommand();
+
+    if (homeHookCommand != null) {
+      homeHookCommand.schedule();
+    }
   }
 
   /** This function is called periodically during operator control. */
@@ -89,7 +96,8 @@ public class Robot extends TimedRobot {
   @Override
   public void testInit() {
     // Cancels all running commands at the start of test mode.
-    CommandScheduler.getInstance().cancelAll();
+    CommandScheduler.getInstance().cancelAll();  
+    
   }
 
   /** This function is called periodically during test mode. */
