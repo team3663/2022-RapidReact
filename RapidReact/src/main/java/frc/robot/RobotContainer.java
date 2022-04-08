@@ -135,7 +135,7 @@ public class RobotContainer {
         registerAutoCommand("Two Ball", this::createRightTwoBallCommand);
         registerAutoCommand("Three Ball", this::createThreeBallCommand);
         registerAutoCommand("Five Ball", this::createFiveBallCommand);
-        registerAutoCommand("JUST TEST Five Ball Line", this::createFiveBallLineCommand);
+        registerAutoCommand("Faster? Five Ball", this::createFiveBallLineCommand);
         registerAutoCommand("TUNE", this::createTuneAutoCommand);
 
         // Create commands used during teleop
@@ -376,13 +376,14 @@ public class RobotContainer {
             new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(2)
                 .raceWith(new AimCommand(limelight, drivetrain)),
 
-            new FollowerCommand(drivetrain, trajectoryFactory.get("ball2 to ball3")),
-            new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(2)
+            new FollowerCommand(drivetrain, trajectoryFactory.get("ball2 to ball3"))
+                .raceWith(new IntakeCommand(intake, feeder, () -> false)),
+            new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(1)
                 .raceWith(new AimCommand(limelight, drivetrain)),
 
-            new FollowerCommand(drivetrain, trajectoryFactory.get("ball3 to station")),
-            new FollowerCommand(drivetrain, trajectoryFactory.get("station to shoot"))
+            new FollowerCommand(drivetrain, trajectoryFactory.get("ball3 to station"))
                 .raceWith(new IntakeCommand(intake, feeder, () -> false)),
+            new FollowerCommand(drivetrain, trajectoryFactory.get("station to shoot")),
             new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(3)
                 .raceWith(new AimCommand(limelight, drivetrain))
        );
@@ -396,13 +397,14 @@ public class RobotContainer {
             new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(2)
                 .raceWith(new AimCommand(limelight, drivetrain)),
 
-            new FollowerCommand(drivetrain, trajectoryFactory.get("ball2 to ball3")),
-            new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(2)
+            new FollowerCommand(drivetrain, trajectoryFactory.get("ball2 to ball3"))
+                .raceWith(new IntakeCommand(intake, feeder, () -> false)),
+            new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(1)
                 .raceWith(new AimCommand(limelight, drivetrain)),
 
-            new FollowerCommand(drivetrain, trajectoryFactory.get("ball3 to station line")),
-            new FollowerCommand(drivetrain, trajectoryFactory.get("station to shoot line"))
+            new FollowerCommand(drivetrain, trajectoryFactory.get("ball3 to station line"))
                 .raceWith(new IntakeCommand(intake, feeder, () -> false)),
+            new FollowerCommand(drivetrain, trajectoryFactory.get("station to shoot line")),
             new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(3)
                 .raceWith(new AimCommand(limelight, drivetrain))
        );
