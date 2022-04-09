@@ -167,9 +167,11 @@ public class ClimberSubsystem extends SubsystemBase {
     private final double HANG_OFFSET = 30; // tune this
 
     // PID Values
-    private double windmillP = 0.0005; //0.1
+    private double windmillSmartP = 0.0005; //0.1
     private double windmillI = 0.0;
     private double windmillD = 0.0;
+
+    private double windmillPoseP = 0.1;
 
     private boolean homed = false;
 
@@ -196,7 +198,7 @@ public class ClimberSubsystem extends SubsystemBase {
 
 
       // Setting PIDs
-      windmillPIDController.setP(windmillP);
+      windmillPIDController.setP(windmillSmartP);
       windmillPIDController.setI(windmillI);
       windmillPIDController.setD(windmillD);
       windmillPIDController.setOutputRange(-windmillRotationSpeed, windmillRotationSpeed);
@@ -205,9 +207,20 @@ public class ClimberSubsystem extends SubsystemBase {
     }
 
     public void setAngle(double angle) {
+      windmillPIDController.setP(windmillSmartP);
+
       targetAngle = angle;
       windmillPIDController.setReference(targetAngle, ControlType.kSmartMotion); //controltype smart motion
     }
+
+    
+    public void setPose(double pose) {
+      windmillPIDController.setP(windmillPoseP);
+
+      targetAngle = pose;
+      windmillPIDController.setReference(targetAngle, ControlType.kPosition); 
+    }
+    
 
     public double getAngle(){
       return windmillEncoder.getPosition();
@@ -245,7 +258,8 @@ public class ClimberSubsystem extends SubsystemBase {
             currentWindmillState = WindmillState.FirstToSecond;
             break;
           case ShiftWeightOffFirst:
-            setAngle(FIRST_TO_SECOND + SHIFT_WEIGHT_FIRST_OFFSET);
+            // setAngle(FIRST_TO_SECOND + SHIFT_WEIGHT_FIRST_OFFSET);
+            setPose(FIRST_TO_SECOND + SHIFT_WEIGHT_FIRST_OFFSET);
             currentWindmillState = WindmillState.ShiftWeightOffFirst;
             break;
           case SecondToThird:
@@ -253,11 +267,13 @@ public class ClimberSubsystem extends SubsystemBase {
             currentWindmillState = WindmillState.SecondToThird;
             break;
           case ShiftWeightOffSecond:
-            setAngle(SECOND_TO_THIRD + SHIFT_WEIGHT_SECOND_OFFSET);
+            // setAngle(SECOND_TO_THIRD + SHIFT_WEIGHT_SECOND_OFFSET);
+            setPose(SECOND_TO_THIRD + SHIFT_WEIGHT_SECOND_OFFSET);
             currentWindmillState = WindmillState.ShiftWeightOffSecond;
             break;
           case Hang:
-            setAngle(SECOND_TO_THIRD + HANG_OFFSET);
+            // setAngle(SECOND_TO_THIRD + HANG_OFFSET);
+            setPose(SECOND_TO_THIRD + HANG_OFFSET);
             currentWindmillState = WindmillState.Hang;
             break;
         }

@@ -24,11 +24,20 @@ public class TrajectoryFactory {
     // constraints
     public static TrajectoryConstraint[] constraints = {
             new MaxAccelerationConstraint(1.5),
-            new FeedforwardConstraint(9,
+            new FeedforwardConstraint(10, //10
                     FollowerCommand.FEEDFORWARD_CONSTANTS.getVelocityConstant(),
                     FollowerCommand.FEEDFORWARD_CONSTANTS.getAccelerationConstant()),
-            new CentripetalAccelerationConstraint(3)
+            new CentripetalAccelerationConstraint(4) //4
     };
+
+    // unused
+    public static TrajectoryConstraint[] faster = {
+        new MaxAccelerationConstraint(1.5),
+        new FeedforwardConstraint(10, //10
+                FollowerCommand.FEEDFORWARD_CONSTANTS.getVelocityConstant(),
+                FollowerCommand.FEEDFORWARD_CONSTANTS.getAccelerationConstant()),
+        new CentripetalAccelerationConstraint(4) //4
+};
 
     public static TrajectoryConstraint[] testConstraints = {
         new MaxAccelerationConstraint(0.1),
@@ -75,6 +84,13 @@ public class TrajectoryFactory {
         constraints,
         sampleDistance);
     */
+
+    private Trajectory forward = new Trajectory(
+        new SimplePathBuilder(new Vector2(-0.5, -2), Rotation2.fromDegrees(-90))
+            .lineTo(new Vector2(-0.5, -4), Rotation2.fromDegrees(-90))
+            .build(),
+            constraints,
+            sampleDistance);
     
     private Trajectory start_ball2 = new Trajectory(
         new SimplePathBuilder(new Vector2(-0.5, -2), Rotation2.fromDegrees(-90))
@@ -85,7 +101,7 @@ public class TrajectoryFactory {
 
     private Trajectory ball2_ball3 = new Trajectory(
         new SplinePathBuilder(new Vector2(-0.58, -2.95), new Rotation2(0, 1, true), Rotation2.fromDegrees(-90))
-            .hermite(new Vector2(-3.38, -1.76), new Rotation2(-3.20, -1.14, true), Rotation2.fromDegrees(-136))
+            .hermite(new Vector2(-3.38, -1.76), new Rotation2(-3.20, -1.14, true), Rotation2.fromDegrees(-154))
             .build(),
             constraints,
             sampleDistance);
@@ -114,7 +130,7 @@ public class TrajectoryFactory {
         
     private Trajectory station_shoot = new Trajectory(
         new SplinePathBuilder(new Vector2(-6.92, -2.31), Rotation2.ZERO, Rotation2.fromDegrees(-149))
-            .hermite(new Vector2(-3.38, -1.76), Rotation2.ZERO, Rotation2.fromDegrees(-136))
+            .hermite(new Vector2(-3.38, -1.76), Rotation2.ZERO, Rotation2.fromDegrees(-154))
             .build(),
         constraints,
         sampleDistance);
@@ -128,7 +144,7 @@ public class TrajectoryFactory {
             
     private Trajectory station_shoot_line = new Trajectory(
             new SimplePathBuilder(new Vector2(-6.92, -2.31), Rotation2.fromDegrees(-149))
-                .lineTo(new Vector2(-3.38, -1.76), Rotation2.fromDegrees(-136))
+                .lineTo(new Vector2(-4, -2.08), Rotation2.fromDegrees(-154))
                 .build(),
             constraints,
             sampleDistance);
@@ -142,6 +158,7 @@ public class TrajectoryFactory {
         trajectories.put("station to shoot", station_shoot);
         trajectories.put("ball3 to station line", ball3_station_line);
         trajectories.put("station to shoot line", station_shoot_line);
+        trajectories.put("forward", forward);
     }
 
     public Trajectory get(String name) {

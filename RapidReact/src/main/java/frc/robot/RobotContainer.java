@@ -134,9 +134,7 @@ public class RobotContainer {
         registerAutoCommand("One Ball", this::createOneBallCommand);
         registerAutoCommand("Two Ball", this::createRightTwoBallCommand);
         registerAutoCommand("Three Ball", this::createThreeBallCommand);
-        registerAutoCommand("Five Ball", this::createFiveBallCommand);
-        registerAutoCommand("Faster? Five Ball", this::createFiveBallLineCommand);
-        registerAutoCommand("TUNE", this::createTuneAutoCommand);
+        registerAutoCommand("Five Ball", this::createFiveBallLineCommand);
 
         // Create commands used during teleop
         drivetrain.setDefaultCommand(new DefaultDriveCommand(
@@ -394,7 +392,7 @@ public class RobotContainer {
             new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-0.5, -2, Rotation2d.fromDegrees(-90)))),
             new FollowerCommand(drivetrain, trajectoryFactory.get("start to ball2"))
                 .raceWith(new IntakeCommand(intake, feeder, () -> false)),
-            new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(2)
+            new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(1.6)
                 .raceWith(new AimCommand(limelight, drivetrain)),
 
             new FollowerCommand(drivetrain, trajectoryFactory.get("ball2 to ball3"))
