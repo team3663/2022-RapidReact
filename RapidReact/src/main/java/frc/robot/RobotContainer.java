@@ -308,9 +308,8 @@ public class RobotContainer {
 
     private Command createTaxiOnlyCommand() {
         return new SequentialCommandGroup(
-            new InstantCommand(() -> drivetrain.resetPosition()),
-            new FollowerCommand(drivetrain, trajectoryFactory.get("start to ball2"))
-        );
+            new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-0.5, -2, Rotation2d.fromDegrees(-90)))),
+            new FollowerCommand(drivetrain, trajectoryFactory.get("start to ball2")));
     }
 
     private Command createShootOnlyCommand() {

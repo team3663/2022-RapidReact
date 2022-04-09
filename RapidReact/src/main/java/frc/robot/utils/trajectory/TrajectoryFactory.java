@@ -85,12 +85,19 @@ public class TrajectoryFactory {
         sampleDistance);
     */
 
-    private Trajectory forward = new Trajectory(
-        new SimplePathBuilder(new Vector2(-0.5, -2), Rotation2.fromDegrees(-90))
-            .lineTo(new Vector2(-0.5, -4), Rotation2.fromDegrees(-90))
+    private Trajectory back = new Trajectory(
+        new SimplePathBuilder(new Vector2(-0.5, -4), Rotation2.fromDegrees(-90))
+            .lineTo(new Vector2(-0.5, -2), Rotation2.fromDegrees(-90))
             .build(),
             constraints,
             sampleDistance);
+
+            private Trajectory forward = new Trajectory(
+                new SimplePathBuilder(new Vector2(-0.5, -2), Rotation2.fromDegrees(-90))
+                    .lineTo(new Vector2(-.58, -4), Rotation2.fromDegrees(-90))
+                    .build(),
+                    constraints,
+                    sampleDistance);
     
     private Trajectory start_ball2 = new Trajectory(
         new SimplePathBuilder(new Vector2(-0.5, -2), Rotation2.fromDegrees(-90))
@@ -158,6 +165,7 @@ public class TrajectoryFactory {
         trajectories.put("station to shoot", station_shoot);
         trajectories.put("ball3 to station line", ball3_station_line);
         trajectories.put("station to shoot line", station_shoot_line);
+        trajectories.put("back", back);
         trajectories.put("forward", forward);
     }
 
