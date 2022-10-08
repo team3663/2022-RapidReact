@@ -17,10 +17,24 @@ That dosin't work you and you don't have a **Common** folder you can run
 
 
 After that command is ran in the **cd common** into the common lib and run **gradlew build**.
+```
+cd common
+```
+then
+```
+./gradlew build
+```
+
 
 Then **cd ..** out of the **common** directory and into the project directory.
+```
+cd..
+```
 
-Then run the **gradlew build** That will build the hole  project.
+Then run the **gradlew build** That will build the whole project.
+```
+./gradlew build
+```
 
 All of theys steps you can run in vscode **Build robot code**.
 
