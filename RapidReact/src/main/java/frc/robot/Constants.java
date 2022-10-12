@@ -19,17 +19,10 @@ public final class Constants {
 	public static final double DRIVETRAIN_WHEELBASE_METERS = 0.6604;
 	public static final double DRIVE_TRAIN_WHEEL_DIAMETER_METERS = 0.106325;
 
-	// the below OFFSET section is what's last pushed (now is 2022.10.7 6:21pm)
-	// public static final double FRONT_LEFT_MODULE_STEER_OFFSET = -Math.toRadians(64.764404296875);// 297.7734375
-	// public static final double FRONT_RIGHT_MODULE_STEER_OFFSET = -Math.toRadians(261.749267578125);// 23.291015625
-	// public static final double BACK_LEFT_MODULE_STEER_OFFSET = -Math.toRadians(11.865234375);// 95.27343750000001
-	// public static final double BACK_RIGHT_MODULE_STEER_OFFSET = -Math.toRadians(94.482421875);// 310.60546875
-
-	// Since we replace the swerve modules with the ones from Software Bot, these are the new OFFSET values (now is 2022.10.7 6:21pm)
-	public static final double FRONT_LEFT_MODULE_STEER_OFFSET = -Math.toRadians(132.18);// 132.18
-	public static final double FRONT_RIGHT_MODULE_STEER_OFFSET = -Math.toRadians(131.12);// 131.12
-	public static final double BACK_LEFT_MODULE_STEER_OFFSET = -Math.toRadians(95.80);// 95.80
-	public static final double BACK_RIGHT_MODULE_STEER_OFFSET = -Math.toRadians(0.);// 0
+	public static final double FRONT_LEFT_MODULE_STEER_OFFSET = -Math.toRadians(311.75);// 311.75
+	public static final double FRONT_RIGHT_MODULE_STEER_OFFSET = -Math.toRadians(311.92);// 311.92
+	public static final double BACK_LEFT_MODULE_STEER_OFFSET = -Math.toRadians(275.27);// 275.27
+	public static final double BACK_RIGHT_MODULE_STEER_OFFSET = -Math.toRadians(285.03);// 285.03
 
 
   // Limelight
