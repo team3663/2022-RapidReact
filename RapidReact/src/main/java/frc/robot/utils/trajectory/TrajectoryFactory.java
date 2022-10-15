@@ -40,7 +40,7 @@ public class TrajectoryFactory {
 };
 
     public static TrajectoryConstraint[] testConstraints = {
-        new MaxAccelerationConstraint(0.1),
+        new MaxAccelerationConstraint(1.0),
         new MaxVelocityConstraint(1),
         new CentripetalAccelerationConstraint(3)
 };
@@ -62,7 +62,7 @@ public class TrajectoryFactory {
         new SimplePathBuilder(new Vector2(0, 0), Rotation2.ZERO)
             .lineTo(new Vector2(5, 0), Rotation2.fromDegrees(0))
             .build(),
-        constraints,
+        testConstraints,
         sampleDistance);
 
     private Trajectory tuneCurve = new Trajectory(

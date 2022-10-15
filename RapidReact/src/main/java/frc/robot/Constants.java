@@ -19,10 +19,10 @@ public final class Constants {
 	public static final double DRIVETRAIN_WHEELBASE_METERS = 0.6604;
 	public static final double DRIVE_TRAIN_WHEEL_DIAMETER_METERS = 0.106325;
 
-	public static final double FRONT_LEFT_MODULE_STEER_OFFSET = -Math.toRadians(311.75);// 311.75
-	public static final double FRONT_RIGHT_MODULE_STEER_OFFSET = -Math.toRadians(311.92);// 311.92
-	public static final double BACK_LEFT_MODULE_STEER_OFFSET = -Math.toRadians(275.27);// 275.27
-	public static final double BACK_RIGHT_MODULE_STEER_OFFSET = -Math.toRadians(285.03);// 285.03
+	public static final double FRONT_LEFT_MODULE_STEER_OFFSET = -Math.toRadians(311.75 - 180);// 311.75
+	public static final double FRONT_RIGHT_MODULE_STEER_OFFSET = -Math.toRadians(311.92 - 180);// 311.92
+	public static final double BACK_LEFT_MODULE_STEER_OFFSET = -Math.toRadians(275.27 - 180);// 275.27
+	public static final double BACK_RIGHT_MODULE_STEER_OFFSET = -Math.toRadians(285.03 - 180);// 285.03
 
 
   // Limelight

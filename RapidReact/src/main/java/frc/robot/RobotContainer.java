@@ -57,9 +57,10 @@ import java.util.function.Supplier;
 public class RobotContainer {
 
     private final XboxController driveController = new XboxController(Constants.DRIVE_CONTROLLER_PORT);
-    private final XboxControllerHelper driveControllerHelper = new XboxControllerHelper(driveController);   
+    private final XboxControllerHelper driveControllerHelper = new XboxControllerHelper(driveController);
     private final XboxController operatorController = new XboxController(Constants.OPERATOR_CONTROLLER_PORT);
-    // private final XboxController testController = new XboxController(Constants.TEST_CONTROLLER_PORT);
+    // private final XboxController testController = new
+    // XboxController(Constants.TEST_CONTROLLER_PORT);
 
     Pigeon pigeon = new Pigeon(DRIVETRAIN_PIGEON_ID);
     // private final Pixy pixy = new Pixy(Pixy.TEAM_RED);
@@ -103,7 +104,7 @@ public class RobotContainer {
                 HOOD_LIMITSWITCH_DIO, ranger);
         intake = new IntakeSubsystem(INTAKE_MOTOR_CAN_ID, BOOM_RETRACT_SOLENOID_CHAN, BOOM_EXTEND_SOLENOID_CHAN,
                 ARM_RETRACT_SOLENOID_CHAN, ARM_EXTEND_SOLENOID_CHAN);
-        climber = new ClimberSubsystem(ELEVATOR_CAN_ID, WINDMILL_1_CAN_ID, WINDMILL_2_CAN_ID, 
+        climber = new ClimberSubsystem(ELEVATOR_CAN_ID, WINDMILL_1_CAN_ID, WINDMILL_2_CAN_ID,
                 RED_HOOK_CAN_ID, BLUE_HOOK_CAN_ID, WINDMILL_SENSOR_DIO);
 
         // Setup our server drivetrain subsystem
@@ -141,112 +142,112 @@ public class RobotContainer {
                 drivetrain,
                 () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
                 () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity,
-                () -> -driveControllerHelper.scaleAxis(driveController.getRightX()) * drivetrain.maxAngularVelocity * 0.8));
+                () -> -driveControllerHelper.scaleAxis(driveController.getRightX()) * drivetrain.maxAngularVelocity
+                        * 0.8));
 
         // create idle shoot command
         shooter.setDefaultCommand(new IdleShooterCommand(shooter));
 
         // Climber Command Groups
         homeHookCommand = new SequentialCommandGroup(
-            new HomeRedHookCommand(climber),
-            new HomeBlueHookCommand(climber)
-        );
+                new HomeRedHookCommand(climber),
+                new HomeBlueHookCommand(climber));
 
         deployClimberCommand = new ParallelCommandGroup(
-            new HomeElevatorCommand(climber),
-            new SwitchRedHookCommand(climber, HookPosition.Grab),
-            new SwitchBlueHookCommand(climber, HookPosition.Grab)
-        );
+                new HomeElevatorCommand(climber),
+                new SwitchRedHookCommand(climber, HookPosition.Grab),
+                new SwitchBlueHookCommand(climber, HookPosition.Grab));
 
         climbSecondToThirdCommmand = new ParallelCommandGroup(
-            new RotateWindmillCommand(climber, WindmillState.SecondToThird),
-            new SequentialCommandGroup(
-                new WaitForSecondsCommand(2),
-                new SwitchRedHookCommand(climber, HookPosition.Grab)  
-            )
-        );
+                new RotateWindmillCommand(climber, WindmillState.SecondToThird),
+                new SequentialCommandGroup(
+                        new WaitForSecondsCommand(2),
+                        new SwitchRedHookCommand(climber, HookPosition.Grab)));
 
         climbCommand = new SequentialCommandGroup(
-            new RotateWindmillCommand(climber, WindmillState.FirstToSecond),
-            new WaitForSecondsCommand(0.25),
-            new SwitchBlueHookCommand(climber, HookPosition.Lock),
-            new WaitForSecondsCommand(0.5),
-            new RotateWindmillCommand(climber, WindmillState.ShiftWeightOffFirst),
-            new WaitForSecondsCommand(0.25),
-            new SwitchRedHookCommand(climber, HookPosition.Release),
-            new WaitForSecondsCommand(0.25),
-            climbSecondToThirdCommmand,
-            new WaitForSecondsCommand(0.5),
-            new SwitchRedHookCommand(climber, HookPosition.Lock),
-            new WaitForSecondsCommand(0.25),
-            new RotateWindmillCommand(climber, WindmillState.ShiftWeightOffSecond),
-            new WaitForSecondsCommand(0.25),
-            new SwitchBlueHookCommand(climber, HookPosition.Release),
-            new WaitForSecondsCommand(0.25),
-            new RotateWindmillCommand(climber, WindmillState.Hang)
-        );
+                new RotateWindmillCommand(climber, WindmillState.FirstToSecond),
+                new WaitForSecondsCommand(0.25),
+                new SwitchBlueHookCommand(climber, HookPosition.Lock),
+                new WaitForSecondsCommand(0.5),
+                new RotateWindmillCommand(climber, WindmillState.ShiftWeightOffFirst),
+                new WaitForSecondsCommand(0.25),
+                new SwitchRedHookCommand(climber, HookPosition.Release),
+                new WaitForSecondsCommand(0.25),
+                climbSecondToThirdCommmand,
+                new WaitForSecondsCommand(0.5),
+                new SwitchRedHookCommand(climber, HookPosition.Lock),
+                new WaitForSecondsCommand(0.25),
+                new RotateWindmillCommand(climber, WindmillState.ShiftWeightOffSecond),
+                new WaitForSecondsCommand(0.25),
+                new SwitchBlueHookCommand(climber, HookPosition.Release),
+                new WaitForSecondsCommand(0.25),
+                new RotateWindmillCommand(climber, WindmillState.Hang));
     }
 
     /**
      * Use this method to define your button->command mappings.
      */
     private void configureButtonBindings() {
-        
+
         // Reset the gyroscope on the Pigeon.
         new JoystickButton(driveController, Button.kStart.value)
                 .whenPressed(new InstantCommand(() -> drivetrain.resetPosition()));
 
         // Schedule the Shoot command to fire a cargo
         new Trigger(() -> driveController.getLeftTriggerAxis() > 0.8).whileActiveOnce(
-            new ParallelCommandGroup(
-                new AimCommand(limelight, drivetrain,
-                                () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
-                                () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity),
-                new ShootCommand(shooter, feeder, limelight,
+                new ParallelCommandGroup(
+                        new AimCommand(limelight, drivetrain,
+                                () -> -driveControllerHelper.scaleAxis(driveController.getLeftY())
+                                        * drivetrain.maxVelocity,
+                                () -> -driveControllerHelper.scaleAxis(driveController.getLeftX())
+                                        * drivetrain.maxVelocity),
+                        new ShootCommand(shooter, feeder, limelight,
                                 driveControllerHelper::rumble,
                                 () -> driveController.getRightTriggerAxis() > 0.8,
                                 () -> driveController.getXButton())));
 
         new JoystickButton(driveController, Button.kB.value).whenHeld(
-            new ParallelCommandGroup(
-                new ShootCommand(shooter, feeder, limelight, () -> driveController.getXButton()),
-                new AimCommand(limelight, drivetrain,
-                    () -> -driveControllerHelper.scaleAxis(driveController.getLeftY()) * drivetrain.maxVelocity,
-                    () -> -driveControllerHelper.scaleAxis(driveController.getLeftX()) * drivetrain.maxVelocity)));
+                new ParallelCommandGroup(
+                        new ShootCommand(shooter, feeder, limelight, () -> driveController.getXButton()),
+                        new AimCommand(limelight, drivetrain,
+                                () -> -driveControllerHelper.scaleAxis(driveController.getLeftY())
+                                        * drivetrain.maxVelocity,
+                                () -> -driveControllerHelper.scaleAxis(driveController.getLeftX())
+                                        * drivetrain.maxVelocity)));
 
         new JoystickButton(driveController, Button.kA.value).whenHeld(
-            new ShootCommand(shooter, feeder,
-                driveControllerHelper::rumble,
-                () -> driveController.getRightTriggerAxis() > 0.8,
-                () -> driveController.getXButton(),
-                "hub"));
-            
+                new ShootCommand(shooter, feeder,
+                        driveControllerHelper::rumble,
+                        () -> driveController.getRightTriggerAxis() > 0.8,
+                        () -> driveController.getXButton(),
+                        "hub"));
+
         // Schedule the Intake command to pick-up cargo
         new JoystickButton(driveController, Button.kRightBumper.value)
                 .whenHeld(new IntakeCommand(intake, feeder, (() -> driveController.getLeftBumper())));
 
         // operator controls
         new JoystickButton(operatorController, Button.kA.value).whenPressed(
-                    new InstantCommand(() -> feeder.setFeedMode(FeedMode.REVERSE_CONTINUOUS)));
-                
+                new InstantCommand(() -> feeder.setFeedMode(FeedMode.REVERSE_CONTINUOUS)));
+
         new JoystickButton(operatorController, Button.kA.value).whenReleased(
-                    new InstantCommand(() -> feeder.setFeedMode(FeedMode.STOPPED)));
+                new InstantCommand(() -> feeder.setFeedMode(FeedMode.STOPPED)));
 
         new JoystickButton(operatorController, Button.kB.value).whenPressed(
-            new InstantCommand(() -> feeder.setFeedMode(FeedMode.PRESHOOT)));
-        
+                new InstantCommand(() -> feeder.setFeedMode(FeedMode.PRESHOOT)));
+
         new JoystickButton(operatorController, Button.kB.value).whenReleased(
-            new InstantCommand(() -> feeder.setFeedMode(FeedMode.STOPPED)));
+                new InstantCommand(() -> feeder.setFeedMode(FeedMode.STOPPED)));
 
         new JoystickButton(operatorController, Button.kX.value)
-            .whileHeld(new RotateWindmillCommand(climber, WindmillState.Freeze));
+                .whileHeld(new RotateWindmillCommand(climber, WindmillState.Freeze));
 
         new JoystickButton(operatorController, Button.kY.value)
-            .whenPressed(new RotateWindmillCommand(climber, WindmillState.Home));
+                .whenPressed(new RotateWindmillCommand(climber, WindmillState.Home));
 
         new JoystickButton(operatorController, Button.kLeftBumper.value)
-            .whileHeld(new ExtendElevatorCommand(climber, -0.1));
-        
+                .whileHeld(new ExtendElevatorCommand(climber, -0.1));
+
         new JoystickButton(operatorController, Button.kBack.value).whenPressed(deployClimberCommand);
 
         new JoystickButton(operatorController, Button.kStart.value).whenPressed(climbCommand);
@@ -273,7 +274,8 @@ public class RobotContainer {
 
     /**
      * Register an autonomous command so it appears in the chooser in Shuffleboard
-     * @param name Name of command as it appears in the chooser
+     * 
+     * @param name    Name of command as it appears in the chooser
      * @param creator Reference to method that creates the command
      */
     private void registerAutoCommand(String name, Supplier<Command> creator) {
@@ -308,8 +310,8 @@ public class RobotContainer {
 
     private Command createTaxiOnlyCommand() {
         return new SequentialCommandGroup(
-            new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-0.5, -2, Rotation2d.fromDegrees(-90)))),
-            new FollowerCommand(drivetrain, trajectoryFactory.get("start to ball2")));
+                new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-0.5, -2, Rotation2d.fromDegrees(-90)))),
+                new FollowerCommand(drivetrain, trajectoryFactory.get("start to ball2")));
     }
 
     private Command createShootOnlyCommand() {
@@ -321,24 +323,26 @@ public class RobotContainer {
         return new SequentialCommandGroup(createShootOnlyCommand(), createTaxiOnlyCommand());
     }
 
-/*     private Command createLeftTwoBallCommand() {
-        return new SequentialCommandGroup(
-            new InstantCommand(() -> drivetrain.resetPosition()),
-            new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
-            new FollowerCommand(drivetrain, TrajectoryFactory.twoMetersForward),
-            new ParallelCommandGroup(
-            new AutoAlignWithHubCommand(limelight, drivetrain),
-            new AutoShootCommand(shooter, feeder, limelight, 2, false)),
-            new AutoIntakeCommand(intake, feeder, IntakeMode.retracted));
-    } */
+    /*
+     * private Command createLeftTwoBallCommand() {
+     * return new SequentialCommandGroup(
+     * new InstantCommand(() -> drivetrain.resetPosition()),
+     * new AutoIntakeCommand(intake, feeder, IntakeMode.extended),
+     * new FollowerCommand(drivetrain, TrajectoryFactory.twoMetersForward),
+     * new ParallelCommandGroup(
+     * new AutoAlignWithHubCommand(limelight, drivetrain),
+     * new AutoShootCommand(shooter, feeder, limelight, 2, false)),
+     * new AutoIntakeCommand(intake, feeder, IntakeMode.retracted));
+     * }
+     */
 
     public Command createRightTwoBallCommand() {
         return new SequentialCommandGroup(
-            new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-0.5, -2, Rotation2d.fromDegrees(-90)))),
-            new FollowerCommand(drivetrain, trajectoryFactory.get("start to ball2"))
-                .raceWith(new IntakeCommand(intake, feeder, () -> false)),
-            new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(5)
-                .raceWith(new AimCommand(limelight, drivetrain)));
+                new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-0.5, -2, Rotation2d.fromDegrees(-90)))),
+                new FollowerCommand(drivetrain, trajectoryFactory.get("start to ball2"))
+                        .raceWith(new IntakeCommand(intake, feeder, () -> false)),
+                new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(5)
+                        .raceWith(new AimCommand(limelight, drivetrain)));
     }
 
     /**
@@ -348,16 +352,16 @@ public class RobotContainer {
      */
     private Command createThreeBallCommand() {
         return new SequentialCommandGroup(
-            new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-0.5, -2, Rotation2d.fromDegrees(-90)))),
-            new IntakeCommand(intake, feeder, () -> false)
-                .raceWith(new FollowerCommand(drivetrain, trajectoryFactory.get("start to ball2"))),
-            new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(2.5)
-                .raceWith(new AimCommand(limelight, drivetrain)),
+                new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-0.5, -2, Rotation2d.fromDegrees(-90)))),
+                new IntakeCommand(intake, feeder, () -> false)
+                        .raceWith(new FollowerCommand(drivetrain, trajectoryFactory.get("start to ball2"))),
+                new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(2.5)
+                        .raceWith(new AimCommand(limelight, drivetrain)),
 
-            new IntakeCommand(intake, feeder, () -> false)
-                .raceWith(new FollowerCommand(drivetrain, trajectoryFactory.get("ball2 to ball3"))),
-            new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(2.5)
-                .raceWith(new AimCommand(limelight, drivetrain)));
+                new IntakeCommand(intake, feeder, () -> false)
+                        .raceWith(new FollowerCommand(drivetrain, trajectoryFactory.get("ball2 to ball3"))),
+                new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(2.5)
+                        .raceWith(new AimCommand(limelight, drivetrain)));
     }
 
     /**
@@ -367,49 +371,47 @@ public class RobotContainer {
      */
     private Command createFiveBallCommand() {
         return new SequentialCommandGroup(
-            new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-0.5, -2, Rotation2d.fromDegrees(-90)))),
-            new FollowerCommand(drivetrain, trajectoryFactory.get("start to ball2"))
-                .raceWith(new IntakeCommand(intake, feeder, () -> false)),
-            new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(2)
-                .raceWith(new AimCommand(limelight, drivetrain)),
+                new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-0.5, -2, Rotation2d.fromDegrees(-90)))),
+                new FollowerCommand(drivetrain, trajectoryFactory.get("start to ball2"))
+                        .raceWith(new IntakeCommand(intake, feeder, () -> false)),
+                new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(2)
+                        .raceWith(new AimCommand(limelight, drivetrain)),
 
-            new FollowerCommand(drivetrain, trajectoryFactory.get("ball2 to ball3"))
-                .raceWith(new IntakeCommand(intake, feeder, () -> false)),
-            new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(1)
-                .raceWith(new AimCommand(limelight, drivetrain)),
+                new FollowerCommand(drivetrain, trajectoryFactory.get("ball2 to ball3"))
+                        .raceWith(new IntakeCommand(intake, feeder, () -> false)),
+                new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(1)
+                        .raceWith(new AimCommand(limelight, drivetrain)),
 
-            new FollowerCommand(drivetrain, trajectoryFactory.get("ball3 to station"))
-                .raceWith(new IntakeCommand(intake, feeder, () -> false)),
-            new FollowerCommand(drivetrain, trajectoryFactory.get("station to shoot")),
-            new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(3)
-                .raceWith(new AimCommand(limelight, drivetrain))
-       );
+                new FollowerCommand(drivetrain, trajectoryFactory.get("ball3 to station"))
+                        .raceWith(new IntakeCommand(intake, feeder, () -> false)),
+                new FollowerCommand(drivetrain, trajectoryFactory.get("station to shoot")),
+                new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(3)
+                        .raceWith(new AimCommand(limelight, drivetrain)));
     }
 
     private Command createFiveBallLineCommand() {
         return new SequentialCommandGroup(
-            new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-0.5, -2, Rotation2d.fromDegrees(-90)))),
-            new FollowerCommand(drivetrain, trajectoryFactory.get("start to ball2"))
-                .raceWith(new IntakeCommand(intake, feeder, () -> false)),
-            new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(1.6)
-                .raceWith(new AimCommand(limelight, drivetrain)),
+                new InstantCommand(() -> drivetrain.setAutoInitPose(new Pose2d(-0.5, -2, Rotation2d.fromDegrees(-90)))),
+                new FollowerCommand(drivetrain, trajectoryFactory.get("start to ball2"))
+                        .raceWith(new IntakeCommand(intake, feeder, () -> false)),
+                new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(1.6)
+                        .raceWith(new AimCommand(limelight, drivetrain)),
 
-            new FollowerCommand(drivetrain, trajectoryFactory.get("ball2 to ball3"))
-                .raceWith(new IntakeCommand(intake, feeder, () -> false)),
-            new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(1)
-                .raceWith(new AimCommand(limelight, drivetrain)),
+                new FollowerCommand(drivetrain, trajectoryFactory.get("ball2 to ball3"))
+                        .raceWith(new IntakeCommand(intake, feeder, () -> false)),
+                new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(1)
+                        .raceWith(new AimCommand(limelight, drivetrain)),
 
-            new FollowerCommand(drivetrain, trajectoryFactory.get("ball3 to station line"))
-                .raceWith(new IntakeCommand(intake, feeder, () -> false)),
-            new FollowerCommand(drivetrain, trajectoryFactory.get("station to shoot line")),
-            new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(3)
-                .raceWith(new AimCommand(limelight, drivetrain))
-       );
+                new FollowerCommand(drivetrain, trajectoryFactory.get("ball3 to station line"))
+                        .raceWith(new IntakeCommand(intake, feeder, () -> false)),
+                new FollowerCommand(drivetrain, trajectoryFactory.get("station to shoot line")),
+                new ShootCommand(shooter, feeder, limelight, () -> false).withTimeout(3)
+                        .raceWith(new AimCommand(limelight, drivetrain)));
     }
 
     public Command createTuneAutoCommand() {
         return new SequentialCommandGroup(
-            new InstantCommand(() -> drivetrain.resetPosition()),
-            new FollowerCommand(drivetrain, trajectoryFactory.get("tune curve")));
+                new InstantCommand(() -> drivetrain.resetPosition()),
+                new FollowerCommand(drivetrain, trajectoryFactory.get("tune curve")));
     }
 }
