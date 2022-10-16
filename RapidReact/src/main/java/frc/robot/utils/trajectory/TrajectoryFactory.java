@@ -62,7 +62,7 @@ public class TrajectoryFactory {
         new SimplePathBuilder(new Vector2(0, 0), Rotation2.ZERO)
             .lineTo(new Vector2(5, 0), Rotation2.fromDegrees(0))
             .build(),
-        testConstraints,
+        constraints,
         sampleDistance);
 
     private Trajectory tuneCurve = new Trajectory(
