@@ -73,7 +73,7 @@ public class RobotContainer {
     private IntakeSubsystem intake;
     private DrivetrainSubsystem drivetrain;
     private LimelightSubsystem limelight;
-    private ClimberSubsystem climber;
+    // private ClimberSubsystem climber;
 
     // Commands
     private Command homeHookCommand;
@@ -104,8 +104,9 @@ public class RobotContainer {
                 HOOD_LIMITSWITCH_DIO, ranger);
         intake = new IntakeSubsystem(INTAKE_MOTOR_CAN_ID, BOOM_RETRACT_SOLENOID_CHAN, BOOM_EXTEND_SOLENOID_CHAN,
                 ARM_RETRACT_SOLENOID_CHAN, ARM_EXTEND_SOLENOID_CHAN);
-        climber = new ClimberSubsystem(ELEVATOR_CAN_ID, WINDMILL_1_CAN_ID, WINDMILL_2_CAN_ID,
-                RED_HOOK_CAN_ID, BLUE_HOOK_CAN_ID, WINDMILL_SENSOR_DIO);
+        // climber = new ClimberSubsystem(ELEVATOR_CAN_ID, WINDMILL_1_CAN_ID,
+        // WINDMILL_2_CAN_ID,
+        // RED_HOOK_CAN_ID, BLUE_HOOK_CAN_ID, WINDMILL_SENSOR_DIO);
 
         // Setup our server drivetrain subsystem
         SwerveModuleConfig fl = new SwerveModuleConfig(FRONT_LEFT_MODULE_DRIVE_MOTOR, FRONT_LEFT_MODULE_STEER_MOTOR,
@@ -149,39 +150,39 @@ public class RobotContainer {
         shooter.setDefaultCommand(new IdleShooterCommand(shooter));
 
         // Climber Command Groups
-        homeHookCommand = new SequentialCommandGroup(
-                new HomeRedHookCommand(climber),
-                new HomeBlueHookCommand(climber));
+        //homeHookCommand = new SequentialCommandGroup(
+        //        new HomeRedHookCommand(climber),
+        //        new HomeBlueHookCommand(climber));
 
-        deployClimberCommand = new ParallelCommandGroup(
-                new HomeElevatorCommand(climber),
-                new SwitchRedHookCommand(climber, HookPosition.Grab),
-                new SwitchBlueHookCommand(climber, HookPosition.Grab));
+        //deployClimberCommand = new ParallelCommandGroup(
+        //        new HomeElevatorCommand(climber),
+        //        new SwitchRedHookCommand(climber, HookPosition.Grab),
+        //        new SwitchBlueHookCommand(climber, HookPosition.Grab));
 
-        climbSecondToThirdCommmand = new ParallelCommandGroup(
-                new RotateWindmillCommand(climber, WindmillState.SecondToThird),
-                new SequentialCommandGroup(
-                        new WaitForSecondsCommand(2),
-                        new SwitchRedHookCommand(climber, HookPosition.Grab)));
+        //climbSecondToThirdCommmand = new ParallelCommandGroup(
+        //        new RotateWindmillCommand(climber, WindmillState.SecondToThird),
+        //        new SequentialCommandGroup(
+        //                new WaitForSecondsCommand(2),
+        //                new SwitchRedHookCommand(climber, HookPosition.Grab)));
 
-        climbCommand = new SequentialCommandGroup(
-                new RotateWindmillCommand(climber, WindmillState.FirstToSecond),
-                new WaitForSecondsCommand(0.25),
-                new SwitchBlueHookCommand(climber, HookPosition.Lock),
-                new WaitForSecondsCommand(0.5),
-                new RotateWindmillCommand(climber, WindmillState.ShiftWeightOffFirst),
-                new WaitForSecondsCommand(0.25),
-                new SwitchRedHookCommand(climber, HookPosition.Release),
-                new WaitForSecondsCommand(0.25),
-                climbSecondToThirdCommmand,
-                new WaitForSecondsCommand(0.5),
-                new SwitchRedHookCommand(climber, HookPosition.Lock),
-                new WaitForSecondsCommand(0.25),
-                new RotateWindmillCommand(climber, WindmillState.ShiftWeightOffSecond),
-                new WaitForSecondsCommand(0.25),
-                new SwitchBlueHookCommand(climber, HookPosition.Release),
-                new WaitForSecondsCommand(0.25),
-                new RotateWindmillCommand(climber, WindmillState.Hang));
+        //climbCommand = new SequentialCommandGroup(
+        //        new RotateWindmillCommand(climber, WindmillState.FirstToSecond),
+        //        new WaitForSecondsCommand(0.25),
+        //        new SwitchBlueHookCommand(climber, HookPosition.Lock),
+        //        new WaitForSecondsCommand(0.5),
+        //        new RotateWindmillCommand(climber, WindmillState.ShiftWeightOffFirst),
+        //        new WaitForSecondsCommand(0.25),
+        //        new SwitchRedHookCommand(climber, HookPosition.Release),
+        //        new WaitForSecondsCommand(0.25),
+        //        climbSecondToThirdCommmand,
+        //        new WaitForSecondsCommand(0.5),
+        //        new SwitchRedHookCommand(climber, HookPosition.Lock),
+        //        new WaitForSecondsCommand(0.25),
+        //        new RotateWindmillCommand(climber, WindmillState.ShiftWeightOffSecond),
+        //        new WaitForSecondsCommand(0.25),
+        //        new SwitchBlueHookCommand(climber, HookPosition.Release),
+        //        new WaitForSecondsCommand(0.25),
+        //        new RotateWindmillCommand(climber, WindmillState.Hang));
     }
 
     /**
@@ -239,20 +240,23 @@ public class RobotContainer {
         new JoystickButton(operatorController, Button.kB.value).whenReleased(
                 new InstantCommand(() -> feeder.setFeedMode(FeedMode.STOPPED)));
 
-        new JoystickButton(operatorController, Button.kX.value)
-                .whileHeld(new RotateWindmillCommand(climber, WindmillState.Freeze));
+        // new JoystickButton(operatorController, Button.kX.value)
+        // .whileHeld(new RotateWindmillCommand(climber, WindmillState.Freeze));
 
-        new JoystickButton(operatorController, Button.kY.value)
-                .whenPressed(new RotateWindmillCommand(climber, WindmillState.Home));
+        // new JoystickButton(operatorController, Button.kY.value)
+        // .whenPressed(new RotateWindmillCommand(climber, WindmillState.Home));
 
-        new JoystickButton(operatorController, Button.kLeftBumper.value)
-                .whileHeld(new ExtendElevatorCommand(climber, -0.1));
+        // new JoystickButton(operatorController, Button.kLeftBumper.value)
+        // .whileHeld(new ExtendElevatorCommand(climber, -0.1));
 
-        new JoystickButton(operatorController, Button.kBack.value).whenPressed(deployClimberCommand);
+        // new JoystickButton(operatorController,
+        // Button.kBack.value).whenPressed(deployClimberCommand);
 
-        new JoystickButton(operatorController, Button.kStart.value).whenPressed(climbCommand);
+        // new JoystickButton(operatorController,
+        // Button.kStart.value).whenPressed(climbCommand);
 
-        new JoystickButton(operatorController, Button.kRightBumper.value).whenPressed(homeHookCommand);
+        // new JoystickButton(operatorController,
+        // Button.kRightBumper.value).whenPressed(homeHookCommand);
 
     }
 

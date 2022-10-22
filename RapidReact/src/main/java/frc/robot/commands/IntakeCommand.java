@@ -19,6 +19,7 @@ public class IntakeCommand extends CommandBase {
   
   private Timer intakeTimer;
   private boolean isExtended = false;
+  private boolean spinBallOut = false;
   /** Creates a new IntakeCommand. */
   public IntakeCommand(IntakeSubsystem intakeSubsystem, FeederSubsystem feederSubsystem, BooleanSupplier trigger) {
     this.intakeSubsystem = intakeSubsystem;
@@ -36,6 +37,8 @@ public class IntakeCommand extends CommandBase {
     intakeTimer.reset();
     intakeTimer.start();
     isExtended = false;
+    spinBallOut = false;
+    
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -47,8 +50,18 @@ public class IntakeCommand extends CommandBase {
       }
     if(trigger.getAsBoolean()){
       intakeSubsystem.spinBallOut();
+      // Sets the intake mode only once when spiting the ball out
+      if(!spinBallOut){
+        feederSubsystem.setFeedMode(FeedMode.REVERSE_CONTINUOUS);
+        spinBallOut = true;
+      }
     } else {
       intakeSubsystem.spinBallIn();
+      // Sets the intake mode only once when intaking the ball out
+      if(spinBallOut){
+          feederSubsystem.setFeedMode(FeedMode.INTAKE);
+          spinBallOut = false;
+      }
     }
   }
 
@@ -56,6 +69,7 @@ public class IntakeCommand extends CommandBase {
   @Override
   public void end(boolean interrupted) {
     isExtended = false;
+    spinBallOut = false;
     intakeTimer.stop();
     intakeSubsystem.retract();
     feederSubsystem.setFeedMode(FeedMode.STOPPED);
