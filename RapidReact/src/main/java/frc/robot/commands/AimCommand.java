@@ -24,7 +24,7 @@ public class AimCommand extends CommandBase {
 	private DoubleSupplier translationXSupplier;
 	private DoubleSupplier translationYSupplier;
 	
-    private double staticConst = 0.34; 
+    private double staticConst = 0.2; 
 		// set pid to 0, increase until slightly rotating
 
 	// during tele
